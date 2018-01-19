@@ -87,6 +87,9 @@
     <Compile Include="..\BabylonPropertiesActionItem.cs">
       <Link>BabylonPropertiesActionItem.cs</Link>
     </Compile>
+    <Compile Include="..\CustomExporters\KittyHawkMaterialExporter.cs">
+      <Link>Exporter\KittyHawkMaterialExporter.cs</Link>
+    </Compile>
     <Compile Include="..\Descriptor.cs">
       <Link>Descriptor.cs</Link>
     </Compile>
