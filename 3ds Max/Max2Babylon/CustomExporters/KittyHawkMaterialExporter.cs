@@ -113,7 +113,7 @@ namespace Max2Babylon
                         else if (code.ToUpperInvariant() == "GLASS")
                         {
                             material.alphaMode = GLTFMaterial.AlphaMode.BLEND.ToString();
-                            SetBaseColorAlpha(material, 0.3f);
+                            material.SetBaseColorFactorAlpha(0.3f);
                         }
                         break;
                 }
