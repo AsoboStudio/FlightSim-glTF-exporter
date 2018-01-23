@@ -113,7 +113,7 @@ namespace Max2Babylon
                         else if (code.ToUpperInvariant() == "GLASS")
                         {
                             material.alphaMode = GLTFMaterial.AlphaMode.BLEND.ToString();
-                            material.SetBaseColorFactorAlpha(0.3f);
+                            material.SetBaseColorFactorAlpha(0.4f);
                         }
                         break;
                 }
@@ -232,14 +232,14 @@ namespace Max2Babylon
 
         public static void SetBaseColorFactorAlpha(this GLTFMaterial gltfMaterial, float alpha)
         {
-            if (alpha == Defaults.EmissiveFactor[3])
+            if (alpha == Defaults.BaseColorFactor[3])
             {
                 if(gltfMaterial.pbrMetallicRoughness == null || gltfMaterial.pbrMetallicRoughness.baseColorFactor == null)
                     return;
 
-                if(gltfMaterial.pbrMetallicRoughness.baseColorFactor[0] == Defaults.EmissiveFactor[0]
-                    && gltfMaterial.pbrMetallicRoughness.baseColorFactor[1] == Defaults.EmissiveFactor[1]
-                    && gltfMaterial.pbrMetallicRoughness.baseColorFactor[2] == Defaults.EmissiveFactor[2])
+                if(gltfMaterial.pbrMetallicRoughness.baseColorFactor[0] == Defaults.BaseColorFactor[0]
+                    && gltfMaterial.pbrMetallicRoughness.baseColorFactor[1] == Defaults.BaseColorFactor[1]
+                    && gltfMaterial.pbrMetallicRoughness.baseColorFactor[2] == Defaults.BaseColorFactor[2])
                 {
                     gltfMaterial.pbrMetallicRoughness.baseColorFactor = null;
                     return;
@@ -251,14 +251,14 @@ namespace Max2Babylon
 
             if (gltfMaterial.pbrMetallicRoughness.baseColorFactor == null)
                 gltfMaterial.pbrMetallicRoughness.baseColorFactor = new float[] {
-                    Defaults.EmissiveFactor[0], Defaults.EmissiveFactor[1], Defaults.EmissiveFactor[2], alpha };
+                    Defaults.BaseColorFactor[0], Defaults.BaseColorFactor[1], Defaults.BaseColorFactor[2], alpha };
             else
                 gltfMaterial.pbrMetallicRoughness.baseColorFactor[3] = alpha;
         }
 
         public static void SetBaseColorFactor(this GLTFMaterial gltfMaterial, float r, float g, float b)
         {
-            if (r == Defaults.EmissiveFactor[0] && g == Defaults.EmissiveFactor[1] && b == Defaults.EmissiveFactor[2])
+            if (r == Defaults.BaseColorFactor[0] && g == Defaults.BaseColorFactor[1] && b == Defaults.BaseColorFactor[2])
             {
                 if (gltfMaterial.pbrMetallicRoughness == null || gltfMaterial.pbrMetallicRoughness.baseColorFactor == null)
                     return;
@@ -274,7 +274,7 @@ namespace Max2Babylon
                 gltfMaterial.pbrMetallicRoughness = new GLTFPBRMetallicRoughness();
 
             if (gltfMaterial.pbrMetallicRoughness.baseColorFactor == null)
-                gltfMaterial.pbrMetallicRoughness.baseColorFactor = new float[] { r, g, b, Defaults.EmissiveFactor[3] };
+                gltfMaterial.pbrMetallicRoughness.baseColorFactor = new float[] { r, g, b, Defaults.BaseColorFactor[3] };
             else
             {
                 gltfMaterial.pbrMetallicRoughness.baseColorFactor[0] = r;
