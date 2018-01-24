@@ -1,6 +1,7 @@
 using Autodesk.Max;
 using BabylonExport.Entities;
 using GLTFExport.Entities;
+using System.Collections.Generic;
 
 namespace Max2Babylon
 {
@@ -178,6 +179,8 @@ namespace Max2Babylon
         }
         void ProcessParamBlock_TEXTURES(GLTFMaterial material, IIParamBlock2 paramBlock)
         {
+            IPBBitmap baseColor = null, roughnessMetal = null, normal = null;
+
             int numParams = paramBlock.NumParams;
             for (int i = 0; i < numParams; ++i)
             {
@@ -190,21 +193,20 @@ namespace Max2Babylon
                         if (type != ParamType2.Bitmap)
                             continue;// todo: throw warning
 
-                        IPBBitmap baseColor = paramBlock.GetBitmap(paramId, 0, 0);
-                        // todo
+                        baseColor = paramBlock.GetBitmap(paramId, 0, 0);
+
                         break;
                     case "OCCLUSIONROUGHNESSMETALLICTEX":
                         if (type != ParamType2.Point4)
                             continue;// todo: throw warning
 
-                        IPBBitmap orm = paramBlock.GetBitmap(paramId, 0, 0);
-                        // todo
+                        roughnessMetal = paramBlock.GetBitmap(paramId, 0, 0);
+                        
                         break;
                     case "NORMALTEX":
                         if (type != ParamType2.Float)
                             continue;// todo: throw warning
-                        IPBBitmap normalTex = paramBlock.GetBitmap(paramId, 0, 0);
-                        // todo
+                        normal = paramBlock.GetBitmap(paramId, 0, 0);
                         break;
                 }
             }
