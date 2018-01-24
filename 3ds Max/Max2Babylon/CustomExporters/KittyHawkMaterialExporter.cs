@@ -68,6 +68,7 @@ namespace Max2Babylon
 
         void ProcessParamBlocks(GLTFMaterial babylonMaterial, IIGameMaterial material)
         {
+            int numTexMaps = material.NumberOfTextureMaps;
             int numParamBlocks = material.MaxMaterial.NumParamBlocks;
             for (int i = 0; i < numParamBlocks; ++i)
             {
@@ -179,7 +180,7 @@ namespace Max2Babylon
         }
         void ProcessParamBlock_TEXTURES(GLTFMaterial material, IIParamBlock2 paramBlock)
         {
-            IPBBitmap baseColor = null, roughnessMetal = null, normal = null;
+            string baseColorTex = null;
 
             int numParams = paramBlock.NumParams;
             for (int i = 0; i < numParams; ++i)
@@ -187,29 +188,37 @@ namespace Max2Babylon
                 short paramId = paramBlock.IndextoID(i);
                 IParamDef def = paramBlock.GetParamDef(paramId);
                 ParamType2 type = paramBlock.GetParameterType(paramId);
+                
                 switch (def.IntName.ToUpperInvariant())
                 {
                     case "BASECOLORTEX":
-                        if (type != ParamType2.Bitmap)
+                        if (def.Type != ParamType2.Filename)
+                            continue;
+                        if (type != ParamType2.Filename)
                             continue;// todo: throw warning
-
-                        baseColor = paramBlock.GetBitmap(paramId, 0, 0);
+                        if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
+                            continue;
+                        baseColorTex = paramBlock.GetStr(paramId, 0, 0);
+                        
 
                         break;
                     case "OCCLUSIONROUGHNESSMETALLICTEX":
                         if (type != ParamType2.Point4)
                             continue;// todo: throw warning
 
-                        roughnessMetal = paramBlock.GetBitmap(paramId, 0, 0);
+                        //roughnessMetal = paramBlock.GetBitmap(paramId, 0, 0);
                         
                         break;
                     case "NORMALTEX":
                         if (type != ParamType2.Float)
                             continue;// todo: throw warning
-                        normal = paramBlock.GetBitmap(paramId, 0, 0);
+                        //normal = paramBlock.GetBitmap(paramId, 0, 0);
                         break;
                 }
             }
+            
+            //if(!string.IsNullOrWhiteSpace(baseColorTex))
+
         }
         void ProcessParamBlock_FLAGS(GLTFMaterial material, IIParamBlock2 paramBlock)
         {
@@ -231,6 +240,19 @@ namespace Max2Babylon
         // Pretty much all material parameters are optional, which means a lot of variables (nested) are null or have null parents before we set them.
         // These functions exist to make this a bit easier to read and use the gltf spec defaults when variables have to be initialized.
         // In addition, we try to minimize what we export by setting variables to null when they're defaults.
+
+        public static void SetBaseColorTexture(this GLTFMaterial material, string texName)
+        {
+            // todo: validate texture
+            if(string.IsNullOrWhiteSpace(texName))
+            {
+                if (material.pbrMetallicRoughness == null || material.pbrMetallicRoughness.baseColorTexture == null)
+                    return;
+
+                //material.pbrMetallicRoughness.baseColorTexture
+            }
+            material
+        }
 
         public static void SetBaseColorFactorAlpha(this GLTFMaterial gltfMaterial, float alpha)
         {
