@@ -179,17 +179,14 @@ namespace Max2Babylon
             {
                 short paramId = paramBlock.IndextoID(i);
                 IParamDef def = paramBlock.GetParamDef(paramId);
-                ParamType2 type = paramBlock.GetParameterType(paramId);
                 
                 switch (def.IntName.ToUpperInvariant())
                 {
                     case "BASECOLORTEX":
                         if (def.Type != ParamType2.Filename)
-                            continue;
-                        if (type != ParamType2.Filename)
-                            continue;// todo: throw warning
+                            continue; // todo: throw warning
                         if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
-                            continue;
+                            continue; // todo: throw warning
 
                         string baseColorTex = paramBlock.GetStr(paramId, 0, 0);
                         texName = ValidateAndOutputTexture(baseColorTex);
@@ -200,8 +197,10 @@ namespace Max2Babylon
 
                         break;
                     case "OCCLUSIONROUGHNESSMETALLICTEX":
-                        if (type != ParamType2.Point4)
-                            continue;// todo: throw warning
+                        if (def.Type != ParamType2.Filename)
+                            continue; // todo: throw warning
+                        if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
+                            continue; // todo: throw warning
 
                         string occRoughMetalTex = paramBlock.GetStr(paramId, 0, 0);
                         texName = ValidateAndOutputTexture(occRoughMetalTex);
@@ -215,8 +214,10 @@ namespace Max2Babylon
 
                         break;
                     case "NORMALTEX":
-                        if (type != ParamType2.Float)
-                            continue;// todo: throw warning
+                        if (def.Type != ParamType2.Filename)
+                            continue; // todo: throw warning
+                        if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
+                            continue; // todo: throw warning
 
                         string normalTex = paramBlock.GetStr(paramId, 0, 0);
                         texName = ValidateAndOutputTexture(normalTex);
