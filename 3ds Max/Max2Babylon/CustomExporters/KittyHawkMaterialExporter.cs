@@ -21,14 +21,20 @@ namespace Max2Babylon
         IIGameMaterial maxGameMaterial;
         Func<string, string, string> tryWriteImageFunc;
 
+        Dictionary<string, GLTFImage> textureExportCache = new Dictionary<string, GLTFImage>();
+
         GLTFMaterial IGLTFMaterialExporter.ExportGLTFMaterial(GLTF gltf, IIGameMaterial maxGameMaterial, Func<string, string, string> tryWriteImageFunc)
         {
+            // if the gltf class instance is different, this is a new export
+            if (this.gltf != gltf)
+                textureExportCache.Clear();
+
+            // save parameters
             this.gltf = gltf;
             this.maxGameMaterial = maxGameMaterial;
             this.tryWriteImageFunc = tryWriteImageFunc;
 
             GLTFMaterial gltfMaterial = new GLTFMaterial();
-
             gltfMaterial.name = maxGameMaterial.MaterialName;
             gltfMaterial.id = maxGameMaterial.MaxMaterial.GetGuid().ToString();
                         
@@ -172,8 +178,10 @@ namespace Max2Babylon
 
         void ProcessParamBlock_TEXTURES(GLTFMaterial material, IIParamBlock2 paramBlock)
         {
-            string texName;
-
+            string texPath;
+            GLTFImage image;
+            GLTFTextureInfo info;
+            
             int numParams = paramBlock.NumParams;
             for (int i = 0; i < numParams; ++i)
             {
@@ -183,48 +191,58 @@ namespace Max2Babylon
                 switch (def.IntName.ToUpperInvariant())
                 {
                     case "BASECOLORTEX":
+
                         if (def.Type != ParamType2.Filename)
                             continue; // todo: throw warning
                         if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
                             continue; // todo: throw warning
 
-                        string baseColorTex = paramBlock.GetStr(paramId, 0, 0);
-                        texName = ValidateAndOutputTexture(baseColorTex);
-                        if (texName == null)
+                        texPath = paramBlock.GetStr(paramId, 0, 0);
+
+                        image = ExportImage(texPath);
+                        if (image == null)
                             continue;
 
-                        material.SetBaseColorTexture(gltf, texName);
+                        info = ExportTextureInfo(image);
+
+                        material.SetBaseColorTexture(info);
 
                         break;
                     case "OCCLUSIONROUGHNESSMETALLICTEX":
+
                         if (def.Type != ParamType2.Filename)
                             continue; // todo: throw warning
                         if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
                             continue; // todo: throw warning
 
-                        string occRoughMetalTex = paramBlock.GetStr(paramId, 0, 0);
-                        texName = ValidateAndOutputTexture(occRoughMetalTex);
-                        if (texName == null)
+                        texPath = paramBlock.GetStr(paramId, 0, 0);
+
+                        image = ExportImage(texPath);
+                        if (image == null)
                             continue;
 
-                        // same texture, different channels
-                        // todo: re-use GLTFImage and GLTFTexture
-                        material.SetMetallicRoughnessTexture(gltf, texName);
-                        material.SetOcclusionTexture(gltf, texName);
+                        info = ExportTextureInfo(image);
+
+                        material.SetMetallicRoughnessTexture(info);
+                        material.SetOcclusionTexture(info);
 
                         break;
                     case "NORMALTEX":
+
                         if (def.Type != ParamType2.Filename)
                             continue; // todo: throw warning
                         if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
                             continue; // todo: throw warning
+                        
+                        texPath = paramBlock.GetStr(paramId, 0, 0);
 
-                        string normalTex = paramBlock.GetStr(paramId, 0, 0);
-                        texName = ValidateAndOutputTexture(normalTex);
-                        if (texName == null)
+                        image = ExportImage(texPath);
+                        if (image == null)
                             continue;
 
-                        material.SetNormalTexture(gltf, texName);
+                        info = ExportTextureInfo(image);
+
+                        material.SetNormalTexture(info);
 
                         break;
                 }
@@ -236,8 +254,13 @@ namespace Max2Babylon
             
         }
 
-        string ValidateAndOutputTexture(string sourceTexturePath)
+        GLTFImage ExportImage(string sourceTexturePath)
         {
+            if (textureExportCache.TryGetValue(sourceTexturePath, out GLTFImage info))
+            {
+                return info;
+            }
+
             string textureName = Path.GetFileName(sourceTexturePath);
             string validExtension = tryWriteImageFunc(sourceTexturePath, textureName);
 
@@ -246,7 +269,20 @@ namespace Max2Babylon
 
             textureName = Path.ChangeExtension(textureName, validExtension);
 
-            return textureName;
+            info = gltf.AddImage();
+            info.uri = textureName;
+            info.FileExtension = validExtension;
+
+            textureExportCache.Add(sourceTexturePath, info);
+
+            return info;
+        }
+
+        GLTFTextureInfo ExportTextureInfo(GLTFImage image, GLTFSampler sampler = null)
+        {
+            GLTFTexture texture = gltf.AddTexture(image, sampler);
+            texture.name = image.uri;
+            return new GLTFTextureInfo { index = texture.index };
         }
     }
 
@@ -267,95 +303,55 @@ namespace Max2Babylon
 
         #region Textures
 
-        public static GLTFTextureInfo AddBasicTextureInfo(GLTF gltf, string texName)
-        {
-            GLTFImage image = gltf.AddImage();
-            image.uri = texName;
-            image.FileExtension = Path.GetExtension(texName);
-
-            GLTFTexture texture = gltf.AddTexture(null, image);
-            texture.name = texName;
-
-            GLTFTextureInfo textureInfo = new GLTFTextureInfo();
-            textureInfo.index = texture.index;
-
-            return textureInfo;
-        }
-
-        public static void SetBaseColorTexture(this GLTFMaterial material, GLTF gltf, string texName)
+        public static void SetBaseColorTexture(this GLTFMaterial material, GLTFTextureInfo info)
         {
             // it's not so easy to undo the output writing, so don't allow this
-            if (material.pbrMetallicRoughness.baseColorTexture != null)
+            if (material.pbrMetallicRoughness != null && material.pbrMetallicRoughness.baseColorTexture != null)
                 throw new InvalidOperationException("Base color texture already set.");
 
-            if (string.IsNullOrWhiteSpace(texName))
-            {
-                if (material.pbrMetallicRoughness == null || material.pbrMetallicRoughness.baseColorTexture == null)
-                    return;
-
-                material.pbrMetallicRoughness.baseColorTexture = null;
-            }
-
             if (material.pbrMetallicRoughness == null)
                 material.pbrMetallicRoughness = new GLTFPBRMetallicRoughness();
 
-            material.pbrMetallicRoughness.baseColorTexture = AddBasicTextureInfo(gltf, texName);
+            material.pbrMetallicRoughness.baseColorTexture = info;
         }
 
-        public static void SetMetallicRoughnessTexture(this GLTFMaterial material, GLTF gltf, string texName)
+        public static void SetMetallicRoughnessTexture(this GLTFMaterial material, GLTFTextureInfo info)
         {
             // it's not so easy to undo the output writing, so don't allow this
-            if (material.pbrMetallicRoughness.metallicRoughnessTexture != null)
-                throw new InvalidOperationException("Metallic/Roughness texture already set.");
-
-            if (string.IsNullOrWhiteSpace(texName))
-            {
-                if (material.pbrMetallicRoughness == null || material.pbrMetallicRoughness.metallicRoughnessTexture == null)
-                    return;
-
-                material.pbrMetallicRoughness.metallicRoughnessTexture = null;
-            }
+            if (material.pbrMetallicRoughness != null && material.pbrMetallicRoughness.metallicRoughnessTexture != null)
+                throw new InvalidOperationException("Metallic/roughness texture already set.");
 
             if (material.pbrMetallicRoughness == null)
                 material.pbrMetallicRoughness = new GLTFPBRMetallicRoughness();
 
-            material.pbrMetallicRoughness.metallicRoughnessTexture = AddBasicTextureInfo(gltf, texName);
+            material.pbrMetallicRoughness.metallicRoughnessTexture = info;
         }
 
-        public static void SetEmissiveTexture(this GLTFMaterial material, GLTF gltf, string texName)
+        public static void SetEmissiveTexture(this GLTFMaterial material, GLTFTextureInfo info)
         {
             // it's not so easy to undo the output writing, so don't allow this
             if (material.emissiveTexture != null)
-                throw new InvalidOperationException("Metallic/Roughness texture already set.");
+                throw new InvalidOperationException("Emissive texture already set.");
 
-            if (string.IsNullOrWhiteSpace(texName))
-                return;
-
-            material.emissiveTexture = AddBasicTextureInfo(gltf, texName);
+            material.emissiveTexture = info ?? throw new ArgumentNullException(nameof(info));
         }
 
-        public static void SetOcclusionTexture(this GLTFMaterial material, GLTF gltf, string texName)
+        public static void SetOcclusionTexture(this GLTFMaterial material, GLTFTextureInfo info)
         {
             // it's not so easy to undo the output writing, so don't allow this
             if (material.occlusionTexture != null)
-                throw new InvalidOperationException("Metallic/Roughness texture already set.");
+                throw new InvalidOperationException("Occlusion texture already set.");
 
-            if (string.IsNullOrWhiteSpace(texName))
-                return;
-
-            material.occlusionTexture = AddBasicTextureInfo(gltf, texName);
+            material.occlusionTexture = info ?? throw new ArgumentNullException(nameof(info));
         }
 
-        public static void SetNormalTexture(this GLTFMaterial material, GLTF gltf, string texName)
+        public static void SetNormalTexture(this GLTFMaterial material, GLTFTextureInfo info)
         {
             // it's not so easy to undo the output writing, so don't allow this
             if (material.normalTexture != null)
-                throw new InvalidOperationException("Metallic/Roughness texture already set.");
+                throw new InvalidOperationException("Normal texture already set.");
 
-            if (string.IsNullOrWhiteSpace(texName))
-                return;
-
-            material.normalTexture = AddBasicTextureInfo(gltf, texName);
+            material.normalTexture = info ?? throw new ArgumentNullException(nameof(info));
         }
 
         #endregion
