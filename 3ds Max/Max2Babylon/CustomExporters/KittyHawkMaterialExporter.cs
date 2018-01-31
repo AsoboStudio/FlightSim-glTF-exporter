@@ -21,16 +21,22 @@ namespace Max2Babylon
         IIGameMaterial maxGameMaterial;
         Func<string, string, string> tryWriteImageFunc;
         Action<string, Color> raiseMessageAction;
+        Action<string> raiseWarningAction;
+        Action<string> raiseErrorAction;
 
         Dictionary<string, GLTFImage> srcTextureExportCache = new Dictionary<string, GLTFImage>();
-        HashSet<string> dstTextureExportCache = new HashSet<string>();
+        Dictionary<string, string> dstTextureExportCache = new Dictionary<string, string>();
 
-        void RaiseMessage(string message) { raiseMessageAction?.Invoke(message, KittyExporterSettings.DefaultMessageColor); }
-        void RaiseWarning(string message) { raiseMessageAction?.Invoke(message, KittyExporterSettings.WarningMessageColor); }
-        void RaiseError(string message) { raiseMessageAction?.Invoke(message, KittyExporterSettings.ErrorMessageColor); }
+        void RaiseMessage(string message) { RaiseMessage(message, Color.Black); }
+        void RaiseMessage(string message, Color color) { raiseMessageAction?.Invoke(message, color); }
+        void RaiseWarning(string message) { raiseWarningAction?.Invoke(message); }
+        void RaiseError(string message) { raiseErrorAction?.Invoke(message); }
 
         GLTFMaterial IGLTFMaterialExporter.ExportGLTFMaterial(GLTF gltf, IIGameMaterial maxGameMaterial, 
-            Func<string, string, string> tryWriteImageFunc, Action<string, Color> raiseMessageAction)
+            Func<string, string, string> tryWriteImageFunc, 
+            Action<string, Color> raiseMessageAction, 
+            Action<string> raiseWarningAction, 
+            Action<string> raiseErrorAction)
         {
             // if the gltf class instance is different, this is a new export
             if (this.gltf != gltf)
@@ -44,6 +50,8 @@ namespace Max2Babylon
             this.maxGameMaterial = maxGameMaterial;
             this.tryWriteImageFunc = tryWriteImageFunc;
             this.raiseMessageAction = raiseMessageAction;
+            this.raiseWarningAction = raiseWarningAction;
+            this.raiseErrorAction = raiseErrorAction;
 
             GLTFMaterial gltfMaterial = new GLTFMaterial();
             gltfMaterial.name = maxGameMaterial.MaterialName;
@@ -528,21 +536,31 @@ namespace Max2Babylon
             }
 
             string textureName = Path.GetFileName(sourceTexturePath);
+            string previousExtension = Path.GetExtension(textureName).Substring(1); // substring removes '.'
             string validExtension = tryWriteImageFunc(sourceTexturePath, textureName);
 
             if (validExtension == null)
                 return null;
 
+            if (previousExtension.ToUpperInvariant() != validExtension.ToUpperInvariant())
+            {
+                string message = string.Format("Exported texture extension was changed from '{0}' to '{1}'", previousExtension, validExtension);
+                RaiseMessage(message, Color.CornflowerBlue);
+            }
+
             textureName = Path.ChangeExtension(textureName, validExtension);
 
-            if (dstTextureExportCache.Contains(textureName))
+
+            if (dstTextureExportCache.TryGetValue(textureName, out string otherTexturePath))
             {
-                RaiseWarning("Texture with the exported name already exists.");
-                RaiseWarning("-> Do you have material textures with the same name in different folders?");
-                RaiseWarning("-> Texture: " + textureName);
-                RaiseWarning("-> Material: " + maxGameMaterial.MaterialName);
+                RaiseWarning("Texture with the exported name already exists and will be re-used or overwritten!");
+                RaiseWarning("-> You have referenced a texture with the same name in different folders.");
+                RaiseWarning("-- -> Texture: " + textureName);
+                RaiseWarning("-- -> Material: " + maxGameMaterial.MaterialName);
+                RaiseWarning("-- -> This texture path: " + sourceTexturePath);
+                RaiseWarning("-- -> Other texture path: " + otherTexturePath);
             }
-            else dstTextureExportCache.Add(textureName);
+            else dstTextureExportCache.Add(textureName, sourceTexturePath);
 
             info = gltf.AddImage();
             info.uri = textureName;
@@ -572,14 +590,7 @@ namespace Max2Babylon
             return new T { index = texture.index };
         }
     }
-
-    static class KittyExporterSettings
-    {
-        public static readonly Color DefaultMessageColor = Color.Black;
-        public static readonly Color WarningMessageColor = Color.DarkOrange;
-        public static readonly Color ErrorMessageColor = Color.Red;
-    }
-
+    
     static class GLTFMaterialExtensions
     {
         public static class Defaults
