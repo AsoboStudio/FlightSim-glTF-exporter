@@ -3,7 +3,9 @@ using BabylonExport.Entities;
 using GLTFExport.Entities;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Runtime.Serialization;
 
 namespace Max2Babylon
 {
@@ -15,30 +17,39 @@ namespace Max2Babylon
         
         public KittyHawkMaterialExporter() { }
 
-        // getValueByNameUsingParamBlock2Internal(*pMtl,_T("DiffuseTex"),TYPE_FILENAME,&Filename,TV);
-
         GLTF gltf;
         IIGameMaterial maxGameMaterial;
         Func<string, string, string> tryWriteImageFunc;
+        Action<string, Color> raiseMessageAction;
 
-        Dictionary<string, GLTFImage> textureExportCache = new Dictionary<string, GLTFImage>();
+        Dictionary<string, GLTFImage> srcTextureExportCache = new Dictionary<string, GLTFImage>();
+        HashSet<string> dstTextureExportCache = new HashSet<string>();
 
-        GLTFMaterial IGLTFMaterialExporter.ExportGLTFMaterial(GLTF gltf, IIGameMaterial maxGameMaterial, Func<string, string, string> tryWriteImageFunc)
+        void RaiseMessage(string message) { raiseMessageAction?.Invoke(message, KittyExporterSettings.DefaultMessageColor); }
+        void RaiseWarning(string message) { raiseMessageAction?.Invoke(message, KittyExporterSettings.WarningMessageColor); }
+        void RaiseError(string message) { raiseMessageAction?.Invoke(message, KittyExporterSettings.ErrorMessageColor); }
+
+        GLTFMaterial IGLTFMaterialExporter.ExportGLTFMaterial(GLTF gltf, IIGameMaterial maxGameMaterial, 
+            Func<string, string, string> tryWriteImageFunc, Action<string, Color> raiseMessageAction)
         {
             // if the gltf class instance is different, this is a new export
             if (this.gltf != gltf)
-                textureExportCache.Clear();
+            {
+                srcTextureExportCache.Clear();
+                dstTextureExportCache.Clear();
+            }
 
             // save parameters
             this.gltf = gltf;
             this.maxGameMaterial = maxGameMaterial;
             this.tryWriteImageFunc = tryWriteImageFunc;
+            this.raiseMessageAction = raiseMessageAction;
 
             GLTFMaterial gltfMaterial = new GLTFMaterial();
             gltfMaterial.name = maxGameMaterial.MaterialName;
             gltfMaterial.id = maxGameMaterial.MaxMaterial.GetGuid().ToString();
-                        
-            ProcessParamBlocks(gltfMaterial, maxGameMaterial);
+
+            ProcessMaterialProperties(gltfMaterial, maxGameMaterial);
 
             return gltfMaterial;
 
@@ -62,6 +73,260 @@ namespace Max2Babylon
             */
         }
 
+        void ProcessMaterialProperties(GLTFMaterial material, IIGameMaterial maxMaterial)
+        {
+            #region Helper Variables
+
+            int int_out = 0;
+            float float_out = 0.0f;
+            string string_out = ""; // passing in a null string causes a null-reference exception, even though strings are immutable anyway
+            IPoint4 point4_out = Loader.Global.Point4.Create();
+            IPoint3 p3_out = Loader.Global.Point3.Create();
+
+            GLTFImage image;
+            GLTFTextureInfo info;
+
+            // Define some variables for the GetPropertyValue parameters.
+            // http://help.autodesk.com/view/3DSMAX/2017/ENU/?guid=__cpp_ref_class_i_game_property_html
+            //
+            // The time to retrieve the value, defaulted to the static frame.
+            // set to 0 in the exporter with Loader.Global.IGameInterface.SetStaticFrame
+            int param_t = 0;
+            //
+            // The flag indicating if percent fraction value (TYPE_PCNT_FRAC) should be converted (0.1 to 10), default:false 
+            bool param_p = false;
+
+            #endregion
+
+            // Iterate over all properties and find what we want by string.
+            // This way, it doesn't matter in which param rollout the property is defined.
+            // This gives us a little more flexibility in the MaxScript material definition.
+            //
+            // Some parameters only have to be set if we have a texture:
+            // - normal scale
+            // - occlusion strength
+            // Some parameters only have to be set if we have a specific alphaMode:
+            // - alphaCutoff
+            //
+            // Thus, two for loops!
+            // 1. process textures and alphamode
+            // 2. the remaining parameters
+            
+            int numProps = maxMaterial.IPropertyContainer.NumberOfProperties;
+
+            #region Textures & AlphaMode
+
+            for (int i = 0; i < numProps; ++i)
+            {
+                IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+                
+                if (property == null)
+                    continue;
+
+                IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                string propertyName = property.Name.ToUpperInvariant();
+
+                switch (propertyName)
+                {
+                    case "ALPHAMODE":
+                        {
+                            if (!property.GetPropertyValue(ref int_out, param_t))
+                                continue;// todo: throw warning
+                            material.SetAlphaMode((GLTFMaterial.AlphaMode)(int_out-1));
+                            break;
+                        }
+                    case "BASECOLORTEX":
+                        {
+                            if (paramDef.Type != ParamType2.Filename)
+                                continue; // todo: throw warning
+                            if (paramDef.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
+                                continue; // todo: throw warning
+                            string_out = property.MaxParamBlock2?.GetStr(property.ParamID, param_t, 0);
+                            if (string_out == null)
+                                continue; // todo: throw warning
+
+                            if (string.IsNullOrWhiteSpace(string_out))
+                                continue;
+
+                            image = ExportImage(string_out);
+                            if (image == null)
+                                continue;
+
+                            info = CreateTextureInfo(image);
+                            material.SetBaseColorTexture(info);
+
+                            break;
+                        }
+                    case "OCCLUSIONROUGHNESSMETALLICTEX":
+                        {
+                            if (paramDef.Type != ParamType2.Filename)
+                                continue; // todo: throw warning
+                            if (paramDef.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
+                                continue; // todo: throw warning
+                            string_out = property.MaxParamBlock2?.GetStr(property.ParamID, param_t, 0);
+                            if (string_out == null)
+                                continue; // todo: throw warning
+
+                            if (string.IsNullOrWhiteSpace(string_out))
+                                continue;
+
+                            image = ExportImage(string_out);
+                            if (image == null)
+                                continue;
+
+                            info = CreateTextureInfo(image);
+                            material.SetMetallicRoughnessTexture(info);
+
+                            // same image & sampler, so can use same GLTFTexture
+                            int textureIndex = info.index;
+                            info = CreateTextureInfo<GLTFOcclusionTextureInfo>(textureIndex);
+                            material.SetOcclusionTexture(info);
+
+                            break;
+                        }
+                    case "NORMALTEX":
+                        {
+                            if (paramDef.Type != ParamType2.Filename)
+                                continue; // todo: throw warning
+                            if (paramDef.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
+                                continue; // todo: throw warning
+                            string_out = property.MaxParamBlock2?.GetStr(property.ParamID, param_t, 0);
+                            if (string_out == null)
+                                continue; // todo: throw warning
+
+                            if (string.IsNullOrWhiteSpace(string_out))
+                                continue;
+
+                            image = ExportImage(string_out);
+                            if (image == null)
+                                continue;
+
+                            info = CreateTextureInfo<GLTFNormalTextureInfo>(image);
+                            material.SetNormalTexture(info);
+
+                            break;
+                        }
+                    case "EMISSIVETEX":
+                        {
+                            if (paramDef.Type != ParamType2.Filename)
+                                continue; // todo: throw warning
+                            if (paramDef.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
+                                continue; // todo: throw warning
+                            string_out = property.MaxParamBlock2?.GetStr(property.ParamID, param_t, 0);
+                            if (string_out == null)
+                                continue; // todo: throw warning
+
+                            if (string.IsNullOrWhiteSpace(string_out))
+                                continue;
+
+                            image = ExportImage(string_out);
+                            if (image == null)
+                                continue;
+
+                            info = CreateTextureInfo(image);
+                            material.SetEmissiveTexture(info);
+
+                            break;
+                        }
+                }
+            }
+
+            #endregion
+
+            #region The Other Parameters
+            
+            for (int i = 0; i < numProps; ++i)
+            {
+                IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                if (property == null)
+                    continue;
+
+                string propertyName = property.Name.ToUpperInvariant();
+                switch (propertyName)
+                {
+                    case "BASECOLOR":
+                        {
+                            if (!property.GetPropertyValue(point4_out, param_t))
+                                continue; // todo: throw warning
+                            material.SetBaseColorFactor(point4_out.X, point4_out.Y, point4_out.Z);
+                            material.SetBaseColorFactorAlpha(point4_out.W);
+                            break;
+                        }
+                    case "EMISSIVE":
+                        {
+                            if (!property.GetPropertyValue(point4_out, param_t))
+                                continue;// todo: throw warning
+                            material.SetEmissiveFactor(point4_out.X, point4_out.Y, point4_out.Z);
+                            break;
+                        }
+                    case "ROUGHNESS":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                continue;// todo: throw warning
+                            material.SetRoughnessFactor(float_out);
+                            break;
+                        }
+                    case "METALLIC":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                continue;// todo: throw warning
+                            material.SetMetallicFactor(float_out);
+                            break;
+                        }
+                    case "NORMALSCALE":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                continue;// todo: throw warning
+
+                            // only set if normal texture is defined
+                            GLTFNormalTextureInfo normalTexture = material.normalTexture as GLTFNormalTextureInfo;
+                            if (normalTexture == null)
+                                continue;
+
+                            material.SetNormalScale(float_out);
+                            break;
+                        }
+                    case "OCCLUSIONSTRENGTH":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                continue;// todo: throw warning
+
+                            // only set if occlusion texture is defined
+                            GLTFOcclusionTextureInfo occlusionTexture = material.occlusionTexture as GLTFOcclusionTextureInfo;
+                            if (occlusionTexture == null)
+                                continue;
+
+                            material.SetOcclusionStrength(float_out);
+                            break;
+                        }
+                    case "ALPHACUTOFF":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                continue;// todo: throw warning
+
+                            // only set if alphamode == mask
+                            if (material.alphaMode == GLTFMaterial.AlphaMode.MASK.ToString())
+                            {
+                                material.SetAlphaCutoff(float_out);
+                            }
+                            break;
+                        }
+                    case "DOUBLESIDED":
+                        {
+                            if (!property.GetPropertyValue(ref int_out, param_t))
+                                continue;// todo: throw warning
+
+                            material.SetDoubleSided(int_out > 0);
+                            break;
+                        }
+                }
+            }
+
+            #endregion
+        }
+
+        /* ProcessParamBlocks
         void ProcessParamBlocks(GLTFMaterial gltfMaterial, IIGameMaterial material)
         {
             int numTexMaps = material.NumberOfTextureMaps;
@@ -89,7 +354,8 @@ namespace Max2Babylon
                 }
             }
         }
-
+        */
+        /* ProcessParamBlock_SHADER
         void ProcessParamBlock_SHADER(GLTFMaterial material, IIParamBlock2 paramBlock)
         {
             int numParams = paramBlock.NumParams;
@@ -117,7 +383,8 @@ namespace Max2Babylon
                 }
             }
         }
-
+        */
+        /* ProcessParamBlock_PARAMS
         void ProcessParamBlock_PARAMS(GLTFMaterial material, IIParamBlock2 paramBlock)
         {
             int numParams = paramBlock.NumParams;
@@ -170,12 +437,8 @@ namespace Max2Babylon
                 }
             }
         }
-
-        void ProcessParamBlock_PARAMS2(GLTFMaterial material, IIParamBlock2 paramBlock)
-        {
-
-        }
-
+        */
+        /* ProcessParamBlock_TEXTURES
         void ProcessParamBlock_TEXTURES(GLTFMaterial material, IIParamBlock2 paramBlock)
         {
             string texPath;
@@ -191,72 +454,75 @@ namespace Max2Babylon
                 switch (def.IntName.ToUpperInvariant())
                 {
                     case "BASECOLORTEX":
+                        {
+                            if (def.Type != ParamType2.Filename)
+                                continue; // todo: throw warning
+                            if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
+                                continue; // todo: throw warning
 
-                        if (def.Type != ParamType2.Filename)
-                            continue; // todo: throw warning
-                        if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
-                            continue; // todo: throw warning
+                            texPath = paramBlock.GetStr(paramId, 0, 0);
 
-                        texPath = paramBlock.GetStr(paramId, 0, 0);
+                            image = ExportImage(texPath);
+                            if (image == null)
+                                continue;
 
-                        image = ExportImage(texPath);
-                        if (image == null)
-                            continue;
+                            info = CreateTextureInfo(image);
 
-                        info = ExportTextureInfo(image);
+                            material.SetBaseColorTexture(info);
 
-                        material.SetBaseColorTexture(info);
-
-                        break;
+                            break;
+                        }
                     case "OCCLUSIONROUGHNESSMETALLICTEX":
+                        {
+                            if (def.Type != ParamType2.Filename)
+                                continue; // todo: throw warning
+                            if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
+                                continue; // todo: throw warning
 
-                        if (def.Type != ParamType2.Filename)
-                            continue; // todo: throw warning
-                        if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
-                            continue; // todo: throw warning
+                            texPath = paramBlock.GetStr(paramId, 0, 0);
 
-                        texPath = paramBlock.GetStr(paramId, 0, 0);
+                            image = ExportImage(texPath);
+                            if (image == null)
+                                continue;
 
-                        image = ExportImage(texPath);
-                        if (image == null)
-                            continue;
+                            info = CreateTextureInfo(image);
+                            material.SetMetallicRoughnessTexture(info);
 
-                        info = ExportTextureInfo(image);
+                            // same image & sampler, so same GLTFTexture
+                            int textureIndex = info.index;
+                            info = CreateTextureInfo<GLTFOcclusionTextureInfo>(textureIndex);
+                            material.SetOcclusionTexture(info);
 
-                        material.SetMetallicRoughnessTexture(info);
-                        material.SetOcclusionTexture(info);
-
-                        break;
+                            break;
+                        }
                     case "NORMALTEX":
 
-                        if (def.Type != ParamType2.Filename)
-                            continue; // todo: throw warning
-                        if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
-                            continue; // todo: throw warning
-                        
-                        texPath = paramBlock.GetStr(paramId, 0, 0);
+                        {
+                            if (def.Type != ParamType2.Filename)
+                                continue; // todo: throw warning
+                            if (def.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
+                                continue; // todo: throw warning
 
-                        image = ExportImage(texPath);
-                        if (image == null)
-                            continue;
+                            texPath = paramBlock.GetStr(paramId, 0, 0);
 
-                        info = ExportTextureInfo(image);
+                            image = ExportImage(texPath);
+                            if (image == null)
+                                continue;
 
-                        material.SetNormalTexture(info);
+                            info = CreateTextureInfo<GLTFNormalTextureInfo>(image);
 
-                        break;
+                            material.SetNormalTexture(info);
+
+                            break;
+                        }
                 }
             }
         }
-
-        void ProcessParamBlock_FLAGS(GLTFMaterial material, IIParamBlock2 paramBlock)
-        {
-            
-        }
+        */
 
         GLTFImage ExportImage(string sourceTexturePath)
         {
-            if (textureExportCache.TryGetValue(sourceTexturePath, out GLTFImage info))
+            if (srcTextureExportCache.TryGetValue(sourceTexturePath, out GLTFImage info))
             {
                 return info;
             }
@@ -269,21 +535,49 @@ namespace Max2Babylon
 
             textureName = Path.ChangeExtension(textureName, validExtension);
 
+            if (dstTextureExportCache.Contains(textureName))
+            {
+                RaiseWarning("Texture with the exported name already exists.");
+                RaiseWarning("-> Do you have material textures with the same name in different folders?");
+                RaiseWarning("-> Texture: " + textureName);
+                RaiseWarning("-> Material: " + maxGameMaterial.MaterialName);
+            }
+            else dstTextureExportCache.Add(textureName);
+
             info = gltf.AddImage();
             info.uri = textureName;
             info.FileExtension = validExtension;
 
-            textureExportCache.Add(sourceTexturePath, info);
+            srcTextureExportCache.Add(sourceTexturePath, info);
 
             return info;
         }
 
-        GLTFTextureInfo ExportTextureInfo(GLTFImage image, GLTFSampler sampler = null)
+        GLTFTextureInfo CreateTextureInfo(GLTFImage image, GLTFSampler sampler = null)
+        {
+            return CreateTextureInfo<GLTFTextureInfo>(image, sampler);
+        }
+        T CreateTextureInfo<T>(GLTFImage image, GLTFSampler sampler = null) where T : GLTFTextureInfo, new()
         {
             GLTFTexture texture = gltf.AddTexture(image, sampler);
             texture.name = image.uri;
-            return new GLTFTextureInfo { index = texture.index };
+            return CreateTextureInfo<T>(texture);
         }
+        T CreateTextureInfo<T>(int textureIndex) where T : GLTFTextureInfo, new()
+        {
+            return CreateTextureInfo<T>(gltf.TexturesList[textureIndex]);
+        }
+        T CreateTextureInfo<T>(GLTFTexture texture) where T : GLTFTextureInfo, new()
+        {
+            return new T { index = texture.index };
+        }
+    }
+
+    static class KittyExporterSettings
+    {
+        public static readonly Color DefaultMessageColor = Color.Black;
+        public static readonly Color WarningMessageColor = Color.DarkOrange;
+        public static readonly Color ErrorMessageColor = Color.Red;
     }
 
     static class GLTFMaterialExtensions
@@ -292,8 +586,15 @@ namespace Max2Babylon
         {
             public static readonly float[] BaseColorFactor = new float[] { 1, 1, 1, 1 };
             public static readonly float[] EmissiveFactor = new float[] { 0, 0, 0 };
-            public const float RoughnessFactor = 1.0f;
             public const float MetallicFactor = 1.0f;
+            public const float RoughnessFactor = 1.0f;
+
+            public const float NormalScale = 1.0f;
+            public const float OcclusionStrength = 1.0f;
+
+            public const GLTFMaterial.AlphaMode AlphaMode = GLTFMaterial.AlphaMode.OPAQUE;
+            public const float AlphaCutoff = 0.5f;
+            public const bool DoubleSided = false;
         }
 
         #region GLTFMaterial helper functions
@@ -314,7 +615,6 @@ namespace Max2Babylon
 
             material.pbrMetallicRoughness.baseColorTexture = info;
         }
-
         public static void SetMetallicRoughnessTexture(this GLTFMaterial material, GLTFTextureInfo info)
         {
             // it's not so easy to undo the output writing, so don't allow this
@@ -326,7 +626,6 @@ namespace Max2Babylon
 
             material.pbrMetallicRoughness.metallicRoughnessTexture = info;
         }
-
         public static void SetEmissiveTexture(this GLTFMaterial material, GLTFTextureInfo info)
         {
             // it's not so easy to undo the output writing, so don't allow this
@@ -335,7 +634,6 @@ namespace Max2Babylon
 
             material.emissiveTexture = info ?? throw new ArgumentNullException(nameof(info));
         }
-
         public static void SetOcclusionTexture(this GLTFMaterial material, GLTFTextureInfo info)
         {
             // it's not so easy to undo the output writing, so don't allow this
@@ -344,7 +642,6 @@ namespace Max2Babylon
 
             material.occlusionTexture = info ?? throw new ArgumentNullException(nameof(info));
         }
-
         public static void SetNormalTexture(this GLTFMaterial material, GLTFTextureInfo info)
         {
             // it's not so easy to undo the output writing, so don't allow this
@@ -355,6 +652,8 @@ namespace Max2Babylon
         }
 
         #endregion
+
+        #region Factors
 
         public static void SetBaseColorFactorAlpha(this GLTFMaterial gltfMaterial, float alpha)
         {
@@ -381,7 +680,6 @@ namespace Max2Babylon
             else
                 gltfMaterial.pbrMetallicRoughness.baseColorFactor[3] = alpha;
         }
-
         public static void SetBaseColorFactor(this GLTFMaterial gltfMaterial, float r, float g, float b)
         {
             if (r == Defaults.BaseColorFactor[0] && g == Defaults.BaseColorFactor[1] && b == Defaults.BaseColorFactor[2])
@@ -408,7 +706,6 @@ namespace Max2Babylon
                 gltfMaterial.pbrMetallicRoughness.baseColorFactor[2] = b;
             }
         }
-
         public static void SetEmissiveFactor(this GLTFMaterial gltfMaterial, float r, float g, float b)
         {
             if (r == Defaults.EmissiveFactor[0] && g == Defaults.EmissiveFactor[1] && b == Defaults.EmissiveFactor[2])
@@ -428,7 +725,6 @@ namespace Max2Babylon
                 gltfMaterial.emissiveFactor[2] = b;
             }
         }
-
         public static void SetRoughnessFactor(this GLTFMaterial gltfMaterial, float roughness)
         {
             if (roughness == Defaults.RoughnessFactor)
@@ -445,7 +741,6 @@ namespace Max2Babylon
             
             gltfMaterial.pbrMetallicRoughness.roughnessFactor = roughness;
         }
-
         public static void SetMetallicFactor(this GLTFMaterial gltfMaterial, float metallic)
         {
             if (metallic == Defaults.MetallicFactor)
@@ -464,8 +759,45 @@ namespace Max2Babylon
         }
 
         #endregion
+
+        public static void SetNormalScale(this GLTFMaterial gltfMaterial, float normalScale)
+        {
+            GLTFNormalTextureInfo normalTexture = (GLTFNormalTextureInfo)gltfMaterial.normalTexture;
+            normalTexture.scale = normalScale == Defaults.NormalScale ? null : (float?)normalScale;
+        }
+        public static void SetOcclusionStrength(this GLTFMaterial gltfMaterial, float occlusionStrength)
+        {
+            GLTFOcclusionTextureInfo normalTexture = (GLTFOcclusionTextureInfo)gltfMaterial.normalTexture;
+            normalTexture.strength = occlusionStrength == Defaults.OcclusionStrength ? null : (float?)occlusionStrength;
+        }
+
+        public static void SetAlphaCutoff(this GLTFMaterial gltfMaterial, float alphaCutoff)
+        {
+            gltfMaterial.alphaCutoff = alphaCutoff == Defaults.AlphaCutoff ? null : (float?)alphaCutoff;
+        }
+        public static void SetAlphaMode(this GLTFMaterial gltfMaterial, GLTFMaterial.AlphaMode alphaMode)
+        {
+            gltfMaterial.alphaMode = alphaMode == Defaults.AlphaMode ? null : alphaMode.ToString();
+        }
+        public static void SetDoubleSided(this GLTFMaterial gltfMaterial, bool doubleSided)
+        {
+            gltfMaterial.doubleSided = doubleSided;
+        }
+
+        #endregion
     }
 
+    class GLTFNormalTextureInfo : GLTFTextureInfo
+    {
+        [DataMember(EmitDefaultValue = false)]
+        public float? scale { get; set; }
+    }
+
+    class GLTFOcclusionTextureInfo : GLTFTextureInfo
+    {
+        [DataMember(EmitDefaultValue = false)]
+        public float? strength { get; set; }
+    }
 
     //public class KittyHawkMaterial : Autodesk.Max.Plugins.MtlBase
     //{
