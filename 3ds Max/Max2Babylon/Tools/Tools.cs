@@ -150,48 +150,32 @@ namespace Max2Babylon
         {
             var type = GetWrappersAssembly().GetType("Autodesk.Max.Wrappers.IGameCamera");
             var constructor = type.GetConstructors()[0];
-            // var pointerType = GetWrappersAssembly().GetType("IGameCamera");
-            unsafe
-            {
-                var voidPtr = obj.GetNativeHandle().ToPointer();
-                return (IIGameCamera)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
-            }
+
+            return (IIGameCamera)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
         }
 
         public static IIGameMesh AsGameMesh(this IIGameObject obj)
         {
             var type = GetWrappersAssembly().GetType("Autodesk.Max.Wrappers.IGameMesh");
             var constructor = type.GetConstructors()[0];
-            // var pointerType = GetWrappersAssembly().GetType("IGameCamera");
-            unsafe
-            {
-                var voidPtr = obj.GetNativeHandle().ToPointer();
-                return (IIGameMesh)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
-            }
+
+            return (IIGameMesh)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
         }
 
         public static IIGameLight AsGameLight(this IIGameObject obj)
         {
             var type = GetWrappersAssembly().GetType("Autodesk.Max.Wrappers.IGameLight");
             var constructor = type.GetConstructors()[0];
-            // var pointerType = GetWrappersAssembly().GetType("IGameCamera");
-            unsafe
-            {
-                var voidPtr = obj.GetNativeHandle().ToPointer();
-                return (IIGameLight)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
-            }
+
+            return (IIGameLight)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
         }
 
         public static IIGameMorpher AsGameMorpher(this IIGameModifier obj)
         {
             var type = GetWrappersAssembly().GetType("Autodesk.Max.Wrappers.IGameMorpher");
             var constructor = type.GetConstructors()[0];
-            // var pointerType = GetWrappersAssembly().GetType("IGameCamera");
-            unsafe
-            {
-                var voidPtr = obj.GetNativeHandle().ToPointer();
-                return (IIGameMorpher)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
-            }
+
+            return (IIGameMorpher)constructor.Invoke(new object[] { obj.GetNativeHandle(), false });
         }
 
         public const float Epsilon = 0.001f;
@@ -447,6 +431,11 @@ namespace Max2Babylon
             return null;
         }
 
+        /// <summary>
+        /// Convert horizontal FOV to vertical FOV using default aspect ratio
+        /// </summary>
+        /// <param name="fov">horizontal FOV</param>
+        /// <returns></returns>
         public static float ConvertFov(float fov)
         {
             return (float)(2.0f * Math.Atan(Math.Tan(fov / 2.0f) / Loader.Core.ImageAspRatio));
