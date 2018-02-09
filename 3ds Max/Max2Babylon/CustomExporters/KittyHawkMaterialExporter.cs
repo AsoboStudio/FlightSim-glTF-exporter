@@ -145,17 +145,7 @@ namespace Max2Babylon
                         }
                     case "BASECOLORTEX":
                         {
-                            if (paramDef.Type != ParamType2.Filename)
-                                continue; // todo: throw warning
-                            if (paramDef.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
-                                continue; // todo: throw warning
-                            string_out = property.MaxParamBlock2?.GetStr(property.ParamID, param_t, 0);
-                            if (string_out == null)
-                                continue; // todo: throw warning
-
-                            if (string.IsNullOrWhiteSpace(string_out))
-                                continue;
-
+                            string_out = GetImagePath(paramDef, property, param_t);
                             image = ExportImage(string_out);
                             if (image == null)
                                 continue;
@@ -167,17 +157,7 @@ namespace Max2Babylon
                         }
                     case "OCCLUSIONROUGHNESSMETALLICTEX":
                         {
-                            if (paramDef.Type != ParamType2.Filename)
-                                continue; // todo: throw warning
-                            if (paramDef.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
-                                continue; // todo: throw warning
-                            string_out = property.MaxParamBlock2?.GetStr(property.ParamID, param_t, 0);
-                            if (string_out == null)
-                                continue; // todo: throw warning
-
-                            if (string.IsNullOrWhiteSpace(string_out))
-                                continue;
-
+                            string_out = GetImagePath(paramDef, property, param_t);
                             image = ExportImage(string_out);
                             if (image == null)
                                 continue;
@@ -194,17 +174,7 @@ namespace Max2Babylon
                         }
                     case "NORMALTEX":
                         {
-                            if (paramDef.Type != ParamType2.Filename)
-                                continue; // todo: throw warning
-                            if (paramDef.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
-                                continue; // todo: throw warning
-                            string_out = property.MaxParamBlock2?.GetStr(property.ParamID, param_t, 0);
-                            if (string_out == null)
-                                continue; // todo: throw warning
-
-                            if (string.IsNullOrWhiteSpace(string_out))
-                                continue;
-
+                            string_out = GetImagePath(paramDef, property, param_t);
                             image = ExportImage(string_out);
                             if (image == null)
                                 continue;
@@ -216,17 +186,7 @@ namespace Max2Babylon
                         }
                     case "EMISSIVETEX":
                         {
-                            if (paramDef.Type != ParamType2.Filename)
-                                continue; // todo: throw warning
-                            if (paramDef.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
-                                continue; // todo: throw warning
-                            string_out = property.MaxParamBlock2?.GetStr(property.ParamID, param_t, 0);
-                            if (string_out == null)
-                                continue; // todo: throw warning
-
-                            if (string.IsNullOrWhiteSpace(string_out))
-                                continue;
-
+                            string_out = GetImagePath(paramDef, property, param_t);
                             image = ExportImage(string_out);
                             if (image == null)
                                 continue;
@@ -528,14 +488,43 @@ namespace Max2Babylon
         }
         */
 
+        string GetImagePath(IParamDef paramDef, IIGameProperty property, int param_t)
+        {
+            if (paramDef.Type != ParamType2.Filename)
+                return null; // todo: throw warning
+            if (paramDef.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
+                return null; // todo: throw warning
+            string string_out = property.MaxParamBlock2?.GetStr(property.ParamID, param_t, 0);
+
+            if (string.IsNullOrWhiteSpace(string_out))
+                return null; // todo: throw warning
+
+            var path = Loader.Global.MaxSDK.Util.Path.Create();
+            path.SetPath(string_out);
+            string_out = path.ConvertToAbsolute.String;
+
+            if (string.IsNullOrWhiteSpace(string_out))
+                return null;
+
+            return string_out;
+        }
+
         GLTFImage ExportImage(string sourceTexturePath)
         {
+            if (string.IsNullOrWhiteSpace(sourceTexturePath))
+                return null;
+
             if (srcTextureExportCache.TryGetValue(sourceTexturePath, out GLTFImage info))
             {
                 return info;
             }
 
             string textureName = Path.GetFileName(sourceTexturePath);
+            string ext = Path.GetExtension(sourceTexturePath);
+
+            if (string.IsNullOrWhiteSpace(ext))
+                return null;
+
             string previousExtension = Path.GetExtension(textureName).Substring(1); // substring removes '.'
             string validExtension = tryWriteImageFunc(sourceTexturePath, textureName);
 
