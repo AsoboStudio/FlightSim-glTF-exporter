@@ -544,7 +544,7 @@ namespace Max2Babylon
 
             if (previousExtension.ToUpperInvariant() != validExtension.ToUpperInvariant())
             {
-                string message = string.Format("Exported texture extension was changed from '{0}' to '{1}'", previousExtension, validExtension);
+                string message = string.Format("Exported texture {0} was changed from '{1}' to '{2}'", sourceTexturePath, previousExtension, validExtension);
                 RaiseMessage(message, Color.CornflowerBlue);
             }
 
