@@ -59,11 +59,11 @@ namespace Max2Babylon
 
             // name is the serialized name, dont change
             [DataMember(EmitDefaultValue=false)]
-            string ASOBO_MaterialCode;
+            string ASOBO_material_code;
 
             public MaterialCode(Code code)
             {
-                ASOBO_MaterialCode = code.ToString();
+                ASOBO_material_code = code.ToString();
             }
         }
     }
