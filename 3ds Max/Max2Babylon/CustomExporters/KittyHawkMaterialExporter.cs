@@ -43,6 +43,33 @@ namespace Max2Babylon
 
     #endregion
 
+    #region Serializable Extras
+
+    public static class KittyGLTFExtras
+    {
+        [DataContract]
+        public class MaterialCode
+        {
+            public enum Code
+            {
+                Windshield,
+            }
+            
+            public static MaterialCode AsoboWindshield = new MaterialCode(Code.Windshield);
+
+            // name is the serialized name, dont change
+            [DataMember(EmitDefaultValue=false)]
+            string ASOBO_MaterialCode;
+
+            public MaterialCode(Code code)
+            {
+                ASOBO_MaterialCode = code.ToString();
+            }
+        }
+    }
+
+    #endregion
+
     public class KittyHawkMaterialExporter : IGLTFMaterialExporter
     {
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
@@ -194,6 +221,7 @@ namespace Max2Babylon
                                     break;
                                 case 3:
                                     RaiseMessage("Exporting Material Type: \"WINDSHIELD\"");
+                                    material.extras = KittyGLTFExtras.MaterialCode.AsoboWindshield;
                                     break;
                             }
                             break;
