@@ -72,6 +72,13 @@ namespace Max2Babylon
 
     public class KittyHawkMaterialExporter : IGLTFMaterialExporter
     {
+        enum MaterialType
+        {
+            Standard,
+            Decal,
+            Windshield
+        }
+
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
 
         ClassIDWrapper IMaterialExporter.MaterialClassID => class_ID;
@@ -189,6 +196,11 @@ namespace Max2Babylon
             // - Windshield
             GLTFExtensionAsoboMaterialDecal decalExtensionObject = null;
             GLTFExtensions materialExtensions = new GLTFExtensions();
+
+            // material flag is checked for setting specific defaults and other special cases
+            // e.g. windshield is always using AlphaMode.BLEND for compatibility with gltf viewers (it's ignored engine side)
+            MaterialType materialType = MaterialType.Standard;
+
             for (int i = 0; i < numProps; ++i)
             {
                 IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
@@ -209,9 +221,11 @@ namespace Max2Babylon
                             {
                                 case 1:
                                     RaiseMessage("Exporting Material Type: \"STANDARD\"");
+                                    materialType = MaterialType.Standard;
                                     break;
                                 case 2:
                                     RaiseMessage("Exporting Material Type: \"DECAL\"");
+                                    materialType = MaterialType.Decal;
                                     decalExtensionObject = new GLTFExtensionAsoboMaterialDecal();
 
                                     if(!gltf.extensionsUsed.Contains(GLTFExtensionAsoboMaterialDecal.SerializedName))
@@ -221,6 +235,7 @@ namespace Max2Babylon
                                     break;
                                 case 3:
                                     RaiseMessage("Exporting Material Type: \"WINDSHIELD\"");
+                                    materialType = MaterialType.Windshield;
                                     material.extras = KittyGLTFExtras.MaterialCode.AsoboWindshield;
                                     break;
                             }
@@ -333,7 +348,10 @@ namespace Max2Babylon
                                 RaiseError("Could not retrieve ALPHAMODE property.");
                                 continue;
                             }
-                            material.SetAlphaMode((GLTFMaterial.AlphaMode)(int_out-1));
+                            if(materialType == MaterialType.Decal || materialType == MaterialType.Windshield)
+                                material.SetAlphaMode(GLTFMaterial.AlphaMode.BLEND);
+                            else
+                                material.SetAlphaMode((GLTFMaterial.AlphaMode)(int_out-1));
                             break;
                         }
                     case "BASECOLORTEX":
