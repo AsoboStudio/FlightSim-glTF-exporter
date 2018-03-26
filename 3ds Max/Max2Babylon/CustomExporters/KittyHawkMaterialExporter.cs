@@ -1,5 +1,4 @@
 using Autodesk.Max;
-using BabylonExport.Entities;
 using GLTFExport.Entities;
 using System;
 using System.Collections.Generic;
@@ -9,8 +8,77 @@ using System.Runtime.Serialization;
 
 namespace Max2Babylon
 {
+    #region Serializable glTF Objects
+
+    [DataContract]
+    class GLTFNormalTextureInfo : GLTFTextureInfo
+    {
+        [DataMember(EmitDefaultValue = false)]
+        public float? scale { get; set; }
+    }
+
+    [DataContract]
+    class GLTFOcclusionTextureInfo : GLTFTextureInfo
+    {
+        [DataMember(EmitDefaultValue = false)]
+        public float? strength { get; set; }
+    }
+
+    [DataContract]
+    class GLTFExtensionAsoboMaterialDecal : GLTFProperty // use GLTFChildRootProperty if you want to add a name
+    {
+        public const string SerializedName = "ASOBO_material_blend_gbuffer";
+        [DataMember(EmitDefaultValue = false)] public float? baseColorBlendFactor;
+        [DataMember(EmitDefaultValue = false)] public float? metallicBlendFactor;
+        [DataMember(EmitDefaultValue = false)] public float? roughnessBlendFactor;
+        [DataMember(EmitDefaultValue = false)] public float? normalBlendFactor;
+        [DataMember(EmitDefaultValue = false)] public float? emissiveBlendFactor;
+        [DataMember(EmitDefaultValue = false)] public float? occlusionBlendFactor;
+    }
+
+    class GLTFExtensionAsoboMaterialLayer : GLTFProperty
+    {
+
+    }
+
+    #endregion
+
+    #region Serializable Extras
+
+    public static class KittyGLTFExtras
+    {
+        [DataContract]
+        public class MaterialCode
+        {
+            public enum Code
+            {
+                Windshield,
+            }
+            
+            public static MaterialCode AsoboWindshield = new MaterialCode(Code.Windshield);
+
+            // name is the serialized name, dont change
+            [DataMember(EmitDefaultValue=false)]
+            string ASOBO_material_code;
+
+            public MaterialCode(Code code)
+            {
+                ASOBO_material_code = code.ToString();
+            }
+        }
+    }
+
+    #endregion
+
     public class KittyHawkMaterialExporter : IGLTFMaterialExporter
     {
+        enum MaterialType
+        {
+            Standard,
+            Decal,
+            Windshield
+        }
+
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
 
         ClassIDWrapper IMaterialExporter.MaterialClassID => class_ID;
@@ -27,7 +95,7 @@ namespace Max2Babylon
         Dictionary<string, GLTFImage> srcTextureExportCache = new Dictionary<string, GLTFImage>();
         Dictionary<string, string> dstTextureExportCache = new Dictionary<string, string>();
 
-        void RaiseMessage(string message) { RaiseMessage(message, Color.Black); }
+        void RaiseMessage(string message) { RaiseMessage(message, Color.CornflowerBlue); }
         void RaiseMessage(string message, Color color) { raiseMessageAction?.Invoke(message, color); }
         void RaiseWarning(string message) { raiseWarningAction?.Invoke(message); }
         void RaiseError(string message) { raiseErrorAction?.Invoke(message); }
@@ -122,6 +190,143 @@ namespace Max2Babylon
             
             int numProps = maxMaterial.IPropertyContainer.NumberOfProperties;
 
+            #region Material Type (Standard, Decal, Windshield, ...)
+            // - Standard
+            // - GBuffer Blend
+            // - Windshield
+            GLTFExtensionAsoboMaterialDecal decalExtensionObject = null;
+            GLTFExtensions materialExtensions = new GLTFExtensions();
+
+            // material flag is checked for setting specific defaults and other special cases
+            // e.g. windshield is always using AlphaMode.BLEND for compatibility with gltf viewers (it's ignored engine side)
+            MaterialType materialType = MaterialType.Standard;
+
+            for (int i = 0; i < numProps; ++i)
+            {
+                IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                if (property == null)
+                    continue;
+
+                IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                string propertyName = property.Name.ToUpperInvariant();
+
+                switch (propertyName)
+                {
+                    case "MATERIALTYPE":
+                        {
+                            if (!property.GetPropertyValue(ref int_out, param_t))
+                                RaiseError("Could not retrieve MATERIALTYPE property.");
+                            switch(int_out)
+                            {
+                                case 1:
+                                    RaiseMessage("Exporting Material Type: \"STANDARD\"");
+                                    materialType = MaterialType.Standard;
+                                    break;
+                                case 2:
+                                    RaiseMessage("Exporting Material Type: \"DECAL\"");
+                                    materialType = MaterialType.Decal;
+                                    decalExtensionObject = new GLTFExtensionAsoboMaterialDecal();
+
+                                    if(!gltf.extensionsUsed.Contains(GLTFExtensionAsoboMaterialDecal.SerializedName))
+                                        gltf.extensionsUsed.Add(GLTFExtensionAsoboMaterialDecal.SerializedName);
+
+                                    materialExtensions.Add(GLTFExtensionAsoboMaterialDecal.SerializedName, decalExtensionObject);
+                                    break;
+                                case 3:
+                                    RaiseMessage("Exporting Material Type: \"WINDSHIELD\"");
+                                    materialType = MaterialType.Windshield;
+                                    material.extras = KittyGLTFExtras.MaterialCode.AsoboWindshield;
+                                    break;
+                            }
+                            break;
+                        }
+                }
+            }
+
+            #endregion
+
+            #region Extension properties (Decal, Windshield, ...)
+            for (int i = 0; i < numProps; ++i)
+            {
+                IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                if (property == null)
+                    continue;
+
+                IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                string propertyName = property.Name.ToUpperInvariant();
+
+                if (decalExtensionObject != null)
+                {
+                    switch (propertyName)
+                    {
+                        case "DECALCOLORFACTOR":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve DECALCOLORFACTOR property.");
+                                    continue;
+                                }
+                                decalExtensionObject.SetBaseColorBlendFactor(float_out);
+                                break;
+                            }
+                        case "DECALROUGHNESSFACTOR":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve DECALROUGHNESSFACTOR property.");
+                                    continue;
+                                }
+                                decalExtensionObject.SetRoughnessBlendFactor(float_out);
+                                break;
+                            }
+                        case "DECALMETALFACTOR":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve DECALMETALFACTOR property.");
+                                    continue;
+                                }
+                                decalExtensionObject.SetMetallicBlendFactor(float_out);
+                                break;
+                            }
+                        case "DECALNORMALFACTOR":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve DECALNORMALFACTOR property.");
+                                    continue;
+                                }
+                                decalExtensionObject.SetNormalBlendFactor(float_out);
+                                break;
+                            }
+                        case "DECALEMISSIVEFACTOR":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve DECALEMISSIVEFACTOR property.");
+                                    continue;
+                                }
+                                decalExtensionObject.SetEmissiveBlendFactor(float_out);
+                                break;
+                            }
+                        case "DECALOCCLUSIONFACTOR":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve DECALOCCLUSIONFACTOR property.");
+                                    continue;
+                                }
+                                decalExtensionObject.SetOcclusionBlendFactor(float_out);
+                                break;
+                            }
+                    }
+                }
+            }
+
+            #endregion
+
             #region Textures & AlphaMode
 
             for (int i = 0; i < numProps; ++i)
@@ -133,19 +338,25 @@ namespace Max2Babylon
 
                 IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
                 string propertyName = property.Name.ToUpperInvariant();
-
+                
                 switch (propertyName)
                 {
                     case "ALPHAMODE":
                         {
                             if (!property.GetPropertyValue(ref int_out, param_t))
-                                continue;// todo: throw warning
-                            material.SetAlphaMode((GLTFMaterial.AlphaMode)(int_out-1));
+                            {
+                                RaiseError("Could not retrieve ALPHAMODE property.");
+                                continue;
+                            }
+                            if(materialType == MaterialType.Decal || materialType == MaterialType.Windshield)
+                                material.SetAlphaMode(GLTFMaterial.AlphaMode.BLEND);
+                            else
+                                material.SetAlphaMode((GLTFMaterial.AlphaMode)(int_out-1));
                             break;
                         }
                     case "BASECOLORTEX":
                         {
-                            string_out = GetImagePath(paramDef, property, param_t);
+                            string_out = GetImagePath(paramDef, property, param_t, "BASECOLORTEX");
                             image = ExportImage(string_out);
                             if (image == null)
                                 continue;
@@ -157,7 +368,7 @@ namespace Max2Babylon
                         }
                     case "OCCLUSIONROUGHNESSMETALLICTEX":
                         {
-                            string_out = GetImagePath(paramDef, property, param_t);
+                            string_out = GetImagePath(paramDef, property, param_t, "OCCLUSIONROUGHNESSMETALLICTEX");
                             image = ExportImage(string_out);
                             if (image == null)
                                 continue;
@@ -174,7 +385,7 @@ namespace Max2Babylon
                         }
                     case "NORMALTEX":
                         {
-                            string_out = GetImagePath(paramDef, property, param_t);
+                            string_out = GetImagePath(paramDef, property, param_t, "NORMALTEX");
                             image = ExportImage(string_out);
                             if (image == null)
                                 continue;
@@ -186,7 +397,7 @@ namespace Max2Babylon
                         }
                     case "EMISSIVETEX":
                         {
-                            string_out = GetImagePath(paramDef, property, param_t);
+                            string_out = GetImagePath(paramDef, property, param_t, "EMISSIVETEX");
                             image = ExportImage(string_out);
                             if (image == null)
                                 continue;
@@ -216,7 +427,10 @@ namespace Max2Babylon
                     case "BASECOLOR":
                         {
                             if (!property.GetPropertyValue(point4_out, param_t))
-                                continue; // todo: throw warning
+                            {
+                                RaiseError("Could not retrieve BASECOLOR property.");
+                                continue;
+                            }
                             material.SetBaseColorFactor(point4_out.X, point4_out.Y, point4_out.Z);
                             material.SetBaseColorFactorAlpha(point4_out.W);
                             break;
@@ -224,28 +438,40 @@ namespace Max2Babylon
                     case "EMISSIVE":
                         {
                             if (!property.GetPropertyValue(point4_out, param_t))
-                                continue;// todo: throw warning
+                            {
+                                RaiseError("Could not retrieve EMISSIVE property.");
+                                continue;
+                            }
                             material.SetEmissiveFactor(point4_out.X, point4_out.Y, point4_out.Z);
                             break;
                         }
                     case "ROUGHNESS":
                         {
                             if (!property.GetPropertyValue(ref float_out, param_t, param_p))
-                                continue;// todo: throw warning
+                            {
+                                RaiseError("Could not retrieve ROUGHNESS property.");
+                                continue;
+                            }
                             material.SetRoughnessFactor(float_out);
                             break;
                         }
                     case "METALLIC":
                         {
                             if (!property.GetPropertyValue(ref float_out, param_t, param_p))
-                                continue;// todo: throw warning
+                            {
+                                RaiseError("Could not retrieve METALLIC property.");
+                                continue;
+                            }
                             material.SetMetallicFactor(float_out);
                             break;
                         }
                     case "NORMALSCALE":
                         {
                             if (!property.GetPropertyValue(ref float_out, param_t, param_p))
-                                continue;// todo: throw warning
+                            {
+                                RaiseError("Could not retrieve NORMALSCALE property.");
+                                continue;
+                            }
 
                             // only set if normal texture is defined
                             GLTFNormalTextureInfo normalTexture = material.normalTexture as GLTFNormalTextureInfo;
@@ -255,23 +481,26 @@ namespace Max2Babylon
                             material.SetNormalScale(float_out);
                             break;
                         }
-                    case "OCCLUSIONSTRENGTH":
-                        {
-                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
-                                continue;// todo: throw warning
-
-                            // only set if occlusion texture is defined
-                            GLTFOcclusionTextureInfo occlusionTexture = material.occlusionTexture as GLTFOcclusionTextureInfo;
-                            if (occlusionTexture == null)
-                                continue;
-
-                            material.SetOcclusionStrength(float_out);
-                            break;
-                        }
+                    //case "OCCLUSIONSTRENGTH":
+                    //    {
+                    //        if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                    //            RaiseError("Could not retrieve OCCLUSIONSTRENGTH property.");
+                    //
+                    //        // only set if occlusion texture is defined
+                    //        GLTFOcclusionTextureInfo occlusionTexture = material.occlusionTexture as GLTFOcclusionTextureInfo;
+                    //        if (occlusionTexture == null)
+                    //            continue;
+                    //
+                    //        material.SetOcclusionStrength(float_out);
+                    //        break;
+                    //    }
                     case "ALPHACUTOFF":
                         {
                             if (!property.GetPropertyValue(ref float_out, param_t, param_p))
-                                continue;// todo: throw warning
+                            {
+                                RaiseError("Could not retrieve ALPHACUTOFF property.");
+                                continue;
+                            }
 
                             // only set if alphamode == mask
                             if (material.alphaMode == GLTFMaterial.AlphaMode.MASK.ToString())
@@ -283,7 +512,10 @@ namespace Max2Babylon
                     case "DOUBLESIDED":
                         {
                             if (!property.GetPropertyValue(ref int_out, param_t))
-                                continue;// todo: throw warning
+                            {
+                                RaiseError("Could not retrieve DOUBLESIDED property.");
+                                continue;
+                            }
 
                             material.SetDoubleSided(int_out > 0);
                             break;
@@ -292,6 +524,9 @@ namespace Max2Babylon
             }
 
             #endregion
+
+            if (materialExtensions.Count > 0)
+                material.extensions = materialExtensions;
         }
 
         /* ProcessParamBlocks
@@ -488,16 +723,16 @@ namespace Max2Babylon
         }
         */
 
-        string GetImagePath(IParamDef paramDef, IIGameProperty property, int param_t)
+        string GetImagePath(IParamDef paramDef, IIGameProperty property, int param_t, string debugName)
         {
             if (paramDef.Type != ParamType2.Filename)
-                return null; // todo: throw warning
+                RaiseError(debugName + " is not a Filename property.");
             if (paramDef.AssetTypeId != Autodesk.Max.MaxSDK.AssetManagement.AssetType.BitmapAsset)
-                return null; // todo: throw warning
+                RaiseError(debugName + " AssetTypeId is not of type BitmapAsset.");
             string string_out = property.MaxParamBlock2?.GetStr(property.ParamID, param_t, 0);
 
             if (string.IsNullOrWhiteSpace(string_out))
-                return null; // todo: throw warning
+                return null;
 
             var path = Loader.Global.MaxSDK.Util.Path.Create();
             path.SetPath(string_out);
@@ -529,12 +764,15 @@ namespace Max2Babylon
             string validExtension = tryWriteImageFunc(sourceTexturePath, textureName);
 
             if (validExtension == null)
+            {
+                RaiseWarning("Texture has an invalid extension: " + sourceTexturePath);
                 return null;
+            }
 
             if (previousExtension.ToUpperInvariant() != validExtension.ToUpperInvariant())
             {
                 string message = string.Format("Exported texture {0} was changed from '{1}' to '{2}'", sourceTexturePath, previousExtension, validExtension);
-                RaiseMessage(message, Color.CornflowerBlue);
+                RaiseMessage(message);
             }
 
             textureName = Path.ChangeExtension(textureName, validExtension);
@@ -580,7 +818,7 @@ namespace Max2Babylon
         }
     }
     
-    static class GLTFMaterialExtensions
+    static class KittyClassExtensions
     {
         public static class Defaults
         {
@@ -595,6 +833,13 @@ namespace Max2Babylon
             public const GLTFMaterial.AlphaMode AlphaMode = GLTFMaterial.AlphaMode.OPAQUE;
             public const float AlphaCutoff = 0.5f;
             public const bool DoubleSided = false;
+
+            public const float BaseColorBlendFactor = 1.0f;
+            public const float MetallicBlendFactor = 1.0f;
+            public const float RoughnessBlendFactor = 1.0f;
+            public const float NormalBlendFactor = 1.0f;
+            public const float EmissiveBlendFactor = 1.0f;
+            public const float OcclusionBlendFactor = 1.0f;
         }
 
         #region GLTFMaterial helper functions
@@ -785,18 +1030,47 @@ namespace Max2Babylon
         }
 
         #endregion
-    }
 
-    class GLTFNormalTextureInfo : GLTFTextureInfo
-    {
-        [DataMember(EmitDefaultValue = false)]
-        public float? scale { get; set; }
-    }
+        #region Decal Extension helper functions
+        
+        public static void SetBaseColorBlendFactor(this GLTFExtensionAsoboMaterialDecal decalMaterial, float factor)
+        {
+            if (factor == Defaults.BaseColorBlendFactor)
+                decalMaterial.baseColorBlendFactor = null;
+            else decalMaterial.baseColorBlendFactor = factor;
+        }
+        public static void SetRoughnessBlendFactor(this GLTFExtensionAsoboMaterialDecal decalMaterial, float factor)
+        {
+            if (factor == Defaults.RoughnessBlendFactor)
+                decalMaterial.roughnessBlendFactor = null;
+            else decalMaterial.roughnessBlendFactor = factor;
+        }
+        public static void SetMetallicBlendFactor(this GLTFExtensionAsoboMaterialDecal decalMaterial, float factor)
+        {
+            if (factor == Defaults.MetallicBlendFactor)
+                decalMaterial.metallicBlendFactor = null;
+            else decalMaterial.metallicBlendFactor = factor;
+        }
+        public static void SetNormalBlendFactor(this GLTFExtensionAsoboMaterialDecal decalMaterial, float factor)
+        {
+            if (factor == Defaults.NormalBlendFactor)
+                decalMaterial.normalBlendFactor = null;
+            else decalMaterial.normalBlendFactor = factor;
+        }
+        public static void SetEmissiveBlendFactor(this GLTFExtensionAsoboMaterialDecal decalMaterial, float factor)
+        {
+            if (factor == Defaults.EmissiveBlendFactor)
+                decalMaterial.emissiveBlendFactor = null;
+            else decalMaterial.emissiveBlendFactor = factor;
+        }
+        public static void SetOcclusionBlendFactor(this GLTFExtensionAsoboMaterialDecal decalMaterial, float factor)
+        {
+            if (factor == Defaults.OcclusionBlendFactor)
+                decalMaterial.occlusionBlendFactor = null;
+            else decalMaterial.occlusionBlendFactor = factor;
+        }
 
-    class GLTFOcclusionTextureInfo : GLTFTextureInfo
-    {
-        [DataMember(EmitDefaultValue = false)]
-        public float? strength { get; set; }
+        #endregion
     }
 
     //public class KittyHawkMaterial : Autodesk.Max.Plugins.MtlBase
