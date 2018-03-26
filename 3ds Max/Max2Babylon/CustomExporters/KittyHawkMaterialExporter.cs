@@ -3,6 +3,7 @@ using GLTFExport.Entities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
 
@@ -36,9 +37,18 @@ namespace Max2Babylon
         [DataMember(EmitDefaultValue = false)] public float? occlusionBlendFactor;
     }
 
+    [DataContract]
     class GLTFExtensionAsoboMaterialLayer : GLTFProperty
     {
+        public const string SerializedName = "ASOBO_material_distance_field_layer";
+        [DataMember(EmitDefaultValue = false)] public float[] layerColor;
+        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo layerColorTexture;
+        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo distanceFieldLayerMaskTexture;
+    }
 
+    static class GLTFExtensionHelper
+    {
+        public static string Name_MSFT_texture_dds = "MSFT_texture_dds";
     }
 
     #endregion
@@ -85,6 +95,7 @@ namespace Max2Babylon
         
         public KittyHawkMaterialExporter() { }
 
+        BabylonExporter exporter;
         GLTF gltf;
         IIGameMaterial maxGameMaterial;
         Func<string, string, string> tryWriteImageFunc;
@@ -100,7 +111,7 @@ namespace Max2Babylon
         void RaiseWarning(string message) { raiseWarningAction?.Invoke(message); }
         void RaiseError(string message) { raiseErrorAction?.Invoke(message); }
 
-        GLTFMaterial IGLTFMaterialExporter.ExportGLTFMaterial(GLTF gltf, IIGameMaterial maxGameMaterial, 
+        GLTFMaterial IGLTFMaterialExporter.ExportGLTFMaterial(BabylonExporter exporter, GLTF gltf, IIGameMaterial maxGameMaterial, 
             Func<string, string, string> tryWriteImageFunc, 
             Action<string, Color> raiseMessageAction, 
             Action<string> raiseWarningAction, 
@@ -114,6 +125,7 @@ namespace Max2Babylon
             }
 
             // save parameters
+            this.exporter = exporter;
             this.gltf = gltf;
             this.maxGameMaterial = maxGameMaterial;
             this.tryWriteImageFunc = tryWriteImageFunc;
@@ -190,10 +202,18 @@ namespace Max2Babylon
             
             int numProps = maxMaterial.IPropertyContainer.NumberOfProperties;
 
+            // cache some extension property values for layer (conditional exports)
+            float[] layerColor = new float[] { 1, 1, 1, 1 };
+            string layerColorTexPath = null;
+            string layerColorMaskPath = null;
+
+
             #region Material Type (Standard, Decal, Windshield, ...)
             // - Standard
             // - GBuffer Blend
             // - Windshield
+
+            // only create if needed
             GLTFExtensionAsoboMaterialDecal decalExtensionObject = null;
             GLTFExtensions materialExtensions = new GLTFExtensions();
 
@@ -227,11 +247,6 @@ namespace Max2Babylon
                                     RaiseMessage("Exporting Material Type: \"DECAL\"");
                                     materialType = MaterialType.Decal;
                                     decalExtensionObject = new GLTFExtensionAsoboMaterialDecal();
-
-                                    if(!gltf.extensionsUsed.Contains(GLTFExtensionAsoboMaterialDecal.SerializedName))
-                                        gltf.extensionsUsed.Add(GLTFExtensionAsoboMaterialDecal.SerializedName);
-
-                                    materialExtensions.Add(GLTFExtensionAsoboMaterialDecal.SerializedName, decalExtensionObject);
                                     break;
                                 case 3:
                                     RaiseMessage("Exporting Material Type: \"WINDSHIELD\"");
@@ -366,6 +381,16 @@ namespace Max2Babylon
 
                             break;
                         }
+                    case "LAYERCOLORTEX":
+                        {
+                            layerColorTexPath = GetImagePath(paramDef, property, param_t, "LAYERCOLORTEX");
+                            break;
+                        }
+                    case "LAYERMASKTEX":
+                        {
+                            layerColorMaskPath = GetImagePath(paramDef, property, param_t, "LAYERMASKTEX");
+                            break;
+                        }
                     case "OCCLUSIONROUGHNESSMETALLICTEX":
                         {
                             string_out = GetImagePath(paramDef, property, param_t, "OCCLUSIONROUGHNESSMETALLICTEX");
@@ -413,7 +438,7 @@ namespace Max2Babylon
             #endregion
 
             #region The Other Parameters
-            
+
             for (int i = 0; i < numProps; ++i)
             {
                 IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
@@ -433,6 +458,18 @@ namespace Max2Babylon
                             }
                             material.SetBaseColorFactor(point4_out.X, point4_out.Y, point4_out.Z);
                             material.SetBaseColorFactorAlpha(point4_out.W);
+                            break;
+                        }
+                    case "LAYERCOLOR":
+                        {
+                            if (!property.GetPropertyValue(point4_out, param_t))
+                            {
+                                RaiseError("Could not retrieve LAYERCOLOR property.");
+                                continue;
+                            }
+                            for (int c = 0; c < 4; ++c)
+                                layerColor[c] = point4_out[c];
+
                             break;
                         }
                     case "EMISSIVE":
@@ -525,8 +562,54 @@ namespace Max2Babylon
 
             #endregion
 
+            #region Post-processing (extensions, verifications)
+
+            // custom layer extension, only export if we have a layer mask texture
+            GLTFExtensionAsoboMaterialLayer layerExtensionObject = null;
+            if(!string.IsNullOrWhiteSpace(layerColorMaskPath))
+            {
+                layerExtensionObject = new GLTFExtensionAsoboMaterialLayer();
+
+                layerExtensionObject.layerColor = layerColor;
+                
+                image = ExportImage(layerColorMaskPath, true);
+                if (image != null)
+                {
+                    info = CreateTextureInfo(image);
+                    layerExtensionObject.distanceFieldLayerMaskTexture = info;
+                }
+
+                if (!string.IsNullOrWhiteSpace(layerColorTexPath))
+                {
+                    image = ExportImage(layerColorTexPath);
+                    if (image != null)
+                    {
+                        info = CreateTextureInfo(image);
+                        layerExtensionObject.layerColorTexture = info;
+                    }
+                }
+            }
+
+            // add used extensions to dictionaries
+            if (decalExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboMaterialDecal.SerializedName, decalExtensionObject);
+
+            if(layerExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboMaterialLayer.SerializedName, layerExtensionObject);
+
             if (materialExtensions.Count > 0)
+            {
                 material.extensions = materialExtensions;
+
+                // set all extensions as used but not required
+                foreach (var pair in material.extensions)
+                {
+                    if (!gltf.extensionsUsed.Contains(pair.Key))
+                        gltf.extensionsUsed.Add(pair.Key);
+                }
+            }
+
+            #endregion
         }
 
         /* ProcessParamBlocks
@@ -744,7 +827,7 @@ namespace Max2Babylon
             return string_out;
         }
 
-        GLTFImage ExportImage(string sourceTexturePath)
+        GLTFImage ExportImage(string sourceTexturePath, bool allowDDS = false)
         {
             if (string.IsNullOrWhiteSpace(sourceTexturePath))
                 return null;
@@ -760,23 +843,37 @@ namespace Max2Babylon
             if (string.IsNullOrWhiteSpace(ext))
                 return null;
 
-            string previousExtension = Path.GetExtension(textureName).Substring(1); // substring removes '.'
-            string validExtension = tryWriteImageFunc(sourceTexturePath, textureName);
+            ext = ext.Substring(1); // remove the period
 
-            if (validExtension == null)
+            // if dds, export as-is
+            if(allowDDS && ext.ToUpperInvariant() == "DDS")
             {
-                RaiseWarning("Texture has an invalid extension: " + sourceTexturePath);
-                return null;
+                if (exporter.CopyTexturesToOutput)
+                {
+                    var destTexturePath = Path.Combine(gltf.OutputFolder, textureName);
+                    File.Copy(sourceTexturePath, destTexturePath, true);
+                }
             }
-
-            if (previousExtension.ToUpperInvariant() != validExtension.ToUpperInvariant())
+            else
             {
-                string message = string.Format("Exported texture {0} was changed from '{1}' to '{2}'", sourceTexturePath, previousExtension, validExtension);
-                RaiseMessage(message);
+                string previousExtension = ext; // substring removes '.'
+                string validExtension = tryWriteImageFunc(sourceTexturePath, textureName);
+
+                if (validExtension == null)
+                {
+                    RaiseWarning("Texture has an invalid extension: " + sourceTexturePath);
+                    return null;
+                }
+
+                if (previousExtension.ToUpperInvariant() != validExtension.ToUpperInvariant())
+                {
+                    string message = string.Format("Exported texture {0} was changed from '{1}' to '{2}'", sourceTexturePath, previousExtension, validExtension);
+                    RaiseMessage(message);
+                }
+
+                textureName = Path.ChangeExtension(textureName, validExtension);
+                ext = validExtension;
             }
-
-            textureName = Path.ChangeExtension(textureName, validExtension);
-
 
             if (dstTextureExportCache.TryGetValue(textureName, out string otherTexturePath))
             {
@@ -791,20 +888,41 @@ namespace Max2Babylon
 
             info = gltf.AddImage();
             info.uri = textureName;
-            info.FileExtension = validExtension;
+            info.FileExtension = ext;
 
             srcTextureExportCache.Add(sourceTexturePath, info);
 
             return info;
         }
-
+        
         GLTFTextureInfo CreateTextureInfo(GLTFImage image, GLTFSampler sampler = null)
         {
             return CreateTextureInfo<GLTFTextureInfo>(image, sampler);
         }
         T CreateTextureInfo<T>(GLTFImage image, GLTFSampler sampler = null) where T : GLTFTextureInfo, new()
         {
-            GLTFTexture texture = gltf.AddTexture(image, sampler);
+            GLTFTexture texture;
+            if (image.FileExtension.ToUpperInvariant() == "DDS")
+            {
+                // texture object without image
+                texture = gltf.AddTexture(null, sampler);
+
+                // texture object for dds extension image reference
+                GLTFTexture ddsTexture = new GLTFTexture();
+                ddsTexture.sampler = sampler?.index;
+                ddsTexture.source = image?.index;
+
+
+                texture.extensions = new GLTFExtensions();
+                texture.extensions.Add(GLTFExtensionHelper.Name_MSFT_texture_dds, ddsTexture);
+
+                if (!gltf.extensionsUsed.Contains(GLTFExtensionHelper.Name_MSFT_texture_dds))
+                    gltf.extensionsUsed.Add(GLTFExtensionHelper.Name_MSFT_texture_dds);
+            }
+            else
+            {
+                texture = gltf.AddTexture(image, sampler);
+            }
             texture.name = image.uri;
             return CreateTextureInfo<T>(texture);
         }
