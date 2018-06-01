@@ -63,9 +63,11 @@ namespace Max2Babylon
             public enum Code
             {
                 Windshield,
+                Porthole
             }
-            
+
             public static MaterialCode AsoboWindshield = new MaterialCode(Code.Windshield);
+            public static MaterialCode AsoboPorthole = new MaterialCode(Code.Porthole);
 
             // name is the serialized name, dont change
             [DataMember(EmitDefaultValue=false)]
@@ -86,7 +88,8 @@ namespace Max2Babylon
         {
             Standard,
             Decal,
-            Windshield
+            Windshield,
+            Porthole
         }
 
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
@@ -253,6 +256,11 @@ namespace Max2Babylon
                                     materialType = MaterialType.Windshield;
                                     material.extras = KittyGLTFExtras.MaterialCode.AsoboWindshield;
                                     break;
+                                case 4:
+                                    RaiseMessage("Exporting Material Type: \"PORTHOLE\"");
+                                    materialType = MaterialType.Porthole;
+                                    material.extras = KittyGLTFExtras.MaterialCode.AsoboPorthole;
+                                    break;
                             }
                             break;
                         }
@@ -363,10 +371,14 @@ namespace Max2Babylon
                                 RaiseError("Could not retrieve ALPHAMODE property.");
                                 continue;
                             }
-                            if(materialType == MaterialType.Decal || materialType == MaterialType.Windshield)
+
+                            // overrides for specific material types
+                            if (materialType == MaterialType.Decal || materialType == MaterialType.Windshield)
                                 material.SetAlphaMode(GLTFMaterial.AlphaMode.BLEND);
+                            else if (materialType == MaterialType.Porthole)
+                                material.SetAlphaMode(GLTFMaterial.AlphaMode.OPAQUE);
                             else
-                                material.SetAlphaMode((GLTFMaterial.AlphaMode)(int_out-1));
+                                material.SetAlphaMode((GLTFMaterial.AlphaMode)(int_out - 1));
                             break;
                         }
                     case "BASECOLORTEX":
