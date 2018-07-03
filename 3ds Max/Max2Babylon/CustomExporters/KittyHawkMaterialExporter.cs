@@ -63,11 +63,13 @@ namespace Max2Babylon
             public enum Code
             {
                 Windshield,
-                Porthole
+                Porthole,
+                Glass
             }
 
             public static MaterialCode AsoboWindshield = new MaterialCode(Code.Windshield);
             public static MaterialCode AsoboPorthole = new MaterialCode(Code.Porthole);
+            public static MaterialCode AsoboGlass = new MaterialCode(Code.Glass);
 
             // name is the serialized name, dont change
             [DataMember(EmitDefaultValue=false)]
@@ -89,7 +91,8 @@ namespace Max2Babylon
             Standard,
             Decal,
             Windshield,
-            Porthole
+            Porthole,
+            Glass
         }
 
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
@@ -243,25 +246,29 @@ namespace Max2Babylon
                             switch(int_out)
                             {
                                 case 1:
-                                    RaiseMessage("Exporting Material Type: \"STANDARD\"");
                                     materialType = MaterialType.Standard;
                                     break;
                                 case 2:
-                                    RaiseMessage("Exporting Material Type: \"DECAL\"");
                                     materialType = MaterialType.Decal;
                                     decalExtensionObject = new GLTFExtensionAsoboMaterialDecal();
                                     break;
                                 case 3:
-                                    RaiseMessage("Exporting Material Type: \"WINDSHIELD\"");
                                     materialType = MaterialType.Windshield;
                                     material.extras = KittyGLTFExtras.MaterialCode.AsoboWindshield;
                                     break;
                                 case 4:
-                                    RaiseMessage("Exporting Material Type: \"PORTHOLE\"");
                                     materialType = MaterialType.Porthole;
                                     material.extras = KittyGLTFExtras.MaterialCode.AsoboPorthole;
                                     break;
+                                case 5:
+                                    materialType = MaterialType.Glass;
+                                    material.extras = KittyGLTFExtras.MaterialCode.AsoboGlass;
+                                    break;
+                                default:
+                                    materialType = MaterialType.Standard;
+                                    break;
                             }
+                            RaiseMessage(string.Format("Exporting Material Type: \"{0}\"", materialType.ToString()));
                             break;
                         }
                 }
@@ -373,7 +380,7 @@ namespace Max2Babylon
                             }
 
                             // overrides for specific material types
-                            if (materialType == MaterialType.Decal || materialType == MaterialType.Windshield)
+                            if (materialType == MaterialType.Decal || materialType == MaterialType.Windshield || materialType == MaterialType.Glass)
                                 material.SetAlphaMode(GLTFMaterial.AlphaMode.BLEND);
                             else if (materialType == MaterialType.Porthole)
                                 material.SetAlphaMode(GLTFMaterial.AlphaMode.OPAQUE);
