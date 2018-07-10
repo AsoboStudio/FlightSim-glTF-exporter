@@ -46,6 +46,13 @@ namespace Max2Babylon
         [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo distanceFieldLayerMaskTexture;
     }
 
+    [DataContract]
+    class GLTFExtensionAlphaModeDither : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_alphamode_dither";
+        //[DataMember(EmitDefaultValue = false)] public string alphaMode;
+    }
+
     static class GLTFExtensionHelper
     {
         public static string Name_MSFT_texture_dds = "MSFT_texture_dds";
@@ -381,11 +388,25 @@ namespace Max2Babylon
 
                             // overrides for specific material types
                             if (materialType == MaterialType.Decal || materialType == MaterialType.Windshield || materialType == MaterialType.Glass)
-                                material.SetAlphaMode(GLTFMaterial.AlphaMode.BLEND);
+                                material.SetAlphaMode(GLTFMaterial.AlphaMode.BLEND.ToString());
                             else if (materialType == MaterialType.Porthole)
-                                material.SetAlphaMode(GLTFMaterial.AlphaMode.OPAQUE);
+                                material.SetAlphaMode(GLTFMaterial.AlphaMode.OPAQUE.ToString());
                             else
-                                material.SetAlphaMode((GLTFMaterial.AlphaMode)(int_out - 1));
+                            {
+                                int alphaMode = int_out - 1;
+                                if (alphaMode == 3)
+                                {
+                                    alphaMode = (int)GLTFMaterial.AlphaMode.BLEND;
+                                    GLTFExtensionAlphaModeDither ditherExtensionObject = new GLTFExtensionAlphaModeDither();
+                                    material.extensions.Add(GLTFExtensionAlphaModeDither.SerializedName, ditherExtensionObject);
+                                }
+                                else if(alphaMode > 3 || alphaMode < 0)
+                                {
+                                    alphaMode = (int)GLTFMaterial.AlphaMode.OPAQUE;
+                                    RaiseWarning("Unknown alpha mode: exporting OPAQUE");
+                                }
+                                else material.SetAlphaMode(((GLTFMaterial.AlphaMode)(alphaMode)).ToString());
+                            }
                             break;
                         }
                     case "BASECOLORTEX":
@@ -1157,9 +1178,9 @@ namespace Max2Babylon
         {
             gltfMaterial.alphaCutoff = alphaCutoff == Defaults.AlphaCutoff ? null : (float?)alphaCutoff;
         }
-        public static void SetAlphaMode(this GLTFMaterial gltfMaterial, GLTFMaterial.AlphaMode alphaMode)
+        public static void SetAlphaMode(this GLTFMaterial gltfMaterial, string alphaMode)
         {
-            gltfMaterial.alphaMode = alphaMode == Defaults.AlphaMode ? null : alphaMode.ToString();
+            gltfMaterial.alphaMode = alphaMode == Defaults.AlphaMode.ToString() ? null : alphaMode;
         }
         public static void SetDoubleSided(this GLTFMaterial gltfMaterial, bool doubleSided)
         {
