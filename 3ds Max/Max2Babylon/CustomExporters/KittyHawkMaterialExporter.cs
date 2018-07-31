@@ -64,6 +64,8 @@ namespace Max2Babylon
 
     public static class KittyGLTFExtras
     {
+        public static string Name_ASOBO_material_code = "ASOBO_material_code";
+
         [DataContract]
         public class MaterialCode
         {
@@ -261,15 +263,15 @@ namespace Max2Babylon
                                     break;
                                 case 3:
                                     materialType = MaterialType.Windshield;
-                                    material.extras = KittyGLTFExtras.MaterialCode.AsoboWindshield;
+                                    material.extras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Windshield.ToString());
                                     break;
                                 case 4:
                                     materialType = MaterialType.Porthole;
-                                    material.extras = KittyGLTFExtras.MaterialCode.AsoboPorthole;
+                                    material.extras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Porthole.ToString());
                                     break;
                                 case 5:
                                     materialType = MaterialType.Glass;
-                                    material.extras = KittyGLTFExtras.MaterialCode.AsoboGlass;
+                                    material.extras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Glass.ToString());
                                     break;
                                 default:
                                     materialType = MaterialType.Standard;
