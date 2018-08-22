@@ -231,6 +231,7 @@ namespace Max2Babylon
             // only create if needed
             GLTFExtensionAsoboMaterialDecal decalExtensionObject = null;
             GLTFExtensions materialExtensions = new GLTFExtensions();
+            GLTFExtensions materialExtras = new GLTFExtensions();
 
             // material flag is checked for setting specific defaults and other special cases
             // e.g. windshield is always using AlphaMode.BLEND for compatibility with gltf viewers (it's ignored engine side)
@@ -263,15 +264,15 @@ namespace Max2Babylon
                                     break;
                                 case 3:
                                     materialType = MaterialType.Windshield;
-                                    material.extras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Windshield.ToString());
+                                    materialExtras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Windshield.ToString());
                                     break;
                                 case 4:
                                     materialType = MaterialType.Porthole;
-                                    material.extras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Porthole.ToString());
+                                    materialExtras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Porthole.ToString());
                                     break;
                                 case 5:
                                     materialType = MaterialType.Glass;
-                                    material.extras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Glass.ToString());
+                                    materialExtras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Glass.ToString());
                                     break;
                                 default:
                                     materialType = MaterialType.Standard;
@@ -649,6 +650,11 @@ namespace Max2Babylon
                     if (!gltf.extensionsUsed.Contains(pair.Key))
                         gltf.extensionsUsed.Add(pair.Key);
                 }
+            }
+
+            if(materialExtras.Count > 0)
+            {
+                material.extras = materialExtras;
             }
 
             #endregion
