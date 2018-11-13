@@ -896,7 +896,7 @@ namespace Max2Babylon
             // if dds, export as-is
             if(allowDDS && ext.ToUpperInvariant() == "DDS")
             {
-                if (exporter.exportParameters.copyTexturesToOutput)
+                if (exporter.exportParameters.writeTextures)
                 {
                     var destTexturePath = Path.Combine(gltf.OutputFolder, textureName);
                     File.Copy(sourceTexturePath, destTexturePath, true);
