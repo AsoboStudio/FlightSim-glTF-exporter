@@ -473,6 +473,10 @@ namespace Max2Babylon
 
             // Output
             babylonScene.Prepare(false, false);
+
+            IUTF8Str max_start_notification = Autodesk.Max.GlobalInterface.Instance.UTF8Str.Create("BabylonExportStart");
+            Loader.Global.BroadcastNotification(SystemNotificationCode.PreExport, max_start_notification);
+
             if (isBabylonExported)
             {
                 RaiseMessage("Saving to output file");
@@ -597,6 +601,14 @@ namespace Max2Babylon
                     {
                         if (exportParameters.overwriteTextures)
                         {
+                            FileAttributes attributes = File.GetAttributes(targetFilePath);
+
+                            if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                            {
+                                // Make the file RW
+                                attributes = attributes & ~FileAttributes.ReadOnly;
+                                File.SetAttributes(targetFilePath, attributes);
+                            }
                             File.Delete(targetFilePath);
                             File.Move(sourceFilePath, targetFilePath);
                             RaiseMessage(sourceFilePath + " -> " + targetFilePath);
