@@ -47,10 +47,33 @@ namespace Max2Babylon
     }
 
     [DataContract]
-    class GLTFExtensionAlphaModeDither : GLTFProperty
+    class GLTFExtensionAsoboAlphaModeDither : GLTFProperty
     {
         public const string SerializedName = "ASOBO_material_alphamode_dither";
         //[DataMember(EmitDefaultValue = false)] public string alphaMode;
+    }
+
+    [DataContract]
+    class GLTFExtensionAsoboMaterialDetail
+    {
+        public const string SerializedName = "ASOBO_material_detail_map";
+
+        [DataMember(EmitDefaultValue = false)]
+        public float? UVScale { get; set; }
+        [DataMember(EmitDefaultValue = false)]
+        public float[] UVOffset { get; set; }
+
+        [DataMember(EmitDefaultValue = false)]
+        public GLTFTextureInfo detailColorTexture { get; set; }
+        [DataMember(EmitDefaultValue = false)]
+        public GLTFNormalTextureInfo detailNormalTexture { get; set; }
+
+        public static class Defaults
+        {
+            public static readonly float UVScale = 1;
+            public static readonly float[] UVOffset = new float[] { 0, 0 };
+            public static readonly float NormalScale = 1;
+        }
     }
 
     static class GLTFExtensionHelper
@@ -217,11 +240,17 @@ namespace Max2Babylon
             
             int numProps = maxMaterial.IPropertyContainer.NumberOfProperties;
 
-            // cache some extension property values for layer (conditional exports)
+            // cache some extension property values (conditional exports)
+
             float[] layerColor = new float[] { 1, 1, 1, 1 };
             string layerColorTexPath = null;
             string layerColorMaskPath = null;
 
+            float detailUVScale = GLTFExtensionAsoboMaterialDetail.Defaults.UVScale;
+            float[] detailUVOffset = new float[] { GLTFExtensionAsoboMaterialDetail.Defaults.UVOffset[0], GLTFExtensionAsoboMaterialDetail.Defaults.UVOffset[1] };
+            float detailNormalScale = GLTFExtensionAsoboMaterialDetail.Defaults.NormalScale;
+            string detailColorTexPath = null;
+            string detailNormalTexPath = null;
 
             #region Material Type (Standard, Decal, Windshield, ...)
             // - Standard
@@ -286,7 +315,7 @@ namespace Max2Babylon
 
             #endregion
 
-            #region Extension properties (Decal, Windshield, ...)
+            #region Decal Extension properties
             for (int i = 0; i < numProps; ++i)
             {
                 IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
@@ -364,7 +393,76 @@ namespace Max2Babylon
                     }
                 }
             }
+            #endregion
 
+            #region Detail Map Extension Properties
+            if (materialType == MaterialType.Standard || materialType == MaterialType.Windshield)
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "DETAILCOLORTEX":
+                            {
+                                detailColorTexPath = GetImagePath(paramDef, property, param_t, "DETAILCOLORTEX");
+                                break;
+                            }
+                        case "DETAILNORMALTEX":
+                            {
+                                detailNormalTexPath = GetImagePath(paramDef, property, param_t, "DETAILNORMALTEX");
+                                break;
+                            }
+                        case "DETAILUVSCALE":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve DETAILUVSCALE property.");
+                                    continue;
+                                }
+                                detailUVScale = float_out;
+                                break;
+                            }
+                        case "DETAILUVOFFSETX":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve DETAILUVOFFSETX property.");
+                                    continue;
+                                }
+                                detailUVOffset[0] = float_out;
+                                break;
+                            }
+                        case "DETAILUVOFFSETY":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve DETAILUVOFFSETY property.");
+                                    continue;
+                                }
+                                detailUVOffset[1] = float_out;
+                                break;
+                            }
+                        case "DETAILNORMALSCALE":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve DETAILNORMALSCALE property.");
+                                    continue;
+                                }
+                                detailNormalScale = float_out;
+                                break;
+                            }
+                    }
+                }
+            }
             #endregion
 
             #region Textures & AlphaMode
@@ -400,8 +498,8 @@ namespace Max2Babylon
                                 if (alphaMode == 3)
                                 {
                                     alphaMode = (int)GLTFMaterial.AlphaMode.BLEND;
-                                    GLTFExtensionAlphaModeDither ditherExtensionObject = new GLTFExtensionAlphaModeDither();
-                                    material.extensions.Add(GLTFExtensionAlphaModeDither.SerializedName, ditherExtensionObject);
+                                    GLTFExtensionAsoboAlphaModeDither ditherExtensionObject = new GLTFExtensionAsoboAlphaModeDither();
+                                    material.extensions.Add(GLTFExtensionAsoboAlphaModeDither.SerializedName, ditherExtensionObject);
                                 }
                                 else if(alphaMode > 3 || alphaMode < 0)
                                 {
@@ -604,17 +702,17 @@ namespace Max2Babylon
             }
 
             #endregion
-
-            #region Post-processing (extensions, verifications)
+            
+            #region Process Extension Objects
 
             // custom layer extension, only export if we have a layer mask texture
             GLTFExtensionAsoboMaterialLayer layerExtensionObject = null;
-            if(!string.IsNullOrWhiteSpace(layerColorMaskPath))
+            if (!string.IsNullOrWhiteSpace(layerColorMaskPath))
             {
                 layerExtensionObject = new GLTFExtensionAsoboMaterialLayer();
 
                 layerExtensionObject.layerColor = layerColor;
-                
+
                 image = ExportImage(layerColorMaskPath, true);
                 if (image != null)
                 {
@@ -633,12 +731,57 @@ namespace Max2Babylon
                 }
             }
 
+            // detail map extension, only if we have a detail color and/or detail normal map
+            GLTFExtensionAsoboMaterialDetail detailExtensionObject = null;
+            if(!string.IsNullOrWhiteSpace(detailColorTexPath) || !string.IsNullOrWhiteSpace(detailNormalTexPath))
+            {
+                detailExtensionObject = new GLTFExtensionAsoboMaterialDetail();
+                if (!string.IsNullOrWhiteSpace(detailColorTexPath))
+                {
+                    image = ExportImage(detailColorTexPath);
+                    if (image != null)
+                    {
+                        info = CreateTextureInfo(image);
+                        detailExtensionObject.detailColorTexture = info;
+                    }
+                }
+                if (!string.IsNullOrWhiteSpace(detailNormalTexPath))
+                {
+                    image = ExportImage(detailNormalTexPath);
+                    if (image != null)
+                    {
+                        info = CreateTextureInfo<GLTFNormalTextureInfo>(image);
+                        detailExtensionObject.detailNormalTexture = (GLTFNormalTextureInfo)info;
+
+                        if(detailNormalScale != GLTFExtensionAsoboMaterialDetail.Defaults.NormalScale)
+                            detailExtensionObject.detailNormalTexture.scale = detailNormalScale;
+                    }
+                }
+
+                if (detailUVScale != GLTFExtensionAsoboMaterialDetail.Defaults.UVScale)
+                    detailExtensionObject.UVScale = detailUVScale;
+
+                if (detailUVOffset[0] != GLTFExtensionAsoboMaterialDetail.Defaults.UVOffset[0]
+                    && detailUVOffset[1] != GLTFExtensionAsoboMaterialDetail.Defaults.UVOffset[1])
+                {
+                    detailExtensionObject.UVOffset = new float[2];
+                    detailUVOffset.CopyTo(detailExtensionObject.UVOffset, 0);
+                }
+            }
+
+            #endregion
+
+            #region Post-processing
+
             // add used extensions to dictionaries
             if (decalExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialDecal.SerializedName, decalExtensionObject);
 
             if(layerExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialLayer.SerializedName, layerExtensionObject);
+
+            if (detailExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboMaterialDetail.SerializedName, detailExtensionObject);
 
             if (materialExtensions.Count > 0)
             {
