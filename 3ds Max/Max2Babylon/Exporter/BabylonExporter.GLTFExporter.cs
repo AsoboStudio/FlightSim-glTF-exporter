@@ -520,7 +520,7 @@ namespace Max2Babylon
             gltfNode.scale = babylonNode.scaling;
 
             // Switch coordinate system at object level
-            gltfNode.translation[2] *= -1;
+            gltfNode.translation[2] *= -1 * scaleFactor;
             gltfNode.rotation[0] *= -1;
             gltfNode.rotation[1] *= -1;
 

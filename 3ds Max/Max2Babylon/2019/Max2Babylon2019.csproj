@@ -56,7 +56,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>.\</OutputPath>
+    <OutputPath>..\assemblies\2019\</OutputPath>
     <DefineConstants>TRACE;MAX2019</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -183,6 +183,9 @@
     </Compile>
     <Compile Include="..\Exporter\BabylonExporter.GLTFExporter.Light.cs">
       <Link>Exporter\GLTFGlobalVertex.cs</Link>
+    </Compile>
+    <Compile Include="..\Extensions\ScaleSystem.cs">
+      <Link>Extensions\ScaleSystem.cs</Link>
     </Compile>
     <Compile Include="..\Forms\AnimationForm.cs">
       <Link>Forms\AnimationForm.cs</Link>

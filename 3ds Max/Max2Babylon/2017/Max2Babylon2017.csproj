@@ -47,7 +47,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>C:\Program Files\Autodesk\3ds Max 2017\bin\assemblies\</OutputPath>
+    <OutputPath>..\assemblies\2017\</OutputPath>
     <DefineConstants>TRACE;DEBUG;MAX2017</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
@@ -56,7 +56,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>.\</OutputPath>
+    <OutputPath>..\assemblies\2017\</OutputPath>
     <DefineConstants>TRACE;MAX2017</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -183,6 +183,9 @@
     </Compile>
     <Compile Include="..\Exporter\BabylonExporter.GLTFExporter.Light.cs">
       <Link>Exporter\GLTFGlobalVertex.cs</Link>
+    </Compile>
+    <Compile Include="..\Extensions\ScaleSystem.cs">
+      <Link>Extensions\ScaleSystem.cs</Link>
     </Compile>
     <Compile Include="..\Forms\AnimationForm.cs">
       <Link>Forms\AnimationForm.cs</Link>

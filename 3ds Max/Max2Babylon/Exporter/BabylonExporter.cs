@@ -7,8 +7,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
+using Max2Babylon.Extensions;
 using Color = System.Drawing.Color;
 
 namespace Max2Babylon
@@ -34,6 +36,7 @@ namespace Max2Babylon
         private bool exportNonAnimated;
 
         public static string exporterVersion = "1.3.33";
+        public float scaleFactor = 1.0f;
 
         void ReportProgressChanged(int progress)
         {
@@ -85,7 +88,8 @@ namespace Max2Babylon
         }
         public void Export(ExportParameters exportParameters)
         {
-            // Check input text is valid
+            this.scaleFactor = Tools.GetScaleFactorToMeters();
+
             var scaleFactorFloat = 1.0f;
             string scaleFactor = exportParameters.scaleFactor;
             try
