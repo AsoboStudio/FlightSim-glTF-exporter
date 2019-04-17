@@ -41,7 +41,7 @@ namespace Max2Babylon
         }
 
         #region Math
-        
+
         public static float Lerp(float min, float max, float t)
         {
             return min + (max - min) * t;
@@ -368,6 +368,7 @@ namespace Max2Babylon
             return scaleFactorFloat;
 
         }
+
 
 
         public static void PreparePipeline(IINode node, bool deactivate)
