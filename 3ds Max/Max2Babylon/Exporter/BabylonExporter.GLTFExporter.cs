@@ -137,12 +137,20 @@ namespace Max2Babylon
                 });
             });
 
-            // Cast lists to arrays
-            gltf.Prepare();
+            if (!string.IsNullOrEmpty(exportParameters.findName))
+            {
+                foreach (GLTFNode gltfNode in gltf.NodesList)
+                {
+                    gltfNode.name = gltfNode.name.Replace(exportParameters.findName, exportParameters.replaceName);
+                }
+            }
 
             // Output
             RaiseMessage("GLTFExporter | Saving to output file");
             if (!generateBinary) {
+
+                // Cast lists to arrays
+                gltf.Prepare();
 
                 // Write .gltf file
                 string outputGltfFile = Path.ChangeExtension(outputFile, "gltf");
