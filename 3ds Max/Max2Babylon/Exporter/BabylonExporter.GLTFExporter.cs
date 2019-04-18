@@ -10,6 +10,7 @@ using System.Text;
 using Color = System.Drawing.Color;
 using System.Linq;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace Max2Babylon
 {
@@ -141,7 +142,8 @@ namespace Max2Babylon
             {
                 foreach (GLTFNode gltfNode in gltf.NodesList)
                 {
-                    gltfNode.name = gltfNode.name.Replace(exportParameters.findName, exportParameters.replaceName);
+                    string result = Regex.Replace(gltfNode.name, exportParameters.findName, exportParameters.replaceName, RegexOptions.IgnoreCase);
+                    gltfNode.name = result;
                 }
             }
 
