@@ -26,7 +26,7 @@ namespace Max2Babylon
     }
 
     [DataContract]
-    class GLTFExtensionAsoboMaterialDecal : GLTFProperty // use GLTFChildRootProperty if you want to add a name
+    class GLTFExtensionAsoboMaterialGeometryDecal : GLTFProperty // use GLTFChildRootProperty if you want to add a name
     {
         public const string SerializedName = "ASOBO_material_blend_gbuffer";
         [DataMember(EmitDefaultValue = false)] public float? baseColorBlendFactor;
@@ -67,6 +67,8 @@ namespace Max2Babylon
         public GLTFTextureInfo detailColorTexture { get; set; }
         [DataMember(EmitDefaultValue = false)]
         public GLTFNormalTextureInfo detailNormalTexture { get; set; }
+        [DataMember(EmitDefaultValue = false)]
+        public GLTFTextureInfo detailMetalRoughAOTexture { get; set; }
 
         public static class Defaults
         {
@@ -96,7 +98,9 @@ namespace Max2Babylon
             {
                 Windshield,
                 Porthole,
-                Glass
+                Glass,
+                // todo: rename to GeoDecalProgressive or something like that, rather than tying to in-game usage? e.g. same technique could be used for moss/mud/whatever
+                GeoDecalFrosted,
             }
 
             public static MaterialCode AsoboWindshield = new MaterialCode(Code.Windshield);
@@ -121,10 +125,12 @@ namespace Max2Babylon
         enum MaterialType
         {
             Standard,
-            Decal,
+            GeoDecal,
+            GeoDecalFrosted,
             Windshield,
             Porthole,
-            Glass
+            Glass,
+
         }
 
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
@@ -251,6 +257,7 @@ namespace Max2Babylon
             float detailNormalScale = GLTFExtensionAsoboMaterialDetail.Defaults.NormalScale;
             string detailColorTexPath = null;
             string detailNormalTexPath = null;
+            string detailMetalRoughAOTexPath = null;
 
             #region Material Type (Standard, Decal, Windshield, ...)
             // - Standard
@@ -258,7 +265,7 @@ namespace Max2Babylon
             // - Windshield
 
             // only create if needed
-            GLTFExtensionAsoboMaterialDecal decalExtensionObject = null;
+            GLTFExtensionAsoboMaterialGeometryDecal decalExtensionObject = null;
             GLTFExtensions materialExtensions = new GLTFExtensions();
             GLTFExtensions materialExtras = new GLTFExtensions();
 
@@ -288,8 +295,8 @@ namespace Max2Babylon
                                     materialType = MaterialType.Standard;
                                     break;
                                 case 2:
-                                    materialType = MaterialType.Decal;
-                                    decalExtensionObject = new GLTFExtensionAsoboMaterialDecal();
+                                    materialType = MaterialType.GeoDecal;
+                                    decalExtensionObject = new GLTFExtensionAsoboMaterialGeometryDecal();
                                     break;
                                 case 3:
                                     materialType = MaterialType.Windshield;
@@ -302,6 +309,11 @@ namespace Max2Babylon
                                 case 5:
                                     materialType = MaterialType.Glass;
                                     materialExtras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Glass.ToString());
+                                    break;
+                                case 6:
+                                    materialType = MaterialType.GeoDecalFrosted;
+                                    decalExtensionObject = new GLTFExtensionAsoboMaterialGeometryDecal();
+                                    materialExtras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.GeoDecalFrosted.ToString());
                                     break;
                                 default:
                                     materialType = MaterialType.Standard;
@@ -420,6 +432,11 @@ namespace Max2Babylon
                                 detailNormalTexPath = GetImagePath(paramDef, property, param_t, "DETAILNORMALTEX");
                                 break;
                             }
+                        case "DETAILOCCLUSIONROUGHNESSMETALLICTEX":
+                            {
+                                detailMetalRoughAOTexPath = GetImagePath(paramDef, property, param_t, "DETAILOCCLUSIONROUGHNESSMETALLICTEX");
+                                break;
+                            }
                         case "DETAILUVSCALE":
                             {
                                 if (!property.GetPropertyValue(ref float_out, param_t, param_p))
@@ -488,7 +505,7 @@ namespace Max2Babylon
                             }
 
                             // overrides for specific material types
-                            if (materialType == MaterialType.Decal || materialType == MaterialType.Windshield || materialType == MaterialType.Glass)
+                            if (materialType == MaterialType.GeoDecal || materialType == MaterialType.Windshield || materialType == MaterialType.Glass || materialType == MaterialType.GeoDecalFrosted)
                                 material.SetAlphaMode(GLTFMaterial.AlphaMode.BLEND.ToString());
                             else if (materialType == MaterialType.Porthole)
                                 material.SetAlphaMode(GLTFMaterial.AlphaMode.OPAQUE.ToString());
@@ -733,7 +750,7 @@ namespace Max2Babylon
 
             // detail map extension, only if we have a detail color and/or detail normal map
             GLTFExtensionAsoboMaterialDetail detailExtensionObject = null;
-            if(!string.IsNullOrWhiteSpace(detailColorTexPath) || !string.IsNullOrWhiteSpace(detailNormalTexPath))
+            if(!string.IsNullOrWhiteSpace(detailColorTexPath) || !string.IsNullOrWhiteSpace(detailNormalTexPath) || !string.IsNullOrWhiteSpace(detailMetalRoughAOTexPath))
             {
                 detailExtensionObject = new GLTFExtensionAsoboMaterialDetail();
                 if (!string.IsNullOrWhiteSpace(detailColorTexPath))
@@ -757,6 +774,15 @@ namespace Max2Babylon
                             detailExtensionObject.detailNormalTexture.scale = detailNormalScale;
                     }
                 }
+                if (!string.IsNullOrWhiteSpace(detailMetalRoughAOTexPath))
+                {
+                    image = ExportImage(detailMetalRoughAOTexPath);
+                    if (image != null)
+                    {
+                        info = CreateTextureInfo(image);
+                        detailExtensionObject.detailMetalRoughAOTexture = info;
+                    }
+                }
 
                 if (detailUVScale != GLTFExtensionAsoboMaterialDetail.Defaults.UVScale)
                     detailExtensionObject.UVScale = detailUVScale;
@@ -775,7 +801,7 @@ namespace Max2Babylon
 
             // add used extensions to dictionaries
             if (decalExtensionObject != null)
-                materialExtensions.Add(GLTFExtensionAsoboMaterialDecal.SerializedName, decalExtensionObject);
+                materialExtensions.Add(GLTFExtensionAsoboMaterialGeometryDecal.SerializedName, decalExtensionObject);
 
             if(layerExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialLayer.SerializedName, layerExtensionObject);
@@ -1342,37 +1368,37 @@ namespace Max2Babylon
 
         #region Decal Extension helper functions
         
-        public static void SetBaseColorBlendFactor(this GLTFExtensionAsoboMaterialDecal decalMaterial, float factor)
+        public static void SetBaseColorBlendFactor(this GLTFExtensionAsoboMaterialGeometryDecal decalMaterial, float factor)
         {
             if (factor == Defaults.BaseColorBlendFactor)
                 decalMaterial.baseColorBlendFactor = null;
             else decalMaterial.baseColorBlendFactor = factor;
         }
-        public static void SetRoughnessBlendFactor(this GLTFExtensionAsoboMaterialDecal decalMaterial, float factor)
+        public static void SetRoughnessBlendFactor(this GLTFExtensionAsoboMaterialGeometryDecal decalMaterial, float factor)
         {
             if (factor == Defaults.RoughnessBlendFactor)
                 decalMaterial.roughnessBlendFactor = null;
             else decalMaterial.roughnessBlendFactor = factor;
         }
-        public static void SetMetallicBlendFactor(this GLTFExtensionAsoboMaterialDecal decalMaterial, float factor)
+        public static void SetMetallicBlendFactor(this GLTFExtensionAsoboMaterialGeometryDecal decalMaterial, float factor)
         {
             if (factor == Defaults.MetallicBlendFactor)
                 decalMaterial.metallicBlendFactor = null;
             else decalMaterial.metallicBlendFactor = factor;
         }
-        public static void SetNormalBlendFactor(this GLTFExtensionAsoboMaterialDecal decalMaterial, float factor)
+        public static void SetNormalBlendFactor(this GLTFExtensionAsoboMaterialGeometryDecal decalMaterial, float factor)
         {
             if (factor == Defaults.NormalBlendFactor)
                 decalMaterial.normalBlendFactor = null;
             else decalMaterial.normalBlendFactor = factor;
         }
-        public static void SetEmissiveBlendFactor(this GLTFExtensionAsoboMaterialDecal decalMaterial, float factor)
+        public static void SetEmissiveBlendFactor(this GLTFExtensionAsoboMaterialGeometryDecal decalMaterial, float factor)
         {
             if (factor == Defaults.EmissiveBlendFactor)
                 decalMaterial.emissiveBlendFactor = null;
             else decalMaterial.emissiveBlendFactor = factor;
         }
-        public static void SetOcclusionBlendFactor(this GLTFExtensionAsoboMaterialDecal decalMaterial, float factor)
+        public static void SetOcclusionBlendFactor(this GLTFExtensionAsoboMaterialGeometryDecal decalMaterial, float factor)
         {
             if (factor == Defaults.OcclusionBlendFactor)
                 decalMaterial.occlusionBlendFactor = null;
