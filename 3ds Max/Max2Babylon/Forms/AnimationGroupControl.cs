@@ -206,7 +206,7 @@ namespace Max2Babylon
             MaxNodeTree.EndUpdate();
         }
 
-        private void SelectNameButton_Click(object sender, EventArgs e)
+        private void preDefNameButtonClick(object sender, EventArgs e)
         {
             if (currentInfo == null)
             {
@@ -216,7 +216,7 @@ namespace Max2Babylon
 
             if (selectNameForm == null || selectNameForm.IsDisposed)
             {
-                selectNameForm = new SelectNameForm(nameTextBox,currentInfo, MaxNodeTree);
+                selectNameForm = new SelectNameForm(nameTextBox, currentInfo, MaxNodeTree);
             }
 
             selectNameForm.TopMost = true;

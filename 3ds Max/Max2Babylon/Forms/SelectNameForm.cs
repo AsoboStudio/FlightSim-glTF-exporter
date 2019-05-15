@@ -34,64 +34,69 @@ namespace Max2Babylon.Forms
 
         private List<TreeNode> GetExcelFile()
         {
-            //Create COM Objects. Create a COM object for everything that is referenced
-            Excel.Application xlApp = new Excel.Application();
-            Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(@"U:\Licences_Projets\FLIGHT_SIM\ART\Planes\NamingConventions.xlsx");
-            Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
-            Excel.Range xlRange = xlWorksheet.UsedRange;
-
-            int rowCount = xlRange.Rows.Count;
-            int colCount = xlRange.Columns.Count;
-
             List<TreeNode> xmlElements = new List<TreeNode>();
-
-            int targetColumn = 7;
-            int subtargetColumn = 9;
-            //excel is not zero based!!
-            for (int i = 2; i <= rowCount; i++)
+            try
             {
-                if (xlRange.Cells[i, targetColumn] != null && xlRange.Cells[i, targetColumn].Value2 != null)
+                //Create COM Objects. Create a COM object for everything that is referenced
+                Excel.Application xlApp = new Excel.Application();
+                Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(@"U:\Licences_Projets\FLIGHT_SIM\ART\Planes\NamingConventions.xlsx");
+                Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
+                Excel.Range xlRange = xlWorksheet.UsedRange;
+
+                int rowCount = xlRange.Rows.Count;
+                int colCount = xlRange.Columns.Count;
+
+
+
+                int targetColumn = 7;
+                int subtargetColumn = 9;
+                //excel is not zero based!!
+                for (int i = 2; i <= rowCount; i++)
                 {
-                    string rootElement = xlRange.Cells[i, targetColumn].Value2.ToString();
-                    TreeNode element = new TreeNode(rootElement);
-
-                    if (xlRange.Cells[i, subtargetColumn] != null && xlRange.Cells[i, subtargetColumn].Value2 != null)
+                    if (xlRange.Cells[i, targetColumn] != null && xlRange.Cells[i, targetColumn].Value2 != null)
                     {
-                        //element has subelements
-                        string subElementsValue = xlRange.Cells[i, subtargetColumn].Value2.ToString();
-                        subElementsValue = subElementsValue.Replace(" ", ""); //remove empty spaces
-                        var subElements = subElementsValue.Split(',');
+                        string rootElement = xlRange.Cells[i, targetColumn].Value2.ToString();
+                        TreeNode element = new TreeNode(rootElement);
 
-                        foreach (string subElement in subElements)
+                        if (xlRange.Cells[i, subtargetColumn] != null && xlRange.Cells[i, subtargetColumn].Value2 != null)
                         {
-                            TreeNode subTreeNode = new TreeNode(subElement);
-                            element.Nodes.Add(subTreeNode);
+                            //element has subelements
+                            string subElementsValue = xlRange.Cells[i, subtargetColumn].Value2.ToString();
+                            subElementsValue = subElementsValue.Replace(" ", ""); //remove empty spaces
+                            var subElements = subElementsValue.Split(',');
+
+                            foreach (string subElement in subElements)
+                            {
+                                TreeNode subTreeNode = new TreeNode(subElement);
+                                element.Nodes.Add(subTreeNode);
+                            }
                         }
+
+                        xmlElements.Add(element);
                     }
-
-                    xmlElements.Add(element);
                 }
+
+                //cleanup
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+
+                //release com objects to fully kill excel process from running in the background
+                Marshal.ReleaseComObject(xlRange);
+                Marshal.ReleaseComObject(xlWorksheet);
+
+                //close and release
+                xlWorkbook.Close();
+                Marshal.ReleaseComObject(xlWorkbook);
+
+                //quit and release
+                xlApp.Quit();
+                Marshal.ReleaseComObject(xlApp);
             }
-
-            //cleanup
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            //rule of thumb for releasing com objects:
-            //  never use two dots, all COM objects must be referenced and released individually
-            //  ex: [somthing].[something].[something] is bad
-
-            //release com objects to fully kill excel process from running in the background
-            Marshal.ReleaseComObject(xlRange);
-            Marshal.ReleaseComObject(xlWorksheet);
-
-            //close and release
-            xlWorkbook.Close();
-            Marshal.ReleaseComObject(xlWorkbook);
-
-            //quit and release
-            xlApp.Quit();
-            Marshal.ReleaseComObject(xlApp);
+            catch (Exception e)
+            {
+                MessageBox.Show("Impossible to retrieve XLS file");
+            }
+            
 
             return xmlElements;
         }
@@ -100,9 +105,10 @@ namespace Max2Babylon.Forms
         {
             if (preDefiniedNameList.SelectedNode != null)
             {
-                if (preDefiniedNameList.SelectedNode.Nodes != null)
+                if (preDefiniedNameList.SelectedNode.Nodes.Count>0)
                 {
-                    MessageBox.Show("This Animation Group Template cannot be added because contains child")
+                    MessageBox.Show("This Animation Group Template cannot be added because contains child");
+                    return;
                 }
 
                 string element = preDefiniedNameList.SelectedNode.Text;

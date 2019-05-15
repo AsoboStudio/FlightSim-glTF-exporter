@@ -36,6 +36,7 @@
             System.Windows.Forms.Panel startEndPanel;
             System.Windows.Forms.Panel warningLabelPanel;
             this.nameTextBox = new System.Windows.Forms.TextBox();
+            this.nameLabel = new System.Windows.Forms.Label();
             this.ConfirmButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
             this.removeNodeButton = new System.Windows.Forms.Button();
@@ -48,7 +49,7 @@
             this.nodesGroupBox = new System.Windows.Forms.GroupBox();
             this.MaxNodeTree = new Max2Babylon.MaxNodeTreeView();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.SelectNameButton = new System.Windows.Forms.Button();
+            this.preDefName_Button = new System.Windows.Forms.Button();
             nameFieldPanel = new System.Windows.Forms.Panel();
             optionsButtonsPanel = new System.Windows.Forms.Panel();
             nodeButtonsPanel = new System.Windows.Forms.Panel();
@@ -72,23 +73,33 @@
             // 
             nameFieldPanel.AutoSize = true;
             nameFieldPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            nameFieldPanel.Controls.Add(this.SelectNameButton);
+            nameFieldPanel.Controls.Add(this.preDefName_Button);
             nameFieldPanel.Controls.Add(this.nameTextBox);
+            nameFieldPanel.Controls.Add(this.nameLabel);
             nameFieldPanel.Dock = System.Windows.Forms.DockStyle.Top;
             nameFieldPanel.Location = new System.Drawing.Point(3, 16);
             nameFieldPanel.Name = "nameFieldPanel";
-            nameFieldPanel.Size = new System.Drawing.Size(184, 29);
+            nameFieldPanel.Size = new System.Drawing.Size(184, 26);
             nameFieldPanel.TabIndex = 0;
             // 
             // nameTextBox
             // 
-            this.nameTextBox.Location = new System.Drawing.Point(54, 5);
+            this.nameTextBox.Location = new System.Drawing.Point(39, 3);
             this.nameTextBox.MinimumSize = new System.Drawing.Size(20, 20);
             this.nameTextBox.Name = "nameTextBox";
-            this.nameTextBox.Size = new System.Drawing.Size(119, 20);
+            this.nameTextBox.Size = new System.Drawing.Size(105, 20);
             this.nameTextBox.TabIndex = 0;
             this.nameTextBox.WordWrap = false;
             this.nameTextBox.TextChanged += new System.EventHandler(this.nameTextBox_TextChanged);
+            // 
+            // nameLabel
+            // 
+            this.nameLabel.AutoSize = true;
+            this.nameLabel.Location = new System.Drawing.Point(4, 6);
+            this.nameLabel.Name = "nameLabel";
+            this.nameLabel.Size = new System.Drawing.Size(35, 13);
+            this.nameLabel.TabIndex = 0;
+            this.nameLabel.Text = "Name";
             // 
             // optionsButtonsPanel
             // 
@@ -97,7 +108,7 @@
             optionsButtonsPanel.Controls.Add(this.ConfirmButton);
             optionsButtonsPanel.Controls.Add(this.cancelButton);
             optionsButtonsPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            optionsButtonsPanel.Location = new System.Drawing.Point(3, 123);
+            optionsButtonsPanel.Location = new System.Drawing.Point(3, 120);
             optionsButtonsPanel.Name = "optionsButtonsPanel";
             optionsButtonsPanel.Size = new System.Drawing.Size(184, 29);
             optionsButtonsPanel.TabIndex = 0;
@@ -129,7 +140,7 @@
             nodeButtonsPanel.Controls.Add(this.removeNodeButton);
             nodeButtonsPanel.Controls.Add(this.addSelectedButton);
             nodeButtonsPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            nodeButtonsPanel.Location = new System.Drawing.Point(3, 71);
+            nodeButtonsPanel.Location = new System.Drawing.Point(3, 68);
             nodeButtonsPanel.Name = "nodeButtonsPanel";
             nodeButtonsPanel.Padding = new System.Windows.Forms.Padding(3);
             nodeButtonsPanel.Size = new System.Drawing.Size(184, 52);
@@ -183,7 +194,7 @@
             startEndPanel.Controls.Add(this.startTextBox);
             startEndPanel.Controls.Add(this.startLabel);
             startEndPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            startEndPanel.Location = new System.Drawing.Point(3, 45);
+            startEndPanel.Location = new System.Drawing.Point(3, 42);
             startEndPanel.Name = "startEndPanel";
             startEndPanel.Size = new System.Drawing.Size(184, 26);
             startEndPanel.TabIndex = 0;
@@ -308,15 +319,15 @@
             this.splitContainer1.TabIndex = 0;
             this.splitContainer1.TabStop = false;
             // 
-            // SelectNameButton
+            // preDefName_Button
             // 
-            this.SelectNameButton.Location = new System.Drawing.Point(3, 3);
-            this.SelectNameButton.Name = "SelectNameButton";
-            this.SelectNameButton.Size = new System.Drawing.Size(45, 23);
-            this.SelectNameButton.TabIndex = 1;
-            this.SelectNameButton.Text = "Name";
-            this.SelectNameButton.UseVisualStyleBackColor = true;
-            this.SelectNameButton.Click += new System.EventHandler(this.SelectNameButton_Click);
+            this.preDefName_Button.Location = new System.Drawing.Point(150, 3);
+            this.preDefName_Button.Name = "preDefName_Button";
+            this.preDefName_Button.Size = new System.Drawing.Size(31, 20);
+            this.preDefName_Button.TabIndex = 1;
+            this.preDefName_Button.Text = "...";
+            this.preDefName_Button.UseVisualStyleBackColor = true;
+            this.preDefName_Button.Click += new System.EventHandler(this.preDefNameButtonClick);
             // 
             // AnimationGroupControl
             // 
@@ -352,6 +363,7 @@
         private System.Windows.Forms.GroupBox optionsGroupBox;
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.Button ConfirmButton;
+        private System.Windows.Forms.Label nameLabel;
         private System.Windows.Forms.Label endLabel;
         private System.Windows.Forms.TextBox endTextBox;
         private System.Windows.Forms.Label startLabel;
@@ -362,6 +374,6 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.TextBox nameTextBox;
         private System.Windows.Forms.Button removeNodeButton;
-        private System.Windows.Forms.Button SelectNameButton;
+        private System.Windows.Forms.Button preDefName_Button;
     }
 }
