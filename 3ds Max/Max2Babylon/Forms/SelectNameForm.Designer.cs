@@ -28,18 +28,16 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.preDefiniedNameList = new System.Windows.Forms.ListBox();
+            this.preDefiniedNameList = new System.Windows.Forms.TreeView();
             this.SuspendLayout();
             // 
             // preDefiniedNameList
             // 
-            this.preDefiniedNameList.FormattingEnabled = true;
-            this.preDefiniedNameList.Location = new System.Drawing.Point(5, 5);
-            this.preDefiniedNameList.Margin = new System.Windows.Forms.Padding(0);
+            this.preDefiniedNameList.Location = new System.Drawing.Point(3, 2);
             this.preDefiniedNameList.Name = "preDefiniedNameList";
-            this.preDefiniedNameList.Size = new System.Drawing.Size(264, 446);
+            this.preDefiniedNameList.Size = new System.Drawing.Size(256, 444);
             this.preDefiniedNameList.TabIndex = 0;
-            this.preDefiniedNameList.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.preDefName_DoubleClick);
+            this.preDefiniedNameList.DoubleClick += new System.EventHandler(this.preDefName_DoubleClick);
             // 
             // SelectNameForm
             // 
@@ -49,7 +47,7 @@
             this.Controls.Add(this.preDefiniedNameList);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "SelectNameForm";
-            this.Text = "Babylon.js - Select Name";
+            this.Text = "KittyHawk - Select Name";
             this.Load += new System.EventHandler(this.SelectNameForm_Load);
             this.ResumeLayout(false);
 
@@ -57,6 +55,6 @@
 
         #endregion
 
-        private System.Windows.Forms.ListBox preDefiniedNameList;
+        private System.Windows.Forms.TreeView preDefiniedNameList;
     }
 }

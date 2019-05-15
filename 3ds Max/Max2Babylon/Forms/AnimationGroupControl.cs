@@ -214,12 +214,12 @@ namespace Max2Babylon
                 return;
             }
 
-            if (selectNameForm != null)
+            if (selectNameForm == null || selectNameForm.IsDisposed)
             {
-                return;
+                selectNameForm = new SelectNameForm(nameTextBox,currentInfo, MaxNodeTree);
             }
 
-            selectNameForm = new SelectNameForm(nameTextBox);
+            selectNameForm.TopMost = true;
             selectNameForm.Show();
         }
     }
