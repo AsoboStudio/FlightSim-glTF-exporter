@@ -408,7 +408,8 @@ namespace Max2Babylon
             #endregion
 
             #region Detail Map Extension Properties
-            if (materialType == MaterialType.Standard || materialType == MaterialType.Windshield)
+
+            // allow for all material types, for now
             {
                 for (int i = 0; i < numProps; ++i)
                 {
