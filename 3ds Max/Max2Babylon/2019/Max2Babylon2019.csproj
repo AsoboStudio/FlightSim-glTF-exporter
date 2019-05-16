@@ -115,9 +115,6 @@
     <Compile Include="..\BabylonPropertiesActionItem.cs">
       <Link>BabylonPropertiesActionItem.cs</Link>
     </Compile>
-    <Compile Include="..\CustomExporters\KittyHawkMaterialExporter.cs">
-      <Link>Exporter\KittyHawkMaterialExporter.cs</Link>
-    </Compile>
     <Compile Include="..\Descriptor.cs">
       <Link>Descriptor.cs</Link>
     </Compile>
@@ -259,14 +256,6 @@
       <Link>Forms\ScenePropertiesForm.Designer.cs</Link>
       <DependentUpon>ScenePropertiesForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="..\Forms\SelectNameForm.cs">
-      <Link>Forms\SelectNameForm.cs</Link>
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="..\Forms\SelectNameForm.designer.cs">
-      <Link>Forms\SelectNameForm.designer.cs</Link>
-      <DependentUpon>SelectNameForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="..\Forms\Vector3Control.cs">
       <Link>Forms\Vector3Control.cs</Link>
       <SubType>UserControl</SubType>
@@ -283,6 +272,17 @@
     </Compile>
     <Compile Include="..\JsonTextWriterOptimized.cs">
       <Link>JsonTextWriterOptimized.cs</Link>
+    </Compile>
+    <Compile Include="..\KittyHawk\KittyHawkMaterialExporter.cs">
+      <Link>Exporter\KittyHawkMaterialExporter.cs</Link>
+    </Compile>
+    <Compile Include="..\KittyHawk\SelectNameForm.cs">
+      <Link>Forms\SelectNameForm.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\KittyHawk\SelectNameForm.designer.cs">
+      <Link>Forms\SelectNameForm.designer.cs</Link>
+      <DependentUpon>SelectNameForm.cs</DependentUpon>
     </Compile>
     <Compile Include="..\Loader.cs">
       <Link>Loader.cs</Link>
@@ -360,10 +360,6 @@
       <Link>Forms\ScenePropertiesForm.resx</Link>
       <DependentUpon>ScenePropertiesForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\Forms\SelectNameForm.resx">
-      <Link>Forms\SelectNameForm.resx</Link>
-      <DependentUpon>SelectNameForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="..\Forms\Vector3Control.resx">
       <Link>Forms\Vector3Control.resx</Link>
       <DependentUpon>Vector3Control.cs</DependentUpon>
@@ -371,6 +367,10 @@
     <EmbeddedResource Include="..\Forms\MaxNodeTreeView.resx">
       <Link>Forms\MaxNodeTreeView.resx</Link>
       <DependentUpon>MaxNodeTreeView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\KittyHawk\SelectNameForm.resx">
+      <Link>Forms\SelectNameForm.resx</Link>
+      <DependentUpon>SelectNameForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

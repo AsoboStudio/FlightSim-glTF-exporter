@@ -115,9 +115,6 @@
     <Compile Include="..\BabylonPropertiesActionItem.cs">
       <Link>BabylonPropertiesActionItem.cs</Link>
     </Compile>
-    <Compile Include="..\CustomExporters\KittyHawkMaterialExporter.cs">
-      <Link>Exporter\KittyHawkMaterialExporter.cs</Link>
-    </Compile>
     <Compile Include="..\Descriptor.cs">
       <Link>Descriptor.cs</Link>
     </Compile>
@@ -276,6 +273,17 @@
     <Compile Include="..\JsonTextWriterOptimized.cs">
       <Link>JsonTextWriterOptimized.cs</Link>
     </Compile>
+    <Compile Include="..\KittyHawk\KittyHawkMaterialExporter.cs">
+      <Link>Exporter\KittyHawkMaterialExporter.cs</Link>
+    </Compile>
+    <Compile Include="..\KittyHawk\SelectNameForm.cs">
+      <Link>Forms\SelectNameForm.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\KittyHawk\SelectNameForm.designer.cs">
+      <Link>Forms\SelectNameForm.designer.cs</Link>
+      <DependentUpon>SelectNameForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="..\Loader.cs">
       <Link>Loader.cs</Link>
     </Compile>
@@ -360,6 +368,10 @@
       <Link>Forms\MaxNodeTreeView.resx</Link>
       <DependentUpon>MaxNodeTreeView.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\KittyHawk\SelectNameForm.resx">
+      <Link>Forms\SelectNameForm.resx</Link>
+      <DependentUpon>SelectNameForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -371,7 +383,35 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <COMReference Include="Microsoft.Office.Core">
+      <Guid>{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}</Guid>
+      <VersionMajor>2</VersionMajor>
+      <VersionMinor>8</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="Microsoft.Office.Interop.Excel">
+      <Guid>{00020813-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>9</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="VBIDE">
+      <Guid>{0002E157-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>5</VersionMajor>
+      <VersionMinor>3</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
   <ItemGroup>
     <Content Include="Refs\Autodesk.Max.dll" />
     <None Include="Resources\Logo_Exporter_v4.jpg" />
