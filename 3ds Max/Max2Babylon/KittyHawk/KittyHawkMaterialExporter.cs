@@ -517,7 +517,7 @@ namespace Max2Babylon
                                 {
                                     alphaMode = (int)GLTFMaterial.AlphaMode.BLEND;
                                     GLTFExtensionAsoboAlphaModeDither ditherExtensionObject = new GLTFExtensionAsoboAlphaModeDither();
-                                    material.extensions.Add(GLTFExtensionAsoboAlphaModeDither.SerializedName, ditherExtensionObject);
+                                    materialExtensions.Add(GLTFExtensionAsoboAlphaModeDither.SerializedName, ditherExtensionObject);
                                 }
                                 else if(alphaMode > 3 || alphaMode < 0)
                                 {
