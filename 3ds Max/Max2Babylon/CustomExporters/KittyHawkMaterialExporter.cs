@@ -155,6 +155,79 @@ namespace Max2Babylon
         void RaiseWarning(string message) { raiseWarningAction?.Invoke(message); }
         void RaiseError(string message) { raiseErrorAction?.Invoke(message); }
 
+        #region Texture Keywords
+        // Texture keywords are used to show some warnings if for example an albedo texture has _NORM_ in the name, to help catch issues where textures are used in multiple (incompatible) slots.
+
+        List<string> textureKeywords = new List<string> {
+            "_ALBD_",
+            "_ALBD.",
+            "_ALBEDO_",
+            "_ALBEDO.",
+            "_COMP_",
+            "_COMP.",
+            "_NORM_",
+            "_NORM.",
+        };
+
+        bool AlbedoTexCheckSuspiciousName(string texturePath)
+        {
+            string textureName = Path.GetFileName(texturePath).ToUpperInvariant();
+
+            foreach(string textureKeyword in textureKeywords)
+            {
+                if (textureKeyword.Contains("_ALB"))
+                    continue;
+
+                if (textureName.Contains(textureKeyword))
+                {
+                    RaiseWarning(string.Format("Albedo texture slot uses a texture with keyword '{0}': {1}", textureKeyword, textureName));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool CompTexCheckSuspiciousName(string texturePath)
+        {
+            string textureName = Path.GetFileName(texturePath).ToUpperInvariant();
+
+            foreach (string textureKeyword in textureKeywords)
+            {
+                if (textureKeyword.Contains("_COMP"))
+                    continue;
+
+                if (textureName.Contains(textureKeyword))
+                {
+                    RaiseWarning(string.Format("Metal/Rough/Occlusion texture slot uses a texture with keyword '{0}': {1}", textureKeyword, textureName));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool NormalTexCheckSuspiciousName(string texturePath)
+        {
+            string textureName = Path.GetFileName(texturePath).ToUpperInvariant();
+
+            foreach (string textureKeyword in textureKeywords)
+            {
+                if (textureKeyword.Contains("_NORM"))
+                    continue;
+
+                if (textureName.Contains(textureKeyword))
+                {
+                    RaiseWarning(string.Format("Normal texture slot uses a texture with keyword '{0}': {1}", textureKeyword, textureName));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
+
         GLTFMaterial IGLTFMaterialExporter.ExportGLTFMaterial(BabylonExporter exporter, GLTF gltf, IIGameMaterial maxGameMaterial, 
             Func<string, string, string> tryWriteImageFunc, 
             Action<string, Color> raiseMessageAction, 
@@ -535,6 +608,7 @@ namespace Max2Babylon
                             if (image == null)
                                 continue;
 
+                            AlbedoTexCheckSuspiciousName(string_out);
                             info = CreateTextureInfo(image);
                             material.SetBaseColorTexture(info);
 
@@ -557,6 +631,7 @@ namespace Max2Babylon
                             if (image == null)
                                 continue;
 
+                            CompTexCheckSuspiciousName(string_out);
                             info = CreateTextureInfo(image);
                             material.SetMetallicRoughnessTexture(info);
 
@@ -574,6 +649,7 @@ namespace Max2Babylon
                             if (image == null)
                                 continue;
 
+                            NormalTexCheckSuspiciousName(string_out);
                             info = CreateTextureInfo<GLTFNormalTextureInfo>(image);
                             material.SetNormalTexture(info);
 
@@ -759,6 +835,7 @@ namespace Max2Babylon
                     image = ExportImage(detailColorTexPath);
                     if (image != null)
                     {
+                        AlbedoTexCheckSuspiciousName(detailColorTexPath);
                         info = CreateTextureInfo(image);
                         detailExtensionObject.detailColorTexture = info;
                     }
@@ -768,6 +845,7 @@ namespace Max2Babylon
                     image = ExportImage(detailNormalTexPath);
                     if (image != null)
                     {
+                        NormalTexCheckSuspiciousName(detailNormalTexPath);
                         info = CreateTextureInfo<GLTFNormalTextureInfo>(image);
                         detailExtensionObject.detailNormalTexture = (GLTFNormalTextureInfo)info;
 
@@ -780,6 +858,7 @@ namespace Max2Babylon
                     image = ExportImage(detailMetalRoughAOTexPath);
                     if (image != null)
                     {
+                        CompTexCheckSuspiciousName(detailMetalRoughAOTexPath);
                         info = CreateTextureInfo(image);
                         detailExtensionObject.detailMetalRoughAOTexture = info;
                     }
