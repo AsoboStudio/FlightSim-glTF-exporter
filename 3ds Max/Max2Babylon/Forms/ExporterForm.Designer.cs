@@ -42,10 +42,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.chkWriteTextures = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.replaceName = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.findName = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
             this.chkExportMaterials = new System.Windows.Forms.CheckBox();
             this.chkKHRMaterialsUnlit = new System.Windows.Forms.CheckBox();
             this.chkKHRTextureTransform = new System.Windows.Forms.CheckBox();
@@ -63,12 +59,16 @@
             this.chkOnlySelected = new System.Windows.Forms.CheckBox();
             this.chkAutoSave = new System.Windows.Forms.CheckBox();
             this.chkHidden = new System.Windows.Forms.CheckBox();
+            this.replaceLodPrefix = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.butExportAndRun = new System.Windows.Forms.Button();
             this.butClose = new System.Windows.Forms.Button();
             this.toolTipDracoCompression = new System.Windows.Forms.ToolTip(this.components);
             this.butMultiExport = new System.Windows.Forms.Button();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // butExport
@@ -184,7 +184,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 127);
+            this.label2.Location = new System.Drawing.Point(11, 114);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(46, 13);
             this.label2.TabIndex = 10;
@@ -208,10 +208,6 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.replaceName);
-            this.groupBox1.Controls.Add(this.label6);
-            this.groupBox1.Controls.Add(this.findName);
-            this.groupBox1.Controls.Add(this.label5);
             this.groupBox1.Controls.Add(this.chkExportMaterials);
             this.groupBox1.Controls.Add(this.chkKHRMaterialsUnlit);
             this.groupBox1.Controls.Add(this.chkKHRTextureTransform);
@@ -240,40 +236,6 @@
             this.groupBox1.Size = new System.Drawing.Size(450, 270);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
-            // 
-            // replaceName
-            // 
-            this.replaceName.Location = new System.Drawing.Point(153, 93);
-            this.replaceName.Name = "replaceName";
-            this.replaceName.Size = new System.Drawing.Size(54, 20);
-            this.replaceName.TabIndex = 27;
-            this.replaceName.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(100, 97);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(47, 13);
-            this.label6.TabIndex = 26;
-            this.label6.Text = "Replace";
-            // 
-            // findName
-            // 
-            this.findName.Location = new System.Drawing.Point(39, 93);
-            this.findName.Name = "findName";
-            this.findName.Size = new System.Drawing.Size(51, 20);
-            this.findName.TabIndex = 25;
-            this.findName.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 97);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(27, 13);
-            this.label5.TabIndex = 24;
-            this.label5.Text = "Find";
             // 
             // chkExportMaterials
             // 
@@ -415,7 +377,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 69);
+            this.label3.Location = new System.Drawing.Point(15, 73);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(74, 13);
             this.label3.TabIndex = 4;
@@ -429,7 +391,7 @@
             "binary babylon",
             "gltf",
             "glb"});
-            this.comboOutputFormat.Location = new System.Drawing.Point(86, 66);
+            this.comboOutputFormat.Location = new System.Drawing.Point(95, 70);
             this.comboOutputFormat.Name = "comboOutputFormat";
             this.comboOutputFormat.Size = new System.Drawing.Size(121, 21);
             this.comboOutputFormat.TabIndex = 5;
@@ -471,6 +433,23 @@
             this.chkHidden.Text = "Export hidden objects";
             this.chkHidden.UseVisualStyleBackColor = true;
             this.chkHidden.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
+            // 
+            // replaceLodPrefix
+            // 
+            this.replaceLodPrefix.Location = new System.Drawing.Point(109, 16);
+            this.replaceLodPrefix.Name = "replaceLodPrefix";
+            this.replaceLodPrefix.Size = new System.Drawing.Size(51, 20);
+            this.replaceLodPrefix.TabIndex = 25;
+            this.replaceLodPrefix.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(6, 20);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(97, 13);
+            this.label5.TabIndex = 24;
+            this.label5.Text = "Remove Lod Prefix";
             // 
             // butExportAndRun
             // 
@@ -515,11 +494,23 @@
             this.butMultiExport.UseVisualStyleBackColor = true;
             this.butMultiExport.Click += new System.EventHandler(this.butMultiExport_Click);
             // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.replaceLodPrefix);
+            this.groupBox2.Controls.Add(this.label5);
+            this.groupBox2.Location = new System.Drawing.Point(469, 226);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(353, 50);
+            this.groupBox2.TabIndex = 110;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "KittyHawk";
+            // 
             // ExporterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(834, 561);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.butMultiExport);
             this.Controls.Add(this.butExportAndRun);
             this.Controls.Add(this.groupBox1);
@@ -542,6 +533,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -582,9 +575,8 @@
         private System.Windows.Forms.CheckBox chkKHRTextureTransform;
         private System.Windows.Forms.CheckBox chkKHRMaterialsUnlit;
         private System.Windows.Forms.CheckBox chkExportMaterials;
-        private System.Windows.Forms.TextBox replaceName;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.TextBox findName;
+        private System.Windows.Forms.TextBox replaceLodPrefix;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.GroupBox groupBox2;
     }
 }

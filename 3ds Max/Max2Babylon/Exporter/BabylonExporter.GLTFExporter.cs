@@ -138,11 +138,11 @@ namespace Max2Babylon
                 });
             });
 
-            if (!string.IsNullOrEmpty(exportParameters.findName))
+            if (!string.IsNullOrEmpty(exportParameters.lodToReplace))
             {
                 foreach (GLTFNode gltfNode in gltf.NodesList)
                 {
-                    string result = Regex.Replace(gltfNode.name, exportParameters.findName, exportParameters.replaceName, RegexOptions.IgnoreCase);
+                    string result = Regex.Replace(gltfNode.name, exportParameters.lodToReplace, "", RegexOptions.IgnoreCase);
                     gltfNode.name = result;
                 }
             }

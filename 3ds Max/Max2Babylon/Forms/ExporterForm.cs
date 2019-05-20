@@ -18,6 +18,8 @@ namespace Max2Babylon
         TreeNode currentNode;
         int currentRank;
 
+        private ExportItem singleExportItem;
+
         public ExporterForm(BabylonExportActionItem babylonExportAction)
         {
             InitializeComponent();
@@ -48,7 +50,10 @@ namespace Max2Babylon
 
         private void ExporterForm_Load(object sender, EventArgs e)
         {
-            txtFilename.Text = Loader.Core.RootNode.GetLocalData();
+            string userRelativePath = Tools.ResolveRelativePath(Loader.Core.RootNode.GetLocalData());
+            txtFilename.Text = userRelativePath;
+            singleExportItem = new ExportItem(Tools.UnformatPath(txtFilename.Text));
+
             Tools.PrepareCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
             Tools.PrepareCheckBox(chkWriteTextures, Loader.Core.RootNode, "babylonjs_writetextures", 1);
             Tools.PrepareCheckBox(chkOverwriteTextures, Loader.Core.RootNode, "babylonjs_overwritetextures", 1);
@@ -59,8 +64,7 @@ namespace Max2Babylon
             Tools.PrepareComboBox(comboOutputFormat, Loader.Core.RootNode, "babylonjs_outputFormat", "babylon");
             Tools.PrepareTextBox(txtScaleFactor, Loader.Core.RootNode, "babylonjs_txtScaleFactor", "1");
             Tools.PrepareTextBox(txtQuality, Loader.Core.RootNode, "babylonjs_txtCompression", "100");
-            Tools.PrepareTextBox(findName, Loader.Core.RootNode, "babylonjs_findName", "");
-            Tools.PrepareTextBox(replaceName, Loader.Core.RootNode, "babylonjs_replaceName", "");
+            Tools.PrepareTextBox(replaceLodPrefix, Loader.Core.RootNode, "babylonjs_findName", "");
             Tools.PrepareCheckBox(chkMergeAOwithMR, Loader.Core.RootNode, "babylonjs_mergeAOwithMR", 1);
             Tools.PrepareCheckBox(chkDracoCompression, Loader.Core.RootNode, "babylonjs_dracoCompression", 0);
             Tools.PrepareCheckBox(chkKHRLightsPunctual, Loader.Core.RootNode, "babylonjs_khrLightsPunctual");
@@ -79,13 +83,14 @@ namespace Max2Babylon
         {
             if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
             {
-                txtFilename.Text = saveFileDialog.FileName;
+                txtFilename.Text = Tools.FormatPath(saveFileDialog.FileName);
+               
             }
         }
 
         private async void butExport_Click(object sender, EventArgs e)
         {
-            await DoExport();
+            await DoExport(singleExportItem);
         }
 
         private async Task<bool> DoExport(ExportItemList exportItemList)
@@ -106,7 +111,7 @@ namespace Max2Babylon
             return allSucceeded;
         }
 
-        private async Task<bool> DoExport(ExportItem exportItem = null, bool clearLogs = true)
+        private async Task<bool> DoExport(ExportItem exportItem, bool clearLogs = true)
         {
             Tools.UpdateCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
             Tools.UpdateCheckBox(chkWriteTextures, Loader.Core.RootNode, "babylonjs_writetextures");
@@ -118,16 +123,16 @@ namespace Max2Babylon
             Tools.UpdateComboBox(comboOutputFormat, Loader.Core.RootNode, "babylonjs_outputFormat");
             Tools.UpdateTextBox(txtScaleFactor, Loader.Core.RootNode, "babylonjs_txtScaleFactor");
             Tools.UpdateTextBox(txtQuality, Loader.Core.RootNode, "babylonjs_txtCompression");
-            Tools.UpdateTextBox(findName,Loader.Core.RootNode, "babylonjs_findName");
-            Tools.UpdateTextBox(replaceName, Loader.Core.RootNode, "babylonjs_replaceName");
+            Tools.UpdateTextBox(replaceLodPrefix,Loader.Core.RootNode, "babylonjs_findName");
             Tools.UpdateCheckBox(chkMergeAOwithMR, Loader.Core.RootNode, "babylonjs_mergeAOwithMR");
             Tools.UpdateCheckBox(chkDracoCompression, Loader.Core.RootNode, "babylonjs_dracoCompression");
             Tools.UpdateCheckBox(chkKHRTextureTransform, Loader.Core.RootNode, "babylonjs_khrTextureTransform");
             Tools.UpdateCheckBox(chkKHRLightsPunctual, Loader.Core.RootNode, "babylonjs_khrLightsPunctual");
             Tools.UpdateCheckBox(chkKHRMaterialsUnlit, Loader.Core.RootNode, "babylonjs_khr_materials_unlit");
             Tools.UpdateCheckBox(chkExportMaterials, Loader.Core.RootNode, "babylonjs_export_materials");
-            
-            Loader.Core.RootNode.SetLocalData(txtFilename.Text);
+
+            string unformattedPath = Tools.UnformatPath(txtFilename.Text);
+            Loader.Core.RootNode.SetLocalData(Tools.RelativePathStore(unformattedPath));
 
             exporter = new BabylonExporter();
 
@@ -193,7 +198,7 @@ namespace Max2Babylon
             {
                 ExportParameters exportParameters = new ExportParameters
                 {
-                    outputPath = exportItem != null ? exportItem.ExportFilePathAbsolute : txtFilename.Text,
+                    outputPath = Tools.UnformatPath(txtFilename.Text),
                     outputFormat = comboOutputFormat.SelectedItem.ToString(),
                     scaleFactor = txtScaleFactor.Text,
                     writeTextures = chkWriteTextures.Checked,
@@ -210,8 +215,7 @@ namespace Max2Babylon
                     enableKHRTextureTransform = chkKHRTextureTransform.Checked,
                     enableKHRMaterialsUnlit = chkKHRMaterialsUnlit.Checked,
                     exportMaterials = chkExportMaterials.Checked,
-                    findName = findName.Text,
-                    replaceName = replaceName.Text,
+                    lodToReplace = replaceLodPrefix.Text,
                     exportNode = exportItem != null ? exportItem.Node : null
                 };
 
@@ -316,10 +320,10 @@ namespace Max2Babylon
 
         private async void butExportAndRun_Click(object sender, EventArgs e)
         {
-            if (await DoExport())
+            if (await DoExport(singleExportItem))
             {
-                WebServer.SceneFilename = Path.GetFileName(txtFilename.Text);
-                WebServer.SceneFolder = Path.GetDirectoryName(txtFilename.Text);
+                WebServer.SceneFilename = Path.GetFileName(Tools.UnformatPath(txtFilename.Text));
+                WebServer.SceneFolder = Path.GetDirectoryName(Tools.UnformatPath(txtFilename.Text));
 
                 Process.Start(WebServer.url + WebServer.SceneFilename);
 
@@ -363,7 +367,7 @@ namespace Max2Babylon
                     chkOverwriteTextures.Enabled = false;
                     break;
             }
-            this.txtFilename.Text = Path.ChangeExtension(this.txtFilename.Text, this.saveFileDialog.DefaultExt);
+            this.txtFilename.Text = Path.ChangeExtension(txtFilename.Text, this.saveFileDialog.DefaultExt);
         }
 
         /// <summary>
