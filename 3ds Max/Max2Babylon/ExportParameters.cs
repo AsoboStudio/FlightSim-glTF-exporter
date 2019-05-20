@@ -19,8 +19,7 @@
         public bool enableKHRLightsPunctual = false;
         public bool enableKHRTextureTransform = false;
         public bool enableKHRMaterialsUnlit = false;
-        public string findName = "";
-        public string replaceName = "";
+        public string lodToReplace = "";
         public Autodesk.Max.IINode exportNode;
     }
 }
