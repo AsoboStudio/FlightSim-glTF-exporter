@@ -167,6 +167,8 @@ namespace Max2Babylon
             "_COMP.",
             "_NORM_",
             "_NORM.",
+            "_NORMAL_",
+            "_NORMAL.",
         };
 
         bool AlbedoTexCheckSuspiciousName(string texturePath)
@@ -180,7 +182,7 @@ namespace Max2Babylon
 
                 if (textureName.Contains(textureKeyword))
                 {
-                    RaiseWarning(string.Format("Albedo texture slot uses a texture with keyword '{0}': {1}", textureKeyword, textureName));
+                    RaiseWarning(string.Format("Albedo texture slot uses a texture with keyword '{0}' | {1}", textureKeyword, textureName));
                     return true;
                 }
             }
@@ -199,7 +201,7 @@ namespace Max2Babylon
 
                 if (textureName.Contains(textureKeyword))
                 {
-                    RaiseWarning(string.Format("Metal/Rough/Occlusion texture slot uses a texture with keyword '{0}': {1}", textureKeyword, textureName));
+                    RaiseWarning(string.Format("Occlusion/Roughness/Metallic texture slot uses a texture with keyword '{0}' | {1}", textureKeyword, textureName));
                     return true;
                 }
             }
@@ -218,7 +220,7 @@ namespace Max2Babylon
 
                 if (textureName.Contains(textureKeyword))
                 {
-                    RaiseWarning(string.Format("Normal texture slot uses a texture with keyword '{0}': {1}", textureKeyword, textureName));
+                    RaiseWarning(string.Format("Normal texture slot uses a texture with keyword '{0}' | {1}", textureKeyword, textureName));
                     return true;
                 }
             }
