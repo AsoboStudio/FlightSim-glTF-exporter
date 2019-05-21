@@ -132,7 +132,7 @@
             // 
             this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar.Location = new System.Drawing.Point(12, 581);
+            this.progressBar.Location = new System.Drawing.Point(12, 534);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(638, 23);
             this.progressBar.TabIndex = 104;
@@ -144,7 +144,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.treeView.Location = new System.Drawing.Point(12, 294);
             this.treeView.Name = "treeView";
-            this.treeView.Size = new System.Drawing.Size(810, 265);
+            this.treeView.Size = new System.Drawing.Size(810, 234);
             this.treeView.TabIndex = 103;
             this.treeView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
             // 
@@ -153,7 +153,7 @@
             this.butCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.butCancel.Enabled = false;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(656, 581);
+            this.butCancel.Location = new System.Drawing.Point(656, 534);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(80, 23);
             this.butCancel.TabIndex = 105;
@@ -506,7 +506,7 @@
             // 
             this.butClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.butClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butClose.Location = new System.Drawing.Point(742, 581);
+            this.butClose.Location = new System.Drawing.Point(742, 534);
             this.butClose.Name = "butClose";
             this.butClose.Size = new System.Drawing.Size(80, 23);
             this.butClose.TabIndex = 106;
