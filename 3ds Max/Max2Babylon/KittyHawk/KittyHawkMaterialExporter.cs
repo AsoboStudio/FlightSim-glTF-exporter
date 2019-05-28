@@ -78,6 +78,25 @@ namespace Max2Babylon
         }
     }
 
+    [DataContract]
+    class GLTFExtensionAsoboSSS : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_SSS";
+        [DataMember(EmitDefaultValue = false)] public float[] SSSColor;
+        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo opacityTexture;
+        public static class Defaults
+        {
+            public static readonly float[] SSSColor = new float[] { 1, 1, 1, 1 };
+        }
+    }
+
+    [DataContract]
+    class GLTFExtensionAsoboAnisotropic : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_anisotropic";
+        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo wetnessAOTexture;
+    }
+
     static class GLTFExtensionHelper
     {
         public static string Name_MSFT_texture_dds = "MSFT_texture_dds";
@@ -334,6 +353,12 @@ namespace Max2Babylon
             string detailNormalTexPath = null;
             string detailMetalRoughAOTexPath = null;
 
+            bool SSSEnabled = false;
+            float[] SSSColor = new float[] { GLTFExtensionAsoboSSS.Defaults.SSSColor[0], GLTFExtensionAsoboSSS.Defaults.SSSColor[1], GLTFExtensionAsoboSSS.Defaults.SSSColor[2], GLTFExtensionAsoboSSS.Defaults.SSSColor[3] };
+            string opacityTexPath = null;
+
+            string wetnessAOTexPath = null;
+
             #region Material Type (Standard, Decal, Windshield, ...)
             // - Standard
             // - GBuffer Blend
@@ -551,6 +576,76 @@ namespace Max2Babylon
                                     continue;
                                 }
                                 detailNormalScale = float_out;
+                                break;
+                            }
+                    }
+                }
+            }
+            #endregion
+
+            #region SSS Extension Properties
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "SSSENABLED":
+                            {
+                                if (!property.GetPropertyValue(ref int_out, param_t))
+                                {
+                                    RaiseError("Could not retrieve SSSEnabled property.");
+                                    continue;
+                                }
+                                SSSEnabled = int_out != 0;
+                                break;
+                            }
+                        case "SSSCOLOR":
+                            {
+                                if (!property.GetPropertyValue(point4_out, param_t))
+                                {
+                                    RaiseError("Could not retrieve SSSCOLOR property.");
+                                    continue;
+                                }
+                                for (int c = 0; c < 4; ++c)
+                                    SSSColor[c] = point4_out[c];
+
+                                break;
+                            }
+                        case "OPACITYTEX":
+                            {
+                                opacityTexPath = GetImagePath(paramDef, property, param_t, "OPACITYTEX");
+                                break;
+                            }
+                    }
+                }
+            }
+            #endregion
+
+            #region Anisotropic Extension Properties
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "WETNESSAOTEX":
+                            {
+                                wetnessAOTexPath = GetImagePath(paramDef, property, param_t, "WETNESSAOTEX");
                                 break;
                             }
                     }
@@ -791,7 +886,7 @@ namespace Max2Babylon
                                 continue;
                             }
 
-                            material.SetDoubleSided(int_out > 0);
+                            material.SetDoubleSided(int_out != 0);
                             break;
                         }
                 }
@@ -823,6 +918,39 @@ namespace Max2Babylon
                     {
                         info = CreateTextureInfo(image);
                         layerExtensionObject.layerColorTexture = info;
+                    }
+                }
+            }
+
+            // Anisotropic map extension, only if we have a wetnessAO map (sampler name in engine) assigned
+            GLTFExtensionAsoboAnisotropic anisotropicExtensionObject = null;
+            if( !string.IsNullOrWhiteSpace(wetnessAOTexPath))
+            {
+                anisotropicExtensionObject = new GLTFExtensionAsoboAnisotropic();
+
+                image = ExportImage(wetnessAOTexPath, true);
+                if (image != null)
+                {
+                    info = CreateTextureInfo(image);
+                    anisotropicExtensionObject.wetnessAOTexture = info;
+                }
+            }
+
+            // SSS extension, no Opacity map (sampler name in engine) assigned, just need the SSS checkbox
+            GLTFExtensionAsoboSSS SSSExtensionObject = null;
+            if(SSSEnabled)
+            {
+                SSSExtensionObject = new GLTFExtensionAsoboSSS();
+
+                SSSExtensionObject.SSSColor = SSSColor;
+
+                if (!string.IsNullOrWhiteSpace(opacityTexPath))
+                {
+                    image = ExportImage(opacityTexPath, true);
+                    if (image != null)
+                    {
+                        info = CreateTextureInfo(image);
+                        SSSExtensionObject.opacityTexture = info;
                     }
                 }
             }
@@ -890,6 +1018,12 @@ namespace Max2Babylon
 
             if (detailExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialDetail.SerializedName, detailExtensionObject);
+
+            if (SSSExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboSSS.SerializedName, SSSExtensionObject);
+
+            if (anisotropicExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboAnisotropic.SerializedName, anisotropicExtensionObject);
 
             if (materialExtensions.Count > 0)
             {
@@ -1445,11 +1579,10 @@ namespace Max2Babylon
         {
             gltfMaterial.doubleSided = doubleSided;
         }
-
         #endregion
 
         #region Decal Extension helper functions
-        
+
         public static void SetBaseColorBlendFactor(this GLTFExtensionAsoboMaterialGeometryDecal decalMaterial, float factor)
         {
             if (factor == Defaults.BaseColorBlendFactor)
