@@ -187,9 +187,41 @@ namespace Max2Babylon
             for (int i = 0; i < Loader.Core.SelNodeCount; ++i)
             {
                 IINode node = Loader.Core.GetSelNode(i);
-                MaxNodeTree.QueueAddNode(node);
+
+                //added in kittyhawk to add lod node "x0_name" and all other lod relative
+                // x1_name,x2_name etc
+                //todo expost addnode to maxscript and call this outside
+                if (node.Name.StartsWith("x"))
+                {
+                    string lod_name = node.Name.Substring(3);
+                    string lod_prefix = node.Name.Replace(lod_name, "");
+                    if (lod_prefix.ToCharArray()[0] == 'x' && lod_prefix.ToCharArray()[2]=='_')
+                    {
+                        for (int j = 0; j < 7; j++)
+                        {
+                            string relativeLodName = "x" + j + "_" + lod_name;
+                            IINode relativeLodNode = Loader.Core.GetINodeByName(relativeLodName);
+                            if (relativeLodNode != null)
+                            {
+                                MaxNodeTree.QueueAddNode(relativeLodNode);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        MaxNodeTree.QueueAddNode(node);
+                    }
+                }
+                else
+                {
+                    MaxNodeTree.QueueAddNode(node);
+                }
+                
+
             }
             MaxNodeTree.EndUpdate();
+
+
         }
 
         private void removeNodeButton_Click(object sender, EventArgs e)
