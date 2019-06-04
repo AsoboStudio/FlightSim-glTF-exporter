@@ -37,7 +37,7 @@ namespace Max2Babylon
         {
             Tools.PrepareVector3Control(gravityControl, Loader.Core.RootNode, "babylonjs_gravity", 0, -0.9f);
             Tools.PrepareCheckBox(chkQuaternions, Loader.Core.RootNode, "babylonjs_exportquaternions", 1);
-            Tools.PrepareCheckBox(chkAnimations, Loader.Core.RootNode, "babylonjs_donotoptimizeanimations", 0);
+            Tools.PrepareCheckBox(chkAnimations, Loader.Core.RootNode, "babylonjs_donotoptimizeanimations", 1);
 
             Tools.PrepareCheckBox(chkCreateDefaultSkybox, Loader.Core.RootNode, "babylonjs_createDefaultSkybox", 1);
             Tools.PrepareNumericUpDown(nupSkyboxBlurLevel, new List<IINode> { Loader.Core.RootNode }, "babylonjs_skyboxBlurLevel", 0.3f);
