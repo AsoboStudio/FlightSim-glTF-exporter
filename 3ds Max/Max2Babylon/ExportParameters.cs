@@ -21,6 +21,7 @@
         public bool enableKHRTextureTransform = false;
         public bool enableKHRMaterialsUnlit = false;
         public string lodToReplace = "";
+        public bool removeNamespaces;
         public Autodesk.Max.IINode exportNode;
     }
 }

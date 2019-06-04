@@ -138,6 +138,22 @@ namespace Max2Babylon
                 });
             });
 
+            //remove all namespaces of node:
+            // char0:x0_name_left -> x0_name_left
+            if (exportParameters.removeNamespaces)
+            {
+                foreach (GLTFNode gltfNode in gltf.NodesList)
+                {
+                    int indexNamespaceChar = gltfNode.name.LastIndexOf(":");
+                    if (indexNamespaceChar > 0)
+                    {
+                        gltfNode.name = gltfNode.name.Substring(indexNamespaceChar + 1);
+                    }
+                }
+            }
+
+            //remove lod prefix of node of node:
+            //x0_name_left -> name_left
             if (!string.IsNullOrEmpty(exportParameters.lodToReplace))
             {
                 foreach (GLTFNode gltfNode in gltf.NodesList)

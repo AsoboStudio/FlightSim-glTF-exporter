@@ -69,6 +69,7 @@
             this.toolTipDracoCompression = new System.Windows.Forms.ToolTip(this.components);
             this.butMultiExport = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.removeNamespaces_checkbox = new System.Windows.Forms.CheckBox();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -168,7 +169,7 @@
             this.pictureBox2.Image = global::Max2Babylon.Properties.Resources.Logo_Exporter_v4;
             this.pictureBox2.Location = new System.Drawing.Point(468, 12);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(354, 190);
+            this.pictureBox2.Size = new System.Drawing.Size(354, 182);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox2.TabIndex = 9;
             this.pictureBox2.TabStop = false;
@@ -473,7 +474,7 @@
             // 
             // replaceLodPrefix
             // 
-            this.replaceLodPrefix.Location = new System.Drawing.Point(109, 16);
+            this.replaceLodPrefix.Location = new System.Drawing.Point(109, 15);
             this.replaceLodPrefix.Name = "replaceLodPrefix";
             this.replaceLodPrefix.Size = new System.Drawing.Size(51, 20);
             this.replaceLodPrefix.TabIndex = 25;
@@ -482,7 +483,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 20);
+            this.label5.Location = new System.Drawing.Point(6, 19);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(97, 13);
             this.label5.TabIndex = 24;
@@ -534,14 +535,26 @@
             // groupBox2
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.removeNamespaces_checkbox);
             this.groupBox2.Controls.Add(this.replaceLodPrefix);
             this.groupBox2.Controls.Add(this.label5);
-            this.groupBox2.Location = new System.Drawing.Point(469, 209);
+            this.groupBox2.Location = new System.Drawing.Point(469, 201);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(353, 50);
+            this.groupBox2.Size = new System.Drawing.Size(353, 58);
             this.groupBox2.TabIndex = 110;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "KittyHawk";
+            // 
+            // removeNamespaces_checkbox
+            // 
+            this.removeNamespaces_checkbox.AutoSize = true;
+            this.removeNamespaces_checkbox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.removeNamespaces_checkbox.Location = new System.Drawing.Point(4, 39);
+            this.removeNamespaces_checkbox.Name = "removeNamespaces_checkbox";
+            this.removeNamespaces_checkbox.Size = new System.Drawing.Size(129, 17);
+            this.removeNamespaces_checkbox.TabIndex = 26;
+            this.removeNamespaces_checkbox.Text = "Remove namespaces";
+            this.removeNamespaces_checkbox.UseVisualStyleBackColor = true;
             // 
             // ExporterForm
             // 
@@ -620,5 +633,6 @@
         private System.Windows.Forms.TextBox txtTextureName;
         private System.Windows.Forms.Button btnTxtBrowse;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private System.Windows.Forms.CheckBox removeNamespaces_checkbox;
     }
 }
