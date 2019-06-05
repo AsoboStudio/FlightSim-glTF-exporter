@@ -111,10 +111,6 @@ namespace Max2Babylon
             {
                 string selectedFolderPath = folderBrowserDialog1.SelectedPath;
                 string absoluteModelPath = Tools.UnformatPath(txtModelName.Text);
-                if (!Tools.IsBelowModelPath(selectedFolderPath, absoluteModelPath))
-                {
-                    MessageBox.Show("WARNING: folderPath should be below model file path");
-                }
 
                 txtTextureName.Text = Tools.FormatPath(folderBrowserDialog1.SelectedPath);
 
@@ -144,7 +140,12 @@ namespace Max2Babylon
             return allSucceeded;
         }
 
-        private async Task<bool> DoExport(ExportItem exportItem, bool clearLogs = true)
+        private void saveOptionBtn_Click(object sender, EventArgs e)
+        {
+            SaveOptions();
+        }
+
+        private void SaveOptions()
         {
             Tools.UpdateCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
             Tools.UpdateCheckBox(chkWriteTextures, Loader.Core.RootNode, "babylonjs_writetextures");
@@ -171,6 +172,12 @@ namespace Max2Babylon
 
             string unformattedTextureFolderPath = Tools.UnformatPath(txtTextureName.Text);
             Loader.Core.RootNode.SetStringProperty(TextureFolderPathProperty,Tools.RelativePathStore(unformattedTextureFolderPath));
+        }
+
+            
+        private async Task<bool> DoExport(ExportItem exportItem, bool clearLogs = true)
+        {
+            SaveOptions();
 
             exporter = new BabylonExporter();
             if (!string.IsNullOrWhiteSpace(txtTextureName.Text))

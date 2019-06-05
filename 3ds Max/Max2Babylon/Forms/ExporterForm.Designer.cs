@@ -71,6 +71,7 @@
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.removeNamespaces_checkbox = new System.Windows.Forms.CheckBox();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.saveOptionBtn = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -81,7 +82,7 @@
             this.butExport.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.butExport.Enabled = false;
             this.butExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butExport.Location = new System.Drawing.Point(114, 261);
+            this.butExport.Location = new System.Drawing.Point(215, 261);
             this.butExport.Name = "butExport";
             this.butExport.Size = new System.Drawing.Size(197, 27);
             this.butExport.TabIndex = 100;
@@ -133,7 +134,7 @@
             // 
             this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar.Location = new System.Drawing.Point(12, 534);
+            this.progressBar.Location = new System.Drawing.Point(12, 564);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(638, 23);
             this.progressBar.TabIndex = 104;
@@ -145,7 +146,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.treeView.Location = new System.Drawing.Point(12, 294);
             this.treeView.Name = "treeView";
-            this.treeView.Size = new System.Drawing.Size(810, 234);
+            this.treeView.Size = new System.Drawing.Size(810, 264);
             this.treeView.TabIndex = 103;
             this.treeView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
             // 
@@ -154,7 +155,7 @@
             this.butCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.butCancel.Enabled = false;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(656, 534);
+            this.butCancel.Location = new System.Drawing.Point(656, 564);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(80, 23);
             this.butCancel.TabIndex = 105;
@@ -494,7 +495,7 @@
             this.butExportAndRun.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.butExportAndRun.Enabled = false;
             this.butExportAndRun.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butExportAndRun.Location = new System.Drawing.Point(317, 261);
+            this.butExportAndRun.Location = new System.Drawing.Point(418, 261);
             this.butExportAndRun.Name = "butExportAndRun";
             this.butExportAndRun.Size = new System.Drawing.Size(197, 27);
             this.butExportAndRun.TabIndex = 102;
@@ -507,7 +508,7 @@
             // 
             this.butClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.butClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butClose.Location = new System.Drawing.Point(742, 534);
+            this.butClose.Location = new System.Drawing.Point(742, 564);
             this.butClose.Name = "butClose";
             this.butClose.Size = new System.Drawing.Size(80, 23);
             this.butClose.TabIndex = 106;
@@ -524,7 +525,7 @@
             // 
             this.butMultiExport.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.butMultiExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butMultiExport.Location = new System.Drawing.Point(520, 261);
+            this.butMultiExport.Location = new System.Drawing.Point(621, 261);
             this.butMultiExport.Name = "butMultiExport";
             this.butMultiExport.Size = new System.Drawing.Size(197, 27);
             this.butMultiExport.TabIndex = 109;
@@ -556,12 +557,25 @@
             this.removeNamespaces_checkbox.Text = "Remove namespaces";
             this.removeNamespaces_checkbox.UseVisualStyleBackColor = true;
             // 
+            // saveOptionBtn
+            // 
+            this.saveOptionBtn.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.saveOptionBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.saveOptionBtn.Location = new System.Drawing.Point(12, 261);
+            this.saveOptionBtn.Name = "saveOptionBtn";
+            this.saveOptionBtn.Size = new System.Drawing.Size(197, 27);
+            this.saveOptionBtn.TabIndex = 110;
+            this.saveOptionBtn.Text = "Save";
+            this.saveOptionBtn.UseVisualStyleBackColor = true;
+            this.saveOptionBtn.Click += new System.EventHandler(this.saveOptionBtn_Click);
+            // 
             // ExporterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(834, 561);
+            this.ClientSize = new System.Drawing.Size(834, 616);
             this.Controls.Add(this.groupBox2);
+            this.Controls.Add(this.saveOptionBtn);
             this.Controls.Add(this.butMultiExport);
             this.Controls.Add(this.butExportAndRun);
             this.Controls.Add(this.groupBox1);
@@ -634,5 +648,6 @@
         private System.Windows.Forms.Button btnTxtBrowse;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
         private System.Windows.Forms.CheckBox removeNamespaces_checkbox;
+        private System.Windows.Forms.Button saveOptionBtn;
     }
 }

@@ -1,8 +1,8 @@
-﻿using System.Windows.Forms;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using Autodesk.Max;
 
 namespace Max2Babylon
@@ -38,8 +38,6 @@ namespace Max2Babylon
             animationGroupControl.ConfirmPressed += animationGroupControl_ConfirmPressed;
 
             Tools.PrepareCheckBox(exportNonAnimatedNodesCheckBox, Loader.Core.RootNode, "babylonjs_animgroup_exportnonanimated");
-            
-
         }
 
         #endregion
@@ -234,6 +232,7 @@ namespace Max2Babylon
             }
         }
 
+
         //remove aniamtion groups with no nodes
         private void cleanBtn_Click(object sender, EventArgs e)
         {
@@ -267,7 +266,5 @@ namespace Max2Babylon
                 }
             }
         }
-
-        
     }
 }
