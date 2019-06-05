@@ -12,7 +12,6 @@ namespace Max2Babylon
             string storedModelPath = Loader.Core.RootNode.GetStringProperty(ExportParameters.ModelFilePathProperty, string.Empty);
             string userRelativePath = Tools.ResolveRelativePath(storedModelPath);
             string absoluteModelPath = Tools.UnformatPath(userRelativePath);
-            MessageBox.Show(absoluteModelPath);
             Export(InitParameters(absoluteModelPath));
         }
 
