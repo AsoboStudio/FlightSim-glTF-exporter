@@ -62,7 +62,7 @@ ECHO "No Configuaration"
 GOTO Close
 
 :DebugOnMax
-START /d "%max_location%" 3dsmax.exe
+START /d "%max_location%" 3dsmax.exe "D:\KittyHawk\ASSETS\KittyHawk_Data\testExport.max"
 GOTO Close
 
 :Close

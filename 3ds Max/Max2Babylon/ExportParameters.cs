@@ -23,5 +23,9 @@
         public string lodToReplace = "";
         public bool removeNamespaces;
         public Autodesk.Max.IINode exportNode;
+
+
+        public const string ModelFilePathProperty = "modelFilePathProperty";
+        public const string TextureFolderPathProperty = "textureFolderPathProperty";
     }
 }
