@@ -62,6 +62,8 @@ namespace Max2Babylon
         public float? UVScale { get; set; }
         [DataMember(EmitDefaultValue = false)]
         public float[] UVOffset { get; set; }
+        [DataMember(EmitDefaultValue = false)]
+        public float? blendThreshold { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public GLTFTextureInfo detailColorTexture { get; set; }
@@ -69,11 +71,14 @@ namespace Max2Babylon
         public GLTFNormalTextureInfo detailNormalTexture { get; set; }
         [DataMember(EmitDefaultValue = false)]
         public GLTFTextureInfo detailMetalRoughAOTexture { get; set; }
+        [DataMember(EmitDefaultValue = false)]
+        public GLTFTextureInfo blendMaskTexture { get; set; }
 
         public static class Defaults
         {
             public static readonly float UVScale = 1;
             public static readonly float[] UVOffset = new float[] { 0, 0 };
+            public static readonly float blendThreshold = 0.1f;
             public static readonly float NormalScale = 1;
         }
     }
@@ -348,10 +353,12 @@ namespace Max2Babylon
 
             float detailUVScale = GLTFExtensionAsoboMaterialDetail.Defaults.UVScale;
             float[] detailUVOffset = new float[] { GLTFExtensionAsoboMaterialDetail.Defaults.UVOffset[0], GLTFExtensionAsoboMaterialDetail.Defaults.UVOffset[1] };
+            float blendThreshold = GLTFExtensionAsoboMaterialDetail.Defaults.blendThreshold;
             float detailNormalScale = GLTFExtensionAsoboMaterialDetail.Defaults.NormalScale;
             string detailColorTexPath = null;
             string detailNormalTexPath = null;
             string detailMetalRoughAOTexPath = null;
+            string blendMaskTexPath = null;
 
             bool SSSEnabled = false;
             float[] SSSColor = new float[] { GLTFExtensionAsoboSSS.Defaults.SSSColor[0], GLTFExtensionAsoboSSS.Defaults.SSSColor[1], GLTFExtensionAsoboSSS.Defaults.SSSColor[2], GLTFExtensionAsoboSSS.Defaults.SSSColor[3] };
@@ -538,6 +545,11 @@ namespace Max2Babylon
                                 detailMetalRoughAOTexPath = GetImagePath(paramDef, property, param_t, "DETAILOCCLUSIONROUGHNESSMETALLICTEX");
                                 break;
                             }
+                        case "BLENDMASKTEX":
+                            {
+                                blendMaskTexPath = GetImagePath(paramDef, property, param_t, "BLENDMASKTEX");
+                                break;
+                            }
                         case "DETAILUVSCALE":
                             {
                                 if (!property.GetPropertyValue(ref float_out, param_t, param_p))
@@ -566,6 +578,16 @@ namespace Max2Babylon
                                     continue;
                                 }
                                 detailUVOffset[1] = float_out;
+                                break;
+                            }
+                        case "BLENDTHRESHOLD":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve BLENDTHRESHOLD property.");
+                                    continue;
+                                }
+                                blendThreshold = float_out;
                                 break;
                             }
                         case "DETAILNORMALSCALE":
@@ -957,7 +979,7 @@ namespace Max2Babylon
 
             // detail map extension, only if we have a detail color and/or detail normal map
             GLTFExtensionAsoboMaterialDetail detailExtensionObject = null;
-            if(!string.IsNullOrWhiteSpace(detailColorTexPath) || !string.IsNullOrWhiteSpace(detailNormalTexPath) || !string.IsNullOrWhiteSpace(detailMetalRoughAOTexPath))
+            if(!string.IsNullOrWhiteSpace(detailColorTexPath) || !string.IsNullOrWhiteSpace(detailNormalTexPath) || !string.IsNullOrWhiteSpace(detailMetalRoughAOTexPath) || !string.IsNullOrWhiteSpace(blendMaskTexPath))
             {
                 detailExtensionObject = new GLTFExtensionAsoboMaterialDetail();
                 if (!string.IsNullOrWhiteSpace(detailColorTexPath))
@@ -993,9 +1015,21 @@ namespace Max2Babylon
                         detailExtensionObject.detailMetalRoughAOTexture = info;
                     }
                 }
+                if (!string.IsNullOrWhiteSpace(blendMaskTexPath))
+                {
+                    image = ExportImage(blendMaskTexPath);
+                    if (image != null)
+                    {                        
+                        info = CreateTextureInfo(image);
+                        detailExtensionObject.blendMaskTexture = info;
+                    }
+                }
 
                 if (detailUVScale != GLTFExtensionAsoboMaterialDetail.Defaults.UVScale)
                     detailExtensionObject.UVScale = detailUVScale;
+
+                if (blendThreshold != GLTFExtensionAsoboMaterialDetail.Defaults.blendThreshold)
+                    detailExtensionObject.blendThreshold = blendThreshold;
 
                 if (detailUVOffset[0] != GLTFExtensionAsoboMaterialDetail.Defaults.UVOffset[0]
                     && detailUVOffset[1] != GLTFExtensionAsoboMaterialDetail.Defaults.UVOffset[1])
