@@ -274,14 +274,14 @@
       <Link>JsonTextWriterOptimized.cs</Link>
     </Compile>
     <Compile Include="..\KittyHawk\KittyHawkMaterialExporter.cs">
-      <Link>Exporter\KittyHawkMaterialExporter.cs</Link>
+      <Link>KittyHawkExtension\KittyHawkMaterialExporter.cs</Link>
     </Compile>
     <Compile Include="..\KittyHawk\SelectNameForm.cs">
-      <Link>Forms\SelectNameForm.cs</Link>
+      <Link>KittyHawkExtension\SelectNameForm.cs</Link>
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="..\KittyHawk\SelectNameForm.designer.cs">
-      <Link>Forms\SelectNameForm.designer.cs</Link>
+      <Link>KittyHawkExtension\SelectNameForm.designer.cs</Link>
       <DependentUpon>SelectNameForm.cs</DependentUpon>
     </Compile>
     <Compile Include="..\Loader.cs">
@@ -373,7 +373,7 @@
       <DependentUpon>MaxNodeTreeView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="..\KittyHawk\SelectNameForm.resx">
-      <Link>Forms\SelectNameForm.resx</Link>
+      <Link>KittyHawkExtension\SelectNameForm.resx</Link>
       <DependentUpon>SelectNameForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
