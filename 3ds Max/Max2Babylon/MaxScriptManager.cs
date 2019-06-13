@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace Max2Babylon
@@ -108,6 +109,20 @@ namespace Max2Babylon
             {
                 string jsonContent = reader.ReadToEnd();
                 animationGroups.LoadFromJson(jsonContent,true);
+            }
+        }
+
+        public static void MergeAnimationGroups(string jsonPath, string old_root, string new_root)
+        {
+            AnimationGroupList animationGroups = new AnimationGroupList();
+            var fileStream = File.Open(jsonPath, FileMode.Open);
+
+            using (StreamReader reader = new StreamReader(fileStream))
+            {
+                string jsonContent = reader.ReadToEnd();
+                string textToFind = string.Format(@"\b{0}\b", old_root);
+                string overridedJsonContent = Regex.Replace(jsonContent, textToFind, new_root);
+                animationGroups.LoadFromJson(overridedJsonContent, true);
             }
         }
 
