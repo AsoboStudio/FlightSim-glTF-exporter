@@ -114,7 +114,7 @@ namespace Max2Babylon
             }
         }
 
-        private async void butExport_Click(object sender, EventArgs e)
+        public async void butExport_Click(object sender, EventArgs e)
         {
             await DoExport(singleExportItem);
         }
@@ -343,7 +343,7 @@ namespace Max2Babylon
             {
                 exporter.IsCancelled = true;                
             }
-            babylonExportAction.Close();
+            babylonExportAction?.Close();
         }
 
         private void txtFilename_TextChanged(object sender, EventArgs e)

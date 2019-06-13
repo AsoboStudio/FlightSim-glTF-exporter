@@ -8,6 +8,16 @@ namespace Max2Babylon
 {
     public class MaxScriptManager
     {
+        public static void ExportFromUI()
+        {
+            ExporterForm exporterForm = new ExporterForm(null);
+            exporterForm.Show();
+            exporterForm.BringToFront();
+            exporterForm.WindowState = FormWindowState.Normal;
+            exporterForm.butExport_Click(null,EventArgs.Empty);
+        }
+
+
         public static void Export()
         {
             string storedModelPath = Loader.Core.RootNode.GetStringProperty(ExportParameters.ModelFilePathProperty, string.Empty);
@@ -125,6 +135,8 @@ namespace Max2Babylon
                 animationGroups.LoadFromJson(overridedJsonContent, true);
             }
         }
+
+        
 
     }
 }
