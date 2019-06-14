@@ -154,11 +154,12 @@ namespace Max2Babylon
 
             //remove lod prefix of node of node:
             //x0_name_left -> name_left
-            if (!string.IsNullOrEmpty(exportParameters.lodToReplace))
+            if (exportParameters.removeLodPrefix)
             {
                 foreach (GLTFNode gltfNode in gltf.NodesList)
                 {
-                    string result = Regex.Replace(gltfNode.name, exportParameters.lodToReplace, "", RegexOptions.IgnoreCase);
+                    string pattern = "(?i)x[0-9]_";
+                    string result = Regex.Replace(gltfNode.name, pattern,"");
                     gltfNode.name = result;
                 }
             }

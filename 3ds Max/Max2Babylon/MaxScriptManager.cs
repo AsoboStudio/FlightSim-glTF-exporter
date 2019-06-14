@@ -93,7 +93,7 @@ namespace Max2Babylon
             exportParameters.enableKHRMaterialsUnlit = Loader.Core.RootNode.GetBoolProperty("babylonjs_khr_materials_unlit");
             exportParameters.exportMaterials = Loader.Core.RootNode.GetBoolProperty("babylonjs_export_materials");
 
-            exportParameters.lodToReplace = Loader.Core.RootNode.GetStringProperty("kittyhawk_replacelod","x0_");
+            exportParameters.removeLodPrefix = Loader.Core.RootNode.GetBoolProperty("kittyhawk_removelodprefix");
             exportParameters.removeNamespaces = Loader.Core.RootNode.GetBoolProperty("kittyhawk_removenamespaces");
             return exportParameters;
         }

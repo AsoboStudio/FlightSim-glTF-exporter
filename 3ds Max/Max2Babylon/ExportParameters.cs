@@ -20,8 +20,8 @@
         public bool enableKHRLightsPunctual = false;
         public bool enableKHRTextureTransform = false;
         public bool enableKHRMaterialsUnlit = false;
-        public string lodToReplace = "";
-        public bool removeNamespaces;
+        public bool removeLodPrefix = true;
+        public bool removeNamespaces = true;
         public Autodesk.Max.IINode exportNode;
 
 

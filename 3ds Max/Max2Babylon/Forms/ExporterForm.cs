@@ -77,8 +77,8 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkKHRMaterialsUnlit, Loader.Core.RootNode, "babylonjs_khr_materials_unlit");
             Tools.PrepareCheckBox(chkExportMaterials, Loader.Core.RootNode, "babylonjs_export_materials", 1);
 
-            Tools.PrepareTextBox(replaceLodPrefix, Loader.Core.RootNode, "kittyhawk_replacelod", "");
-            Tools.PrepareCheckBox(removeNamespaces_checkbox, Loader.Core.RootNode, "kittyhawk_removenamespaces");
+            Tools.PrepareCheckBox(removeLodPrefix, Loader.Core.RootNode, "kittyhawk_removelodprefix",1);
+            Tools.PrepareCheckBox(removeNamespaces_checkbox, Loader.Core.RootNode, "kittyhawk_removenamespaces",1);
 
             if (comboOutputFormat.SelectedText == "babylon" || comboOutputFormat.SelectedText == "binary babylon" || !gltfPipelineInstalled)
             {
@@ -161,7 +161,7 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkKHRMaterialsUnlit, Loader.Core.RootNode, "babylonjs_khr_materials_unlit");
             Tools.UpdateCheckBox(chkExportMaterials, Loader.Core.RootNode, "babylonjs_export_materials");
 
-            Tools.UpdateTextBox(replaceLodPrefix, Loader.Core.RootNode, "kittyhawk_replacelod");
+            Tools.UpdateCheckBox(removeLodPrefix, Loader.Core.RootNode, "kittyhawk_removelodprefix");
             Tools.UpdateCheckBox(removeNamespaces_checkbox, Loader.Core.RootNode, "kittyhawk_removenamespaces");
 
             string unformattedPath = Tools.UnformatPath(txtModelName.Text);
@@ -263,7 +263,7 @@ namespace Max2Babylon
                     enableKHRTextureTransform = chkKHRTextureTransform.Checked,
                     enableKHRMaterialsUnlit = chkKHRMaterialsUnlit.Checked,
                     exportMaterials = chkExportMaterials.Checked,
-                    lodToReplace = replaceLodPrefix.Text,
+                    removeLodPrefix = removeLodPrefix.Checked,
                     removeNamespaces = removeNamespaces_checkbox.Checked,
                     exportNode = exportItem != null ? exportItem.Node : null
                 };
