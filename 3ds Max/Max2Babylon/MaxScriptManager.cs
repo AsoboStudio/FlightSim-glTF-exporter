@@ -11,6 +11,7 @@ namespace Max2Babylon
         public static void ExportFromUI()
         {
             ExporterForm exporterForm = new ExporterForm(null);
+            exporterForm.TopMost = true;
             exporterForm.Show();
             exporterForm.BringToFront();
             exporterForm.WindowState = FormWindowState.Normal;
