@@ -102,6 +102,13 @@ namespace Max2Babylon
         [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo wetnessAOTexture;
     }
 
+    [DataContract]
+    class GLTFExtensionAsoboClearCoat : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_clear_coat";
+        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo dirtTexture;
+    }
+
     static class GLTFExtensionHelper
     {
         public static string Name_MSFT_texture_dds = "MSFT_texture_dds";
@@ -125,12 +132,13 @@ namespace Max2Babylon
                 Glass,
                 // todo: rename to GeoDecalProgressive or something like that, rather than tying to in-game usage? e.g. same technique could be used for moss/mud/whatever
                 GeoDecalFrosted,
+                ClearCoat,
             }
 
             public static MaterialCode AsoboWindshield = new MaterialCode(Code.Windshield);
             public static MaterialCode AsoboPorthole = new MaterialCode(Code.Porthole);
             public static MaterialCode AsoboGlass = new MaterialCode(Code.Glass);
-
+            
             // name is the serialized name, dont change
             [DataMember(EmitDefaultValue=false)]
             string ASOBO_material_code;
@@ -154,7 +162,7 @@ namespace Max2Babylon
             Windshield,
             Porthole,
             Glass,
-
+            ClearCoat,
         }
 
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
@@ -366,6 +374,8 @@ namespace Max2Babylon
 
             string wetnessAOTexPath = null;
 
+            string dirtTexPath = null;
+
             #region Material Type (Standard, Decal, Windshield, ...)
             // - Standard
             // - GBuffer Blend
@@ -421,6 +431,9 @@ namespace Max2Babylon
                                     materialType = MaterialType.GeoDecalFrosted;
                                     decalExtensionObject = new GLTFExtensionAsoboMaterialGeometryDecal();
                                     materialExtras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.GeoDecalFrosted.ToString());
+                                    break;
+                                case 7:
+                                    materialType = MaterialType.ClearCoat;
                                     break;
                                 default:
                                     materialType = MaterialType.Standard;
@@ -668,6 +681,30 @@ namespace Max2Babylon
                         case "WETNESSAOTEX":
                             {
                                 wetnessAOTexPath = GetImagePath(paramDef, property, param_t, "WETNESSAOTEX");
+                                break;
+                            }
+                    }
+                }
+            }
+            #endregion
+
+            #region ClearCoat Extension Properties
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "DIRTTEX":
+                            {
+                                dirtTexPath = GetImagePath(paramDef, property, param_t, "DIRTTEX");
                                 break;
                             }
                     }
@@ -944,9 +981,9 @@ namespace Max2Babylon
                 }
             }
 
-            // Anisotropic map extension, only if we have a wetnessAO map (sampler name in engine) assigned
+            // Anisotropic map extension, only if we have a wetnessAO map (sampler name in engine) assigned and standard material
             GLTFExtensionAsoboAnisotropic anisotropicExtensionObject = null;
-            if( !string.IsNullOrWhiteSpace(wetnessAOTexPath))
+            if( !string.IsNullOrWhiteSpace(wetnessAOTexPath) && materialType == MaterialType.Standard)
             {
                 anisotropicExtensionObject = new GLTFExtensionAsoboAnisotropic();
 
@@ -958,9 +995,9 @@ namespace Max2Babylon
                 }
             }
 
-            // SSS extension, no Opacity map (sampler name in engine) assigned, just need the SSS checkbox
+            // SSS extension, no Opacity map (sampler name in engine) assigned, just need the SSS checkbox and standard material
             GLTFExtensionAsoboSSS SSSExtensionObject = null;
-            if(SSSEnabled)
+            if(SSSEnabled && materialType == MaterialType.Standard)
             {
                 SSSExtensionObject = new GLTFExtensionAsoboSSS();
 
@@ -974,6 +1011,19 @@ namespace Max2Babylon
                         info = CreateTextureInfo(image);
                         SSSExtensionObject.opacityTexture = info;
                     }
+                }
+            }
+
+            GLTFExtensionAsoboClearCoat clearCoatExtensionObject = null;
+            if (!string.IsNullOrWhiteSpace(dirtTexPath) && materialType == MaterialType.ClearCoat)
+            {
+                clearCoatExtensionObject = new GLTFExtensionAsoboClearCoat();
+
+                image = ExportImage(dirtTexPath, true);
+                if (image != null)
+                {
+                    info = CreateTextureInfo(image);
+                    clearCoatExtensionObject.dirtTexture = info;
                 }
             }
 
@@ -1058,6 +1108,9 @@ namespace Max2Babylon
 
             if (anisotropicExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboAnisotropic.SerializedName, anisotropicExtensionObject);
+
+            if (clearCoatExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboClearCoat.SerializedName, clearCoatExtensionObject);
 
             if (materialExtensions.Count > 0)
             {
