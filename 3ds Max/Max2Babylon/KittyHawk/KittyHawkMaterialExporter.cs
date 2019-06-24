@@ -109,6 +109,29 @@ namespace Max2Babylon
         [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo dirtTexture;
     }
 
+    [DataContract]
+    class GLTFExtensionAsoboParallaxWindow : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_parallax_window";
+        [DataMember(EmitDefaultValue = false)] public float? parallaxScale { get; set; }
+        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo heightMapTexture;
+        public static class Defaults
+        {
+            public static readonly float parallaxScale = 0;
+        }
+    }
+
+    [DataContract]
+    class GLTFExtensionAsoboKittyGlass : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_kitty_glass";
+        [DataMember(EmitDefaultValue = false)] public float? glassReflectionMaskFactor { get; set; }
+        public static class Defaults
+        {
+            public static readonly float glassReflectionMaskFactor = 0;
+        }
+    }
+
     static class GLTFExtensionHelper
     {
         public static string Name_MSFT_texture_dds = "MSFT_texture_dds";
@@ -129,7 +152,7 @@ namespace Max2Babylon
             {
                 Windshield,
                 Porthole,
-                Glass,
+                //Glass,
                 // todo: rename to GeoDecalProgressive or something like that, rather than tying to in-game usage? e.g. same technique could be used for moss/mud/whatever
                 GeoDecalFrosted,
                 ClearCoat,
@@ -137,7 +160,7 @@ namespace Max2Babylon
 
             public static MaterialCode AsoboWindshield = new MaterialCode(Code.Windshield);
             public static MaterialCode AsoboPorthole = new MaterialCode(Code.Porthole);
-            public static MaterialCode AsoboGlass = new MaterialCode(Code.Glass);
+            //public static MaterialCode AsoboGlass = new MaterialCode(Code.Glass);
             
             // name is the serialized name, dont change
             [DataMember(EmitDefaultValue=false)]
@@ -161,8 +184,13 @@ namespace Max2Babylon
             GeoDecalFrosted,
             Windshield,
             Porthole,
-            Glass,
+            Glass,//deprecated
             ClearCoat,
+            ParallaxWindow,
+            Anisotropic,
+            Hair,
+            SSS,
+            KittyGlass,
         }
 
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
@@ -368,13 +396,17 @@ namespace Max2Babylon
             string detailMetalRoughAOTexPath = null;
             string blendMaskTexPath = null;
 
-            bool SSSEnabled = false;
             float[] SSSColor = new float[] { GLTFExtensionAsoboSSS.Defaults.SSSColor[0], GLTFExtensionAsoboSSS.Defaults.SSSColor[1], GLTFExtensionAsoboSSS.Defaults.SSSColor[2], GLTFExtensionAsoboSSS.Defaults.SSSColor[3] };
             string opacityTexPath = null;
 
             string wetnessAOTexPath = null;
 
             string dirtTexPath = null;
+
+            float parallaxScale = GLTFExtensionAsoboParallaxWindow.Defaults.parallaxScale;
+            string heightMapTexPath = null;
+
+            float glassReflectionMaskFactor = GLTFExtensionAsoboKittyGlass.Defaults.glassReflectionMaskFactor;
 
             #region Material Type (Standard, Decal, Windshield, ...)
             // - Standard
@@ -425,7 +457,7 @@ namespace Max2Babylon
                                     break;
                                 case 5:
                                     materialType = MaterialType.Glass;
-                                    materialExtras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Glass.ToString());
+                                    //materialExtras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Glass.ToString());
                                     break;
                                 case 6:
                                     materialType = MaterialType.GeoDecalFrosted;
@@ -434,6 +466,21 @@ namespace Max2Babylon
                                     break;
                                 case 7:
                                     materialType = MaterialType.ClearCoat;
+                                    break;
+                                case 8:
+                                    materialType = MaterialType.ParallaxWindow;
+                                    break;
+                                case 9:
+                                    materialType = MaterialType.Anisotropic;
+                                    break;
+                                case 10:
+                                    materialType = MaterialType.Hair;
+                                    break;
+                                case 11:
+                                    materialType = MaterialType.SSS;
+                                    break;
+                                case 12:
+                                    materialType = MaterialType.KittyGlass;
                                     break;
                                 default:
                                     materialType = MaterialType.Standard;
@@ -632,16 +679,6 @@ namespace Max2Babylon
 
                     switch (propertyName)
                     {
-                        case "SSSENABLED":
-                            {
-                                if (!property.GetPropertyValue(ref int_out, param_t))
-                                {
-                                    RaiseError("Could not retrieve SSSEnabled property.");
-                                    continue;
-                                }
-                                SSSEnabled = int_out != 0;
-                                break;
-                            }
                         case "SSSCOLOR":
                             {
                                 if (!property.GetPropertyValue(point4_out, param_t))
@@ -657,6 +694,40 @@ namespace Max2Babylon
                         case "OPACITYTEX":
                             {
                                 opacityTexPath = GetImagePath(paramDef, property, param_t, "OPACITYTEX");
+                                break;
+                            }
+                    }
+                }
+            }
+            #endregion
+
+            #region Parallax Window Extension Properties
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "PARALLAXSCALE":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve PARALLAXSCALE property.");
+                                    continue;
+                                }
+                                parallaxScale = float_out;
+                                break;
+                            }
+                        case "HEIGHTMAPTEX":
+                            {
+                                heightMapTexPath = GetImagePath(paramDef, property, param_t, "HEIGHTMAPTEX");
                                 break;
                             }
                     }
@@ -681,6 +752,35 @@ namespace Max2Babylon
                         case "WETNESSAOTEX":
                             {
                                 wetnessAOTexPath = GetImagePath(paramDef, property, param_t, "WETNESSAOTEX");
+                                break;
+                            }
+                    }
+                }
+            }
+            #endregion
+
+            #region KittyGlass Extension Properties
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "GLASSREFLECTIONMASKFACTOR":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve GLASSREFLECTIONMASKFACTOR property.");
+                                    continue;
+                                }
+                                glassReflectionMaskFactor = float_out;
                                 break;
                             }
                     }
@@ -735,7 +835,7 @@ namespace Max2Babylon
                             }
 
                             // overrides for specific material types
-                            if (materialType == MaterialType.GeoDecal || materialType == MaterialType.Windshield || materialType == MaterialType.Glass || materialType == MaterialType.GeoDecalFrosted)
+                            if (materialType == MaterialType.GeoDecal || materialType == MaterialType.Windshield || materialType == MaterialType.Glass || materialType == MaterialType.KittyGlass || materialType == MaterialType.GeoDecalFrosted)
                                 material.SetAlphaMode(GLTFMaterial.AlphaMode.BLEND.ToString());
                             else if (materialType == MaterialType.Porthole)
                                 material.SetAlphaMode(GLTFMaterial.AlphaMode.OPAQUE.ToString());
@@ -981,9 +1081,9 @@ namespace Max2Babylon
                 }
             }
 
-            // Anisotropic map extension, only if we have a wetnessAO map (sampler name in engine) assigned and standard material
+            // Anisotropic map extension, only if we have a wetnessAO map (sampler name in engine) assigned and an HAIR or ANISOTROPIC material
             GLTFExtensionAsoboAnisotropic anisotropicExtensionObject = null;
-            if( !string.IsNullOrWhiteSpace(wetnessAOTexPath) && materialType == MaterialType.Standard)
+            if( !string.IsNullOrWhiteSpace(wetnessAOTexPath) && (materialType == MaterialType.Anisotropic || materialType == MaterialType.Hair))
             {
                 anisotropicExtensionObject = new GLTFExtensionAsoboAnisotropic();
 
@@ -995,9 +1095,9 @@ namespace Max2Babylon
                 }
             }
 
-            // SSS extension, no Opacity map (sampler name in engine) assigned, just need the SSS checkbox and standard material
+            // SSS extension, no Opacity map (sampler name in engine) assigned, just need the SSS material or the Hair Material
             GLTFExtensionAsoboSSS SSSExtensionObject = null;
-            if(SSSEnabled && materialType == MaterialType.Standard)
+            if(materialType == MaterialType.SSS || materialType == MaterialType.Hair)
             {
                 SSSExtensionObject = new GLTFExtensionAsoboSSS();
 
@@ -1014,6 +1114,34 @@ namespace Max2Babylon
                 }
             }
 
+            // Parallax Window extension, no HeightMap (sampler name in engine) assigned, just need the parallax window material
+            GLTFExtensionAsoboParallaxWindow parallaxWindowExtensionObject = null;
+            if (materialType == MaterialType.ParallaxWindow)
+            {
+                parallaxWindowExtensionObject = new GLTFExtensionAsoboParallaxWindow();
+
+                parallaxWindowExtensionObject.parallaxScale = parallaxScale;
+
+                if (!string.IsNullOrWhiteSpace(heightMapTexPath))
+                {
+                    image = ExportImage(heightMapTexPath, true);
+                    if (image != null)
+                    {
+                        info = CreateTextureInfo(image);
+                        parallaxWindowExtensionObject.heightMapTexture = info;
+                    }
+                }
+            }
+
+            // KittyGlass extension, replacing glass extra, set by KittyGlass OR glass material
+            GLTFExtensionAsoboKittyGlass kittyGlassExtensionObject = null;
+            if (materialType == MaterialType.KittyGlass || materialType == MaterialType.Glass)
+            {
+                kittyGlassExtensionObject = new GLTFExtensionAsoboKittyGlass();
+                kittyGlassExtensionObject.glassReflectionMaskFactor = glassReflectionMaskFactor;
+            }
+
+            //Clear Coat extension, requiert a dirtTex (lacquer comp) and Clear Coat material
             GLTFExtensionAsoboClearCoat clearCoatExtensionObject = null;
             if (!string.IsNullOrWhiteSpace(dirtTexPath) && materialType == MaterialType.ClearCoat)
             {
@@ -1111,6 +1239,12 @@ namespace Max2Babylon
 
             if (clearCoatExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboClearCoat.SerializedName, clearCoatExtensionObject);
+
+            if (parallaxWindowExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboParallaxWindow.SerializedName, parallaxWindowExtensionObject);
+
+            if (kittyGlassExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboKittyGlass.SerializedName, kittyGlassExtensionObject);
 
             if (materialExtensions.Count > 0)
             {
