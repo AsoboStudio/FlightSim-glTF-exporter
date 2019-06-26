@@ -234,7 +234,7 @@ namespace Max2Babylon
                     DialogResult dr = MessageBox.Show("Rename AnimationGroup to: " + lod_name,"Rename", MessageBoxButtons.YesNo);
                     if (dr == DialogResult.Yes)
                     {
-                        nameTextBox.Text = lod_name;
+                        nameTextBox.Text = lod_name.Replace("\n", String.Empty);
                     }
 
                     string lod_prefix = node.Name.Replace(lod_name, "");
