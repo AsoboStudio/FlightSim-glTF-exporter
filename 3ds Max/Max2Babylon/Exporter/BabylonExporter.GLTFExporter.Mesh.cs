@@ -10,8 +10,6 @@ namespace Max2Babylon
     {
         private GLTFMesh ExportMesh(BabylonMesh babylonMesh, GLTF gltf, BabylonScene babylonScene)
         {
-            babylonMesh.name = babylonMesh.name.Replace("\n", "");
-
             RaiseMessage("GLTFExporter.Mesh | Export mesh named: " + babylonMesh.name, 1);
 
             // --------------------------
