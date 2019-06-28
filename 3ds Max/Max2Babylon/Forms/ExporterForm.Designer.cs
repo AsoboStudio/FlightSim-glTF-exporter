@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExporterForm));
             this.butExport = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.txtModelName = new System.Windows.Forms.TextBox();
@@ -72,16 +73,16 @@
             this.butClose = new System.Windows.Forms.Button();
             this.toolTipDracoCompression = new System.Windows.Forms.ToolTip(this.components);
             this.butMultiExport = new System.Windows.Forms.Button();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.removeLodPrefix = new System.Windows.Forms.CheckBox();
-            this.removeNamespaces_checkbox = new System.Windows.Forms.CheckBox();
-            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.saveOptionBtn = new System.Windows.Forms.Button();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.envFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.removeNamespaces_checkbox = new System.Windows.Forms.CheckBox();
+            this.removeLodPrefix = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // butExport
@@ -141,7 +142,7 @@
             // 
             this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar.Location = new System.Drawing.Point(12, 677);
+            this.progressBar.Location = new System.Drawing.Point(12, 625);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(638, 23);
             this.progressBar.TabIndex = 104;
@@ -153,7 +154,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.treeView.Location = new System.Drawing.Point(12, 355);
             this.treeView.Name = "treeView";
-            this.treeView.Size = new System.Drawing.Size(810, 294);
+            this.treeView.Size = new System.Drawing.Size(810, 265);
             this.treeView.TabIndex = 103;
             this.treeView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
             // 
@@ -162,7 +163,7 @@
             this.butCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.butCancel.Enabled = false;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(656, 677);
+            this.butCancel.Location = new System.Drawing.Point(655, 625);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(80, 23);
             this.butCancel.TabIndex = 105;
@@ -564,7 +565,7 @@
             // 
             this.butClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.butClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butClose.Location = new System.Drawing.Point(742, 677);
+            this.butClose.Location = new System.Drawing.Point(741, 625);
             this.butClose.Name = "butClose";
             this.butClose.Size = new System.Drawing.Size(80, 23);
             this.butClose.TabIndex = 106;
@@ -589,48 +590,6 @@
             this.butMultiExport.UseVisualStyleBackColor = true;
             this.butMultiExport.Click += new System.EventHandler(this.butMultiExport_Click);
             // 
-            // groupBox2
-            // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.removeLodPrefix);
-            this.groupBox2.Controls.Add(this.removeNamespaces_checkbox);
-            this.groupBox2.Location = new System.Drawing.Point(474, 224);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox2.Size = new System.Drawing.Size(235, 86);
-            this.groupBox2.TabIndex = 110;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "KittyHawk";
-            // 
-            // removeLodPrefix
-            // 
-            this.removeLodPrefix.AutoSize = true;
-            this.removeLodPrefix.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.removeLodPrefix.Checked = true;
-            this.removeLodPrefix.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.removeLodPrefix.Location = new System.Drawing.Point(4, 18);
-            this.removeLodPrefix.Margin = new System.Windows.Forms.Padding(2);
-            this.removeLodPrefix.Name = "removeLodPrefix";
-            this.removeLodPrefix.Size = new System.Drawing.Size(115, 17);
-            this.removeLodPrefix.TabIndex = 27;
-            this.removeLodPrefix.Text = "Remove Lod prefix";
-            this.removeLodPrefix.UseVisualStyleBackColor = true;
-            // 
-            // removeNamespaces_checkbox
-            // 
-            this.removeNamespaces_checkbox.AutoSize = true;
-            this.removeNamespaces_checkbox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.removeNamespaces_checkbox.Checked = true;
-            this.removeNamespaces_checkbox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.removeNamespaces_checkbox.Location = new System.Drawing.Point(3, 37);
-            this.removeNamespaces_checkbox.Margin = new System.Windows.Forms.Padding(2);
-            this.removeNamespaces_checkbox.Name = "removeNamespaces_checkbox";
-            this.removeNamespaces_checkbox.Size = new System.Drawing.Size(129, 17);
-            this.removeNamespaces_checkbox.TabIndex = 26;
-            this.removeNamespaces_checkbox.Text = "Remove namespaces";
-            this.removeNamespaces_checkbox.UseVisualStyleBackColor = true;
-            // 
             // saveOptionBtn
             // 
             this.saveOptionBtn.Anchor = System.Windows.Forms.AnchorStyles.Top;
@@ -653,19 +612,49 @@
             // 
             this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox2.Image = global::Max2Babylon.Properties.Resources.MaxExporter;
-            this.pictureBox2.Location = new System.Drawing.Point(474, 14);
-            this.pictureBox2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.pictureBox2.Location = new System.Drawing.Point(473, 11);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(348, 180);
+            this.pictureBox2.Size = new System.Drawing.Size(348, 159);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox2.TabIndex = 9;
             this.pictureBox2.TabStop = false;
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.removeNamespaces_checkbox);
+            this.groupBox2.Controls.Add(this.removeLodPrefix);
+            this.groupBox2.Location = new System.Drawing.Point(473, 177);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(347, 123);
+            this.groupBox2.TabIndex = 111;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "KITTY HAWK";
+            // 
+            // removeNamespaces_checkbox
+            // 
+            this.removeNamespaces_checkbox.AutoSize = true;
+            this.removeNamespaces_checkbox.Location = new System.Drawing.Point(6, 40);
+            this.removeNamespaces_checkbox.Name = "removeNamespaces_checkbox";
+            this.removeNamespaces_checkbox.Size = new System.Drawing.Size(126, 17);
+            this.removeNamespaces_checkbox.TabIndex = 1;
+            this.removeNamespaces_checkbox.Text = "Remove Namespace";
+            this.removeNamespaces_checkbox.UseVisualStyleBackColor = true;
+            // 
+            // removeLodPrefix
+            // 
+            this.removeLodPrefix.AutoSize = true;
+            this.removeLodPrefix.Location = new System.Drawing.Point(7, 20);
+            this.removeLodPrefix.Name = "removeLodPrefix";
+            this.removeLodPrefix.Size = new System.Drawing.Size(116, 17);
+            this.removeLodPrefix.TabIndex = 0;
+            this.removeLodPrefix.Text = "Remove Lod Prefix";
+            this.removeLodPrefix.UseVisualStyleBackColor = true;
             // 
             // ExporterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(834, 656);
+            this.ClientSize = new System.Drawing.Size(838, 668);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.saveOptionBtn);
             this.Controls.Add(this.butMultiExport);
@@ -678,7 +667,8 @@
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.butExport);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.MinimumSize = new System.Drawing.Size(846, 388);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(854, 707);
             this.Name = "ExporterForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Babylon.js - Export scene to babylon or glTF format";
@@ -689,9 +679,9 @@
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -731,14 +721,11 @@
         private System.Windows.Forms.CheckBox chkKHRTextureTransform;
         private System.Windows.Forms.CheckBox chkKHRMaterialsUnlit;
         private System.Windows.Forms.CheckBox chkExportMaterials;
-        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Button saveOptionBtn;
         private System.Windows.Forms.Label textureLabel;
         private System.Windows.Forms.TextBox txtTextureName;
         private System.Windows.Forms.Button btnTxtBrowse;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
-        private System.Windows.Forms.CheckBox removeNamespaces_checkbox;
-        private System.Windows.Forms.Button saveOptionBtn;
-        private System.Windows.Forms.CheckBox removeLodPrefix;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TextBox txtEnvironmentName;
@@ -748,5 +735,8 @@
         private System.Windows.Forms.CheckBox chkNoAutoLight;
         private System.Windows.Forms.CheckBox chkWriteTextures;
         private System.Windows.Forms.OpenFileDialog envFileDialog;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.CheckBox removeNamespaces_checkbox;
+        private System.Windows.Forms.CheckBox removeLodPrefix;
     }
 }
