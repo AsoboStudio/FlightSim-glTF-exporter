@@ -138,6 +138,8 @@ namespace Max2Babylon
                 });
             });
 
+			gltf.NodesList.ForEach(g => g.name = Regex.Replace(g.name, "\n", ""));
+
             //remove all namespaces of node:
             // char0:x0_name_left -> x0_name_left
             if (exportParameters.removeNamespaces)
