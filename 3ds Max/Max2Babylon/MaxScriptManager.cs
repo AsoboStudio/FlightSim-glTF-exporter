@@ -247,6 +247,11 @@ namespace Max2Babylon
             info.SaveToData();
         }
 
+        public int GeTimeRange(AnimationGroup info)
+        {
+            return Tools.CalculateEndFrameFromAnimationGroupNodes(info);
+        }
+
         public void SetAnimationGroupTimeRange(AnimationGroup info, int start,int end)
         {
             if (info == null)
