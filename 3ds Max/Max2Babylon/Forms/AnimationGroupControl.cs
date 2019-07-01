@@ -196,12 +196,6 @@ namespace Max2Babylon
                 if (node.Name.StartsWith("x"))
                 {
                     string lod_name = node.Name.Substring(3);
-                    DialogResult dr = MessageBox.Show("Rename AnimationGroup to: " + lod_name,"Rename", MessageBoxButtons.YesNo);
-                    if (dr == DialogResult.Yes)
-                    {
-                        nameTextBox.Text = lod_name.Replace("\n", String.Empty);
-                    }
-
                     string lod_prefix = node.Name.Replace(lod_name, "");
                     if (lod_prefix.ToCharArray()[0] == 'x' && lod_prefix.ToCharArray()[2]=='_')
                     {
