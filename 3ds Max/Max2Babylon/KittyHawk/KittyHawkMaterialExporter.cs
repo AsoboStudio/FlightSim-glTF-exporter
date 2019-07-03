@@ -114,10 +114,16 @@ namespace Max2Babylon
     {
         public const string SerializedName = "ASOBO_material_parallax_window";
         [DataMember(EmitDefaultValue = false)] public float? parallaxScale { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float? roomSizeXScale { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float? roomSizeYScale { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float? roomNumberXY { get; set; }
         [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo heightMapTexture;
         public static class Defaults
         {
             public static readonly float parallaxScale = 0;
+            public static readonly float roomSizeXScale = 1;
+            public static readonly float roomSizeYScale = 1;
+            public static readonly float roomNumberXY = 1;
         }
     }
 
@@ -404,6 +410,9 @@ namespace Max2Babylon
             string dirtTexPath = null;
 
             float parallaxScale = GLTFExtensionAsoboParallaxWindow.Defaults.parallaxScale;
+            float roomSizeXScale = GLTFExtensionAsoboParallaxWindow.Defaults.roomSizeXScale;
+            float roomSizeYScale = GLTFExtensionAsoboParallaxWindow.Defaults.roomSizeYScale;
+            float roomNumberXY = GLTFExtensionAsoboParallaxWindow.Defaults.roomNumberXY;
             string heightMapTexPath = null;
 
             float glassReflectionMaskFactor = GLTFExtensionAsoboKittyGlass.Defaults.glassReflectionMaskFactor;
@@ -723,6 +732,36 @@ namespace Max2Babylon
                                     continue;
                                 }
                                 parallaxScale = float_out;
+                                break;
+                            }
+                        case "ROOMSIZEXSCALE":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve ROOMSIZEXSCALE property.");
+                                    continue;
+                                }
+                                roomSizeXScale = float_out;
+                                break;
+                            }
+                        case "ROOMSIZEYSCALE":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve ROOMSIZEYSCALE property.");
+                                    continue;
+                                }
+                                roomSizeYScale = float_out;
+                                break;
+                            }
+                        case "ROOMNUMBERXY":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve ROOMNUMBERXY property.");
+                                    continue;
+                                }
+                                roomNumberXY = float_out;
                                 break;
                             }
                         case "HEIGHTMAPTEX":
@@ -1121,6 +1160,9 @@ namespace Max2Babylon
                 parallaxWindowExtensionObject = new GLTFExtensionAsoboParallaxWindow();
 
                 parallaxWindowExtensionObject.parallaxScale = parallaxScale;
+                parallaxWindowExtensionObject.roomSizeXScale = roomSizeXScale;
+                parallaxWindowExtensionObject.roomSizeYScale = roomSizeYScale;
+                parallaxWindowExtensionObject.roomNumberXY = roomNumberXY;
 
                 if (!string.IsNullOrWhiteSpace(heightMapTexPath))
                 {
