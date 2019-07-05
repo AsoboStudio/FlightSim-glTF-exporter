@@ -54,6 +54,12 @@ namespace Max2Babylon
     }
 
     [DataContract]
+    class GLTFExtensionAsoboMaterialInvisibleCollision : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_invisible_collision";
+    }
+
+    [DataContract]
     class GLTFExtensionAsoboMaterialDetail
     {
         public const string SerializedName = "ASOBO_material_detail_map";
@@ -197,6 +203,7 @@ namespace Max2Babylon
             Hair,
             SSS,
             KittyGlass,
+            InvisibleCollision
         }
 
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
@@ -424,6 +431,7 @@ namespace Max2Babylon
 
             // only create if needed
             GLTFExtensionAsoboMaterialGeometryDecal decalExtensionObject = null;
+            GLTFExtensionAsoboMaterialInvisibleCollision invisibleCollisionExtensionObject = null;
             GLTFExtensions materialExtensions = new GLTFExtensions();
             GLTFExtensions materialExtras = new GLTFExtensions();
 
@@ -489,6 +497,10 @@ namespace Max2Babylon
                                     materialType = MaterialType.SSS;
                                     break;
                                 case 12:
+                                    materialType = MaterialType.InvisibleCollision;
+                                    invisibleCollisionExtensionObject = new GLTFExtensionAsoboMaterialInvisibleCollision();
+                                    break;
+                                case 13:
                                     materialType = MaterialType.KittyGlass;
                                     break;
                                 default:
@@ -850,7 +862,7 @@ namespace Max2Babylon
                 }
             }
             #endregion
-
+            
             #region Textures & AlphaMode
 
             for (int i = 0; i < numProps; ++i)
@@ -1287,6 +1299,9 @@ namespace Max2Babylon
 
             if (kittyGlassExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboKittyGlass.SerializedName, kittyGlassExtensionObject);
+
+            if (invisibleCollisionExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboMaterialInvisibleCollision.SerializedName, invisibleCollisionExtensionObject);
 
             if (materialExtensions.Count > 0)
             {
