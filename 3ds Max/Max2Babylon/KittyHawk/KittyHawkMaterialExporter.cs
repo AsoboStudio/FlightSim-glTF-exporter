@@ -999,7 +999,12 @@ namespace Max2Babylon
                                 continue;
                             }
                             material.SetBaseColorFactor(point4_out.X, point4_out.Y, point4_out.Z);
-                            material.SetBaseColorFactorAlpha(point4_out.W);
+
+                            if (invisibleCollisionExtensionObject != null)
+                                material.SetBaseColorFactorAlpha(0.7f);
+                            else
+                                material.SetBaseColorFactorAlpha(point4_out.W);
+
                             break;
                         }
                     case "LAYERCOLOR":
