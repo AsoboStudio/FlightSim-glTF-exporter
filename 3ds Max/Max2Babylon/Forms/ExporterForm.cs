@@ -197,6 +197,11 @@ namespace Max2Babylon
             SaveOptions();
             
             exporter = new BabylonExporter();
+
+            if (KittyHawkExtension.KittyHawkUtilities.ExportItemHasClosedContainers(exportItem.Node))
+            {
+                return false;
+            }
             if (!string.IsNullOrWhiteSpace(txtTextureName.Text))
             {
                 exporter.relativeTextureFolder = Tools.GetPathRelativeToModel(Tools.UnformatPath(txtTextureName.Text), Tools.UnformatPath(txtModelName.Text));

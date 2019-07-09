@@ -276,6 +276,9 @@
     <Compile Include="..\KittyHawk\KittyHawkMaterialExporter.cs">
       <Link>KittyHawkExtension\KittyHawkMaterialExporter.cs</Link>
     </Compile>
+    <Compile Include="..\KittyHawk\KittyHawkUtilities.cs">
+      <Link>KittyHawkExtension\KittyHawkUtilities.cs</Link>
+    </Compile>
     <Compile Include="..\KittyHawk\SelectNameForm.cs">
       <Link>KittyHawkExtension\SelectNameForm.cs</Link>
       <SubType>Form</SubType>
