@@ -124,6 +124,7 @@ namespace Max2Babylon
         [DataMember(EmitDefaultValue = false)] public float? roomSizeYScale { get; set; }
         [DataMember(EmitDefaultValue = false)] public float? roomNumberXY { get; set; }
         [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo heightMapTexture;
+        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo behindWindowMapTexture;
         public static class Defaults
         {
             public static readonly float parallaxScale = 0;
@@ -164,7 +165,6 @@ namespace Max2Babylon
             {
                 Windshield,
                 Porthole,
-                //Glass,
                 // todo: rename to GeoDecalProgressive or something like that, rather than tying to in-game usage? e.g. same technique could be used for moss/mud/whatever
                 GeoDecalFrosted,
                 ClearCoat,
@@ -202,7 +202,6 @@ namespace Max2Babylon
             Anisotropic,
             Hair,
             SSS,
-            KittyGlass,
             InvisibleCollision
         }
 
@@ -421,6 +420,7 @@ namespace Max2Babylon
             float roomSizeYScale = GLTFExtensionAsoboParallaxWindow.Defaults.roomSizeYScale;
             float roomNumberXY = GLTFExtensionAsoboParallaxWindow.Defaults.roomNumberXY;
             string heightMapTexPath = null;
+            string behindWindowMapTexPath = null;
 
             float glassReflectionMaskFactor = GLTFExtensionAsoboKittyGlass.Defaults.glassReflectionMaskFactor;
 
@@ -499,10 +499,7 @@ namespace Max2Babylon
                                 case 12:
                                     materialType = MaterialType.InvisibleCollision;
                                     invisibleCollisionExtensionObject = new GLTFExtensionAsoboMaterialInvisibleCollision();
-                                    break;
-                                case 13:
-                                    materialType = MaterialType.KittyGlass;
-                                    break;
+                                    break;                                
                                 default:
                                     materialType = MaterialType.Standard;
                                     break;
@@ -613,7 +610,10 @@ namespace Max2Babylon
                     {
                         case "DETAILCOLORTEX":
                             {
-                                detailColorTexPath = GetImagePath(paramDef, property, param_t, "DETAILCOLORTEX");
+                                if (materialType != MaterialType.ParallaxWindow)
+                                {
+                                    detailColorTexPath = GetImagePath(paramDef, property, param_t, "DETAILCOLORTEX");
+                                }
                                 break;
                             }
                         case "DETAILNORMALTEX":
@@ -781,6 +781,11 @@ namespace Max2Babylon
                                 heightMapTexPath = GetImagePath(paramDef, property, param_t, "HEIGHTMAPTEX");
                                 break;
                             }
+                        case "DETAILCOLORTEX": //because we reuse the slot from the detailmap
+                            {
+                                behindWindowMapTexPath = GetImagePath(paramDef, property, param_t, "DETAILCOLORTEX");
+                                break;
+                            }
                     }
                 }
             }
@@ -886,7 +891,7 @@ namespace Max2Babylon
                             }
 
                             // overrides for specific material types
-                            if (materialType == MaterialType.GeoDecal || materialType == MaterialType.Windshield || materialType == MaterialType.Glass || materialType == MaterialType.KittyGlass || materialType == MaterialType.GeoDecalFrosted)
+                            if (materialType == MaterialType.GeoDecal || materialType == MaterialType.Windshield || materialType == MaterialType.Glass || materialType == MaterialType.GeoDecalFrosted)
                                 material.SetAlphaMode(GLTFMaterial.AlphaMode.BLEND.ToString());
                             else if (materialType == MaterialType.Porthole)
                                 material.SetAlphaMode(GLTFMaterial.AlphaMode.OPAQUE.ToString());
@@ -1190,11 +1195,21 @@ namespace Max2Babylon
                         parallaxWindowExtensionObject.heightMapTexture = info;
                     }
                 }
+
+                if (!string.IsNullOrWhiteSpace(behindWindowMapTexPath))
+                {
+                    image = ExportImage(behindWindowMapTexPath, true);
+                    if (image != null)
+                    {
+                        info = CreateTextureInfo(image);
+                        parallaxWindowExtensionObject.behindWindowMapTexture = info;
+                    }
+                }
             }
 
             // KittyGlass extension, replacing glass extra, set by KittyGlass OR glass material
             GLTFExtensionAsoboKittyGlass kittyGlassExtensionObject = null;
-            if (materialType == MaterialType.KittyGlass || materialType == MaterialType.Glass)
+            if (materialType == MaterialType.Glass)
             {
                 kittyGlassExtensionObject = new GLTFExtensionAsoboKittyGlass();
                 kittyGlassExtensionObject.glassReflectionMaskFactor = glassReflectionMaskFactor;
@@ -1214,65 +1229,68 @@ namespace Max2Babylon
                 }
             }
 
-            // detail map extension, only if we have a detail color and/or detail normal map
+            // detail map extension, only if we have a detail color and/or detail normal map AND there is no a parallaxWindow extension
             GLTFExtensionAsoboMaterialDetail detailExtensionObject = null;
-            if(!string.IsNullOrWhiteSpace(detailColorTexPath) || !string.IsNullOrWhiteSpace(detailNormalTexPath) || !string.IsNullOrWhiteSpace(detailMetalRoughAOTexPath) || !string.IsNullOrWhiteSpace(blendMaskTexPath))
+            if (materialType != MaterialType.ParallaxWindow)
             {
-                detailExtensionObject = new GLTFExtensionAsoboMaterialDetail();
-                if (!string.IsNullOrWhiteSpace(detailColorTexPath))
+                if (!string.IsNullOrWhiteSpace(detailColorTexPath) || !string.IsNullOrWhiteSpace(detailNormalTexPath) || !string.IsNullOrWhiteSpace(detailMetalRoughAOTexPath) || !string.IsNullOrWhiteSpace(blendMaskTexPath))
                 {
-                    image = ExportImage(detailColorTexPath);
-                    if (image != null)
+                    detailExtensionObject = new GLTFExtensionAsoboMaterialDetail();
+                    if (!string.IsNullOrWhiteSpace(detailColorTexPath))
                     {
-                        AlbedoTexCheckSuspiciousName(detailColorTexPath);
-                        info = CreateTextureInfo(image);
-                        detailExtensionObject.detailColorTexture = info;
+                        image = ExportImage(detailColorTexPath);
+                        if (image != null)
+                        {
+                            AlbedoTexCheckSuspiciousName(detailColorTexPath);
+                            info = CreateTextureInfo(image);
+                            detailExtensionObject.detailColorTexture = info;
+                        }
                     }
-                }
-                if (!string.IsNullOrWhiteSpace(detailNormalTexPath))
-                {
-                    image = ExportImage(detailNormalTexPath);
-                    if (image != null)
+                    if (!string.IsNullOrWhiteSpace(detailNormalTexPath))
                     {
-                        NormalTexCheckSuspiciousName(detailNormalTexPath);
-                        info = CreateTextureInfo<GLTFNormalTextureInfo>(image);
-                        detailExtensionObject.detailNormalTexture = (GLTFNormalTextureInfo)info;
+                        image = ExportImage(detailNormalTexPath);
+                        if (image != null)
+                        {
+                            NormalTexCheckSuspiciousName(detailNormalTexPath);
+                            info = CreateTextureInfo<GLTFNormalTextureInfo>(image);
+                            detailExtensionObject.detailNormalTexture = (GLTFNormalTextureInfo)info;
 
-                        if(detailNormalScale != GLTFExtensionAsoboMaterialDetail.Defaults.NormalScale)
-                            detailExtensionObject.detailNormalTexture.scale = detailNormalScale;
+                            if (detailNormalScale != GLTFExtensionAsoboMaterialDetail.Defaults.NormalScale)
+                                detailExtensionObject.detailNormalTexture.scale = detailNormalScale;
+                        }
                     }
-                }
-                if (!string.IsNullOrWhiteSpace(detailMetalRoughAOTexPath))
-                {
-                    image = ExportImage(detailMetalRoughAOTexPath);
-                    if (image != null)
+                    if (!string.IsNullOrWhiteSpace(detailMetalRoughAOTexPath))
                     {
-                        CompTexCheckSuspiciousName(detailMetalRoughAOTexPath);
-                        info = CreateTextureInfo(image);
-                        detailExtensionObject.detailMetalRoughAOTexture = info;
+                        image = ExportImage(detailMetalRoughAOTexPath);
+                        if (image != null)
+                        {
+                            CompTexCheckSuspiciousName(detailMetalRoughAOTexPath);
+                            info = CreateTextureInfo(image);
+                            detailExtensionObject.detailMetalRoughAOTexture = info;
+                        }
                     }
-                }
-                if (!string.IsNullOrWhiteSpace(blendMaskTexPath))
-                {
-                    image = ExportImage(blendMaskTexPath);
-                    if (image != null)
-                    {                        
-                        info = CreateTextureInfo(image);
-                        detailExtensionObject.blendMaskTexture = info;
+                    if (!string.IsNullOrWhiteSpace(blendMaskTexPath))
+                    {
+                        image = ExportImage(blendMaskTexPath);
+                        if (image != null)
+                        {
+                            info = CreateTextureInfo(image);
+                            detailExtensionObject.blendMaskTexture = info;
+                        }
                     }
-                }
 
-                if (detailUVScale != GLTFExtensionAsoboMaterialDetail.Defaults.UVScale)
-                    detailExtensionObject.UVScale = detailUVScale;
+                    if (detailUVScale != GLTFExtensionAsoboMaterialDetail.Defaults.UVScale)
+                        detailExtensionObject.UVScale = detailUVScale;
 
-                if (blendThreshold != GLTFExtensionAsoboMaterialDetail.Defaults.blendThreshold)
-                    detailExtensionObject.blendThreshold = blendThreshold;
+                    if (blendThreshold != GLTFExtensionAsoboMaterialDetail.Defaults.blendThreshold)
+                        detailExtensionObject.blendThreshold = blendThreshold;
 
-                if (detailUVOffset[0] != GLTFExtensionAsoboMaterialDetail.Defaults.UVOffset[0]
-                    && detailUVOffset[1] != GLTFExtensionAsoboMaterialDetail.Defaults.UVOffset[1])
-                {
-                    detailExtensionObject.UVOffset = new float[2];
-                    detailUVOffset.CopyTo(detailExtensionObject.UVOffset, 0);
+                    if (detailUVOffset[0] != GLTFExtensionAsoboMaterialDetail.Defaults.UVOffset[0]
+                        && detailUVOffset[1] != GLTFExtensionAsoboMaterialDetail.Defaults.UVOffset[1])
+                    {
+                        detailExtensionObject.UVOffset = new float[2];
+                        detailUVOffset.CopyTo(detailExtensionObject.UVOffset, 0);
+                    }
                 }
             }
 
@@ -1287,7 +1305,7 @@ namespace Max2Babylon
             if(layerExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialLayer.SerializedName, layerExtensionObject);
 
-            if (detailExtensionObject != null)
+            if (detailExtensionObject != null && parallaxWindowExtensionObject == null) //we add an detail extension object only if there is no parallaxWindowExtension
                 materialExtensions.Add(GLTFExtensionAsoboMaterialDetail.SerializedName, detailExtensionObject);
 
             if (SSSExtensionObject != null)
