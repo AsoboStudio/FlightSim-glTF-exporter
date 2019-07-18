@@ -241,9 +241,9 @@ namespace Max2Babylon
                 return;
             }
 
-            List<uint> newHandles = info.NodeHandles.ToList();
-            newHandles.Add(nodeHandle);
-            info.NodeHandles = newHandles;
+            List<Guid> newGuids = info.NodeGuids.ToList();
+            newGuids.Add(node.GetGuid());
+            info.NodeGuids = newGuids;
             info.SaveToData();
         }
 
@@ -267,7 +267,7 @@ namespace Max2Babylon
             if (info == null)
                 return;
 
-            info.NodeHandles = new List<uint>();
+            info.NodeGuids = new List<Guid>();
             info.SaveToData();
         }
 
@@ -282,9 +282,9 @@ namespace Max2Babylon
                 return;
             }
 
-            List<uint> newHandles = info.NodeHandles.ToList();
-            newHandles.Remove(nodeHandle);
-            info.NodeHandles = newHandles;
+            List<Guid> newGuids = info.NodeGuids.ToList();
+            newGuids.Remove(node.GetGuid());
+            info.NodeGuids = newGuids;
             info.SaveToData();
         }
 
