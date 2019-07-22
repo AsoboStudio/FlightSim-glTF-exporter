@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExporterForm));
             this.butExport = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.txtModelName = new System.Windows.Forms.TextBox();
@@ -43,6 +42,7 @@
             this.chkWriteTextures = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label5 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.txtEnvironmentName = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
@@ -57,10 +57,14 @@
             this.chkKHRTextureTransform = new System.Windows.Forms.CheckBox();
             this.chkKHRLightsPunctual = new System.Windows.Forms.CheckBox();
             this.chkOverwriteTextures = new System.Windows.Forms.CheckBox();
+            this.chkDoNotOptimizeAnimations = new System.Windows.Forms.CheckBox();
+            this.chkAnimgroupExportNonAnimated = new System.Windows.Forms.CheckBox();
             this.chkDracoCompression = new System.Windows.Forms.CheckBox();
             this.chkMergeAOwithMR = new System.Windows.Forms.CheckBox();
             this.txtQuality = new System.Windows.Forms.TextBox();
             this.labelQuality = new System.Windows.Forms.Label();
+            this.chkExportMorphNormals = new System.Windows.Forms.CheckBox();
+            this.chkExportMorphTangents = new System.Windows.Forms.CheckBox();
             this.chkExportTangents = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
             this.txtScaleFactor = new System.Windows.Forms.TextBox();
@@ -90,7 +94,8 @@
             this.butExport.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.butExport.Enabled = false;
             this.butExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butExport.Location = new System.Drawing.Point(215, 321);
+            this.butExport.Location = new System.Drawing.Point(215, 413);
+            this.butExport.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.butExport.Name = "butExport";
             this.butExport.Size = new System.Drawing.Size(197, 27);
             this.butExport.TabIndex = 100;
@@ -142,7 +147,8 @@
             // 
             this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar.Location = new System.Drawing.Point(12, 625);
+            this.progressBar.Location = new System.Drawing.Point(12, 732);
+            this.progressBar.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(638, 23);
             this.progressBar.TabIndex = 104;
@@ -152,9 +158,10 @@
             this.treeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.treeView.Location = new System.Drawing.Point(12, 355);
+            this.treeView.Location = new System.Drawing.Point(12, 446);
+            this.treeView.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.treeView.Name = "treeView";
-            this.treeView.Size = new System.Drawing.Size(810, 265);
+            this.treeView.Size = new System.Drawing.Size(810, 276);
             this.treeView.TabIndex = 103;
             this.treeView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
             // 
@@ -163,7 +170,8 @@
             this.butCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.butCancel.Enabled = false;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(655, 625);
+            this.butCancel.Location = new System.Drawing.Point(656, 732);
+            this.butCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(80, 23);
             this.butCancel.TabIndex = 105;
@@ -212,6 +220,7 @@
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.label5);
+            this.groupBox1.Controls.Add(this.label8);
             this.groupBox1.Controls.Add(this.label7);
             this.groupBox1.Controls.Add(this.txtEnvironmentName);
             this.groupBox1.Controls.Add(this.label6);
@@ -226,10 +235,14 @@
             this.groupBox1.Controls.Add(this.chkKHRTextureTransform);
             this.groupBox1.Controls.Add(this.chkKHRLightsPunctual);
             this.groupBox1.Controls.Add(this.chkOverwriteTextures);
+            this.groupBox1.Controls.Add(this.chkDoNotOptimizeAnimations);
+            this.groupBox1.Controls.Add(this.chkAnimgroupExportNonAnimated);
             this.groupBox1.Controls.Add(this.chkDracoCompression);
             this.groupBox1.Controls.Add(this.chkMergeAOwithMR);
             this.groupBox1.Controls.Add(this.txtQuality);
             this.groupBox1.Controls.Add(this.labelQuality);
+            this.groupBox1.Controls.Add(this.chkExportMorphNormals);
+            this.groupBox1.Controls.Add(this.chkExportMorphTangents);
             this.groupBox1.Controls.Add(this.chkExportTangents);
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.txtScaleFactor);
@@ -246,23 +259,35 @@
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Location = new System.Drawing.Point(12, 6);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(450, 309);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.groupBox1.Size = new System.Drawing.Size(450, 401);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(16, 252);
+            this.label5.Location = new System.Drawing.Point(15, 343);
+            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(66, 13);
             this.label5.TabIndex = 29;
             this.label5.Text = "Environment";
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(6, 245);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(113, 13);
+            this.label8.TabIndex = 33;
+            this.label8.Text = "Morph Target Options:";
+            // 
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(6, 215);
+            this.label7.Location = new System.Drawing.Point(5, 306);
+            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(112, 13);
             this.label7.TabIndex = 33;
@@ -272,7 +297,8 @@
             // 
             this.txtEnvironmentName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtEnvironmentName.Location = new System.Drawing.Point(86, 250);
+            this.txtEnvironmentName.Location = new System.Drawing.Point(85, 341);
+            this.txtEnvironmentName.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtEnvironmentName.Name = "txtEnvironmentName";
             this.txtEnvironmentName.Size = new System.Drawing.Size(324, 20);
             this.txtEnvironmentName.TabIndex = 30;
@@ -280,7 +306,8 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(6, 270);
+            this.label6.Location = new System.Drawing.Point(5, 361);
+            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(76, 13);
             this.label6.TabIndex = 29;
@@ -290,7 +317,8 @@
             // 
             this.chkFullPBR.AutoSize = true;
             this.chkFullPBR.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkFullPBR.Location = new System.Drawing.Point(172, 231);
+            this.chkFullPBR.Location = new System.Drawing.Point(171, 322);
+            this.chkFullPBR.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkFullPBR.Name = "chkFullPBR";
             this.chkFullPBR.Size = new System.Drawing.Size(86, 17);
             this.chkFullPBR.TabIndex = 28;
@@ -301,7 +329,8 @@
             // 
             this.btnEnvBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnEnvBrowse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnEnvBrowse.Location = new System.Drawing.Point(416, 248);
+            this.btnEnvBrowse.Location = new System.Drawing.Point(415, 339);
+            this.btnEnvBrowse.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnEnvBrowse.Name = "btnEnvBrowse";
             this.btnEnvBrowse.Size = new System.Drawing.Size(28, 23);
             this.btnEnvBrowse.TabIndex = 31;
@@ -313,7 +342,8 @@
             // 
             this.chkNoAutoLight.AutoSize = true;
             this.chkNoAutoLight.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkNoAutoLight.Location = new System.Drawing.Point(18, 231);
+            this.chkNoAutoLight.Location = new System.Drawing.Point(17, 322);
+            this.chkNoAutoLight.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkNoAutoLight.Name = "chkNoAutoLight";
             this.chkNoAutoLight.Size = new System.Drawing.Size(113, 17);
             this.chkNoAutoLight.TabIndex = 27;
@@ -367,7 +397,8 @@
             // 
             this.chkKHRMaterialsUnlit.AutoSize = true;
             this.chkKHRMaterialsUnlit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkKHRMaterialsUnlit.Location = new System.Drawing.Point(318, 287);
+            this.chkKHRMaterialsUnlit.Location = new System.Drawing.Point(317, 378);
+            this.chkKHRMaterialsUnlit.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkKHRMaterialsUnlit.Name = "chkKHRMaterialsUnlit";
             this.chkKHRMaterialsUnlit.Size = new System.Drawing.Size(118, 17);
             this.chkKHRMaterialsUnlit.TabIndex = 22;
@@ -378,7 +409,8 @@
             // 
             this.chkKHRTextureTransform.AutoSize = true;
             this.chkKHRTextureTransform.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkKHRTextureTransform.Location = new System.Drawing.Point(167, 287);
+            this.chkKHRTextureTransform.Location = new System.Drawing.Point(166, 378);
+            this.chkKHRTextureTransform.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkKHRTextureTransform.Name = "chkKHRTextureTransform";
             this.chkKHRTextureTransform.Size = new System.Drawing.Size(133, 17);
             this.chkKHRTextureTransform.TabIndex = 21;
@@ -389,7 +421,8 @@
             // 
             this.chkKHRLightsPunctual.AutoSize = true;
             this.chkKHRLightsPunctual.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkKHRLightsPunctual.Location = new System.Drawing.Point(19, 287);
+            this.chkKHRLightsPunctual.Location = new System.Drawing.Point(18, 378);
+            this.chkKHRLightsPunctual.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkKHRLightsPunctual.Name = "chkKHRLightsPunctual";
             this.chkKHRLightsPunctual.Size = new System.Drawing.Size(123, 17);
             this.chkKHRLightsPunctual.TabIndex = 20;
@@ -408,6 +441,30 @@
             this.chkOverwriteTextures.TabIndex = 19;
             this.chkOverwriteTextures.Text = "Overwrite Textures";
             this.chkOverwriteTextures.UseVisualStyleBackColor = true;
+            // 
+            // chkDoNotOptimizeAnimations
+            // 
+            this.chkDoNotOptimizeAnimations.AutoSize = true;
+            this.chkDoNotOptimizeAnimations.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkDoNotOptimizeAnimations.Location = new System.Drawing.Point(166, 195);
+            this.chkDoNotOptimizeAnimations.Name = "chkDoNotOptimizeAnimations";
+            this.chkDoNotOptimizeAnimations.Size = new System.Drawing.Size(154, 17);
+            this.chkDoNotOptimizeAnimations.TabIndex = 18;
+            this.chkDoNotOptimizeAnimations.Text = "Do Not Optimize Animations";
+            this.chkDoNotOptimizeAnimations.UseVisualStyleBackColor = true;
+            this.chkDoNotOptimizeAnimations.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
+            // 
+            // chkAnimgroupExportNonAnimated
+            // 
+            this.chkAnimgroupExportNonAnimated.AutoSize = true;
+            this.chkAnimgroupExportNonAnimated.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkAnimgroupExportNonAnimated.Location = new System.Drawing.Point(18, 218);
+            this.chkAnimgroupExportNonAnimated.Name = "chkAnimgroupExportNonAnimated";
+            this.chkAnimgroupExportNonAnimated.Size = new System.Drawing.Size(249, 17);
+            this.chkAnimgroupExportNonAnimated.TabIndex = 18;
+            this.chkAnimgroupExportNonAnimated.Text = "(Animation Group) Export Non-Animated Objects";
+            this.chkAnimgroupExportNonAnimated.UseVisualStyleBackColor = true;
+            this.chkAnimgroupExportNonAnimated.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
             // 
             // chkDracoCompression
             // 
@@ -453,6 +510,32 @@
             this.labelQuality.Size = new System.Drawing.Size(79, 13);
             this.labelQuality.TabIndex = 8;
             this.labelQuality.Text = "Texture quality:";
+            // 
+            // chkExportMorphNormals
+            // 
+            this.chkExportMorphNormals.AutoSize = true;
+            this.chkExportMorphNormals.Checked = true;
+            this.chkExportMorphNormals.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkExportMorphNormals.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkExportMorphNormals.Location = new System.Drawing.Point(166, 261);
+            this.chkExportMorphNormals.Name = "chkExportMorphNormals";
+            this.chkExportMorphNormals.Size = new System.Drawing.Size(124, 17);
+            this.chkExportMorphNormals.TabIndex = 16;
+            this.chkExportMorphNormals.Text = "Export morph normals";
+            this.chkExportMorphNormals.UseVisualStyleBackColor = true;
+            this.chkExportMorphNormals.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
+            // 
+            // chkExportMorphTangents
+            // 
+            this.chkExportMorphTangents.AutoSize = true;
+            this.chkExportMorphTangents.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkExportMorphTangents.Location = new System.Drawing.Point(18, 261);
+            this.chkExportMorphTangents.Name = "chkExportMorphTangents";
+            this.chkExportMorphTangents.Size = new System.Drawing.Size(129, 17);
+            this.chkExportMorphTangents.TabIndex = 16;
+            this.chkExportMorphTangents.Text = "Export morph tangents";
+            this.chkExportMorphTangents.UseVisualStyleBackColor = true;
+            this.chkExportMorphTangents.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
             // 
             // chkExportTangents
             // 
@@ -552,7 +635,8 @@
             this.butExportAndRun.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.butExportAndRun.Enabled = false;
             this.butExportAndRun.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butExportAndRun.Location = new System.Drawing.Point(418, 321);
+            this.butExportAndRun.Location = new System.Drawing.Point(418, 413);
+            this.butExportAndRun.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.butExportAndRun.Name = "butExportAndRun";
             this.butExportAndRun.Size = new System.Drawing.Size(197, 27);
             this.butExportAndRun.TabIndex = 102;
@@ -565,7 +649,8 @@
             // 
             this.butClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.butClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butClose.Location = new System.Drawing.Point(741, 625);
+            this.butClose.Location = new System.Drawing.Point(742, 732);
+            this.butClose.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.butClose.Name = "butClose";
             this.butClose.Size = new System.Drawing.Size(80, 23);
             this.butClose.TabIndex = 106;
@@ -582,7 +667,8 @@
             // 
             this.butMultiExport.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.butMultiExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butMultiExport.Location = new System.Drawing.Point(621, 321);
+            this.butMultiExport.Location = new System.Drawing.Point(621, 413);
+            this.butMultiExport.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.butMultiExport.Name = "butMultiExport";
             this.butMultiExport.Size = new System.Drawing.Size(199, 27);
             this.butMultiExport.TabIndex = 109;
@@ -594,7 +680,8 @@
             // 
             this.saveOptionBtn.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.saveOptionBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.saveOptionBtn.Location = new System.Drawing.Point(12, 321);
+            this.saveOptionBtn.Location = new System.Drawing.Point(12, 413);
+            this.saveOptionBtn.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.saveOptionBtn.Name = "saveOptionBtn";
             this.saveOptionBtn.Size = new System.Drawing.Size(197, 27);
             this.saveOptionBtn.TabIndex = 110;
@@ -613,8 +700,9 @@
             this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox2.Image = global::Max2Babylon.Properties.Resources.MaxExporter;
             this.pictureBox2.Location = new System.Drawing.Point(473, 11);
+            this.pictureBox2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(348, 159);
+            this.pictureBox2.Size = new System.Drawing.Size(348, 183);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox2.TabIndex = 9;
             this.pictureBox2.TabStop = false;
@@ -623,9 +711,9 @@
             // 
             this.groupBox2.Controls.Add(this.removeNamespaces_checkbox);
             this.groupBox2.Controls.Add(this.removeLodPrefix);
-            this.groupBox2.Location = new System.Drawing.Point(473, 177);
+            this.groupBox2.Location = new System.Drawing.Point(474, 202);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(347, 123);
+            this.groupBox2.Size = new System.Drawing.Size(347, 199);
             this.groupBox2.TabIndex = 111;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "KITTY HAWK";
@@ -654,9 +742,9 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(838, 668);
-            this.Controls.Add(this.groupBox2);
+            this.ClientSize = new System.Drawing.Size(834, 769);
             this.Controls.Add(this.saveOptionBtn);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.butMultiExport);
             this.Controls.Add(this.butExportAndRun);
             this.Controls.Add(this.groupBox1);
@@ -667,8 +755,8 @@
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.butExport);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MinimumSize = new System.Drawing.Size(854, 707);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.MinimumSize = new System.Drawing.Size(846, 388);
             this.Name = "ExporterForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Babylon.js - Export scene to babylon or glTF format";
@@ -735,7 +823,12 @@
         private System.Windows.Forms.CheckBox chkNoAutoLight;
         private System.Windows.Forms.CheckBox chkWriteTextures;
         private System.Windows.Forms.OpenFileDialog envFileDialog;
-        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.CheckBox chkAnimgroupExportNonAnimated;
+        private System.Windows.Forms.CheckBox chkDoNotOptimizeAnimations;
+        private System.Windows.Forms.CheckBox chkExportMorphTangents;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.CheckBox chkExportMorphNormals;
+		private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.CheckBox removeNamespaces_checkbox;
         private System.Windows.Forms.CheckBox removeLodPrefix;
     }

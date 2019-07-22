@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
+using BabylonExport.Entities;
 
 namespace Max2Babylon
 {
@@ -187,7 +188,7 @@ namespace Max2Babylon
 
     #endregion
 
-    public class KittyHawkMaterialExporter : IGLTFMaterialExporter
+    public class KittyHawkMaterialExporter : IMaxGLTFMaterialExporter
     {
         enum MaterialType
         {
@@ -207,8 +208,8 @@ namespace Max2Babylon
 
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
 
-        ClassIDWrapper IMaterialExporter.MaterialClassID => class_ID;
-        
+        ClassIDWrapper IMaxMaterialExporter.MaterialClassID => class_ID;
+
         public KittyHawkMaterialExporter() { }
 
         BabylonExporter exporter;
@@ -302,7 +303,7 @@ namespace Max2Babylon
 
         #endregion
 
-        GLTFMaterial IGLTFMaterialExporter.ExportGLTFMaterial(BabylonExporter exporter, GLTF gltf, IIGameMaterial maxGameMaterial, 
+        GLTFMaterial IMaxGLTFMaterialExporter.ExportGLTFMaterial(ExportParameters exportParameters, GLTF gltf, IIGameMaterial maxGameMaterial, 
             Func<string, string, string> tryWriteImageFunc, 
             Action<string, Color> raiseMessageAction, 
             Action<string> raiseWarningAction, 

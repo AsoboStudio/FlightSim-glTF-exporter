@@ -4,7 +4,8 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Autodesk.Max;
-
+using BabylonExport.Entities;
+using Utilities;
 using Color = System.Drawing.Color;
 
 namespace Max2Babylon
@@ -56,7 +57,7 @@ namespace Max2Babylon
             string storedModelPath = Loader.Core.RootNode.GetStringProperty(ExportParameters.ModelFilePathProperty,string.Empty);
             string userRelativePath = Tools.ResolveRelativePath(storedModelPath);
             txtModelName.Text = userRelativePath;
-            string absoluteModelPath = Tools.UnformatPath(txtModelName.Text);
+            string absoluteModelPath = PathUtilities.UnformatPath(txtModelName.Text);
             singleExportItem = new ExportItem(absoluteModelPath);
 
             string storedFolderPath = Loader.Core.RootNode.GetStringProperty(ExportParameters.TextureFolderPathProperty, string.Empty);
@@ -79,6 +80,8 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkKHRTextureTransform, Loader.Core.RootNode, "babylonjs_khrTextureTransform");
             Tools.PrepareCheckBox(chkKHRMaterialsUnlit, Loader.Core.RootNode, "babylonjs_khr_materials_unlit");
             Tools.PrepareCheckBox(chkExportMaterials, Loader.Core.RootNode, "babylonjs_export_materials", 1);
+            Tools.PrepareCheckBox(chkExportMorphTangents, Loader.Core.RootNode, "babylonjs_export_Morph_Tangents", 0);
+            Tools.PrepareCheckBox(chkExportMorphNormals, Loader.Core.RootNode, "babylonjs_export_Morph_Normals", 1);
 
             Tools.PrepareCheckBox(removeLodPrefix, Loader.Core.RootNode, "kittyhawk_removelodprefix",1);
             Tools.PrepareCheckBox(removeNamespaces_checkbox, Loader.Core.RootNode, "kittyhawk_removenamespaces",1);
@@ -115,12 +118,16 @@ namespace Max2Babylon
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
                 string selectedFolderPath = folderBrowserDialog1.SelectedPath;
-                string absoluteModelPath = Tools.UnformatPath(txtModelName.Text);
+                string absoluteModelPath = PathUtilities.UnformatPath(txtModelName.Text);
+                if (!PathUtilities.IsBelowPath(selectedFolderPath, absoluteModelPath))
+                {
+                    MessageBox.Show("WARNING: folderPath should be below model file path");
+                }
 
                 txtTextureName.Text = Tools.FormatPath(folderBrowserDialog1.SelectedPath);
             }
         }
-               
+
         private void btnEnvBrowse_Click(object sender, EventArgs e)
         {
             if (envFileDialog.ShowDialog() == DialogResult.OK)
@@ -175,36 +182,33 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkKHRLightsPunctual, Loader.Core.RootNode, "babylonjs_khrLightsPunctual");
             Tools.UpdateCheckBox(chkKHRMaterialsUnlit, Loader.Core.RootNode, "babylonjs_khr_materials_unlit");
             Tools.UpdateCheckBox(chkExportMaterials, Loader.Core.RootNode, "babylonjs_export_materials");
-
-            Tools.UpdateCheckBox(removeLodPrefix, Loader.Core.RootNode, "kittyhawk_removelodprefix");
+            Tools.UpdateCheckBox(chkDoNotOptimizeAnimations, Loader.Core.RootNode, "babylonjs_donotoptimizeanimations");
+            Tools.UpdateCheckBox(chkExportMorphTangents, Loader.Core.RootNode, "babylonjs_export_Morph_Tangents");
+            Tools.UpdateCheckBox(chkExportMorphNormals, Loader.Core.RootNode, "babylonjs_export_Morph_Normals");
+			Tools.UpdateCheckBox(removeLodPrefix, Loader.Core.RootNode, "kittyhawk_removelodprefix");
             Tools.UpdateCheckBox(removeNamespaces_checkbox, Loader.Core.RootNode, "kittyhawk_removenamespaces");
 
-            string unformattedPath = Tools.UnformatPath(txtModelName.Text);
+            string unformattedPath = PathUtilities.UnformatPath(txtModelName.Text);
             Loader.Core.RootNode.SetStringProperty(ExportParameters.ModelFilePathProperty, Tools.RelativePathStore(unformattedPath));
 
-            string unformattedTextureFolderPath = Tools.UnformatPath(txtTextureName.Text);
+            string unformattedTextureFolderPath = PathUtilities.UnformatPath(txtTextureName.Text);
             Loader.Core.RootNode.SetStringProperty(ExportParameters.TextureFolderPathProperty,Tools.RelativePathStore(unformattedTextureFolderPath));
 
             Tools.UpdateCheckBox(chkFullPBR, Loader.Core.RootNode, ExportParameters.PBRFullPropertyName);
             Tools.UpdateCheckBox(chkNoAutoLight, Loader.Core.RootNode, ExportParameters.PBRNoLightPropertyName);
-            string unformattedEnvironmentPath = Tools.UnformatPath(txtEnvironmentName.Text);
+            string unformattedEnvironmentPath = PathUtilities.UnformatPath(txtEnvironmentName.Text);
             Loader.Core.RootNode.SetStringProperty(ExportParameters.PBREnvironmentPathPropertyName, Tools.RelativePathStore(unformattedEnvironmentPath));
         }
-            
 
-        private async Task<bool> DoExport(ExportItem exportItem, bool multiExport = false,bool clearLogs = true)
+        private async Task<bool> DoExport(ExportItem exportItem, bool multiExport = false, bool clearLogs = true)
         {
             SaveOptions();
-            
-            exporter = new BabylonExporter();
 
-            if (KittyHawkExtension.KittyHawkUtilities.ExportItemHasClosedContainers(exportItem.Node))
-            {
-                return false;
-            }
+            exporter = new BabylonExporter();
+            var textureExportPath = "";
             if (!string.IsNullOrWhiteSpace(txtTextureName.Text))
             {
-                exporter.relativeTextureFolder = Tools.GetPathRelativeToModel(Tools.UnformatPath(txtTextureName.Text), Tools.UnformatPath(txtModelName.Text));
+                textureExportPath = PathUtilities.GetRelativePath(PathUtilities.UnformatPath(txtTextureName.Text), PathUtilities.UnformatPath(txtModelName.Text));
             }
 
             if (clearLogs)
@@ -267,28 +271,33 @@ namespace Max2Babylon
             bool success = true;
             try
             {
-                string modelAbsolutePath = multiExport ? exportItem.ExportFilePathAbsolute : Tools.UnformatPath(txtModelName.Text);
-                ExportParameters exportParameters = new ExportParameters
+                string modelAbsolutePath = multiExport ? exportItem.ExportFilePathAbsolute : PathUtilities.UnformatPath(txtModelName.Text);
+                ExportParameters exportParameters = new MaxExportParameters
                 {
-                    outputPath = modelAbsolutePath,
-                    textureFolder = Tools.UnformatPath(txtTextureName.Text),
+                    outputPath = PathUtilities.UnformatPath(txtModelName.Text),
+                    outputTexturePath = textureExportPath,
+                    textureFolder = PathUtilities.UnformatPath(txtTextureName.Text),
                     outputFormat = comboOutputFormat.SelectedItem.ToString(),
-                    scaleFactor = txtScaleFactor.Text,
+                    scaleFactor = float.Parse(txtScaleFactor.Text),
                     writeTextures = chkWriteTextures.Checked,
                     overwriteTextures = chkOverwriteTextures.Checked,
                     exportHiddenObjects = chkHidden.Checked,
                     exportOnlySelected = chkOnlySelected.Checked,
                     generateManifest = chkManifest.Checked,
-                    autoSave3dsMaxFile = chkAutoSave.Checked,
+                    autoSaveSceneFile = chkAutoSave.Checked,
                     exportTangents = chkExportTangents.Checked,
-                    txtQuality = txtQuality.Text,
+                    exportMorphTangents = chkExportMorphTangents.Checked,
+                    exportMorphNormals = chkExportMorphNormals.Checked,
+                    txtQuality = long.Parse(txtQuality.Text),
                     mergeAOwithMR = chkMergeAOwithMR.Checked,
                     dracoCompression = chkDracoCompression.Checked,
                     enableKHRLightsPunctual = chkKHRLightsPunctual.Checked,
                     enableKHRTextureTransform = chkKHRTextureTransform.Checked,
                     enableKHRMaterialsUnlit = chkKHRMaterialsUnlit.Checked,
                     exportMaterials = chkExportMaterials.Checked,
-                    removeLodPrefix = removeLodPrefix.Checked,
+                    optimizeAnimations = !chkDoNotOptimizeAnimations.Checked,
+                    animgroupExportNonAnimated = chkAnimgroupExportNonAnimated.Checked,
+					removeLodPrefix = removeLodPrefix.Checked,
                     removeNamespaces = removeNamespaces_checkbox.Checked,
                     exportNode = exportItem != null ? exportItem.Node : null,
                     pbrNoLight = chkNoAutoLight.Checked,
@@ -399,8 +408,8 @@ namespace Max2Babylon
         {
             if (await DoExport(singleExportItem))
             {
-                WebServer.SceneFilename = Path.GetFileName(Tools.UnformatPath(txtModelName.Text));
-                WebServer.SceneFolder = Path.GetDirectoryName(Tools.UnformatPath(txtModelName.Text));
+                WebServer.SceneFilename = Path.GetFileName(PathUtilities.UnformatPath(txtModelName.Text));
+                WebServer.SceneFolder = Path.GetDirectoryName(PathUtilities.UnformatPath(txtModelName.Text));
 
                 Process.Start(WebServer.url + WebServer.SceneFilename);
 
