@@ -223,7 +223,7 @@ namespace Max2Babylon
 
         public KittyHawkMaterialExporter() { }
 
-        BabylonExporter exporter;
+        ExportParameters exporterParameters;
         GLTF gltf;
         IIGameMaterial maxGameMaterial;
         Func<string, string, string> tryWriteImageFunc;
@@ -328,7 +328,7 @@ namespace Max2Babylon
             }
 
             // save parameters
-            this.exporter = exporter;
+            this.exporterParameters = exportParameters;
             this.gltf = gltf;
             this.maxGameMaterial = maxGameMaterial;
             this.tryWriteImageFunc = tryWriteImageFunc;
@@ -1631,7 +1631,7 @@ namespace Max2Babylon
             // if dds, export as-is
             if(allowDDS && ext.ToUpperInvariant() == "DDS")
             {
-                if (exporter.exportParameters.writeTextures)
+                if (this.exporterParameters.writeTextures)
                 {
                     var destTexturePath = Path.Combine(gltf.OutputFolder, textureName);
                     File.Copy(sourceTexturePath, destTexturePath, true);
@@ -1640,7 +1640,16 @@ namespace Max2Babylon
             else
             {
                 string previousExtension = ext; // substring removes '.'
-                string validExtension = tryWriteImageFunc(sourceTexturePath, textureName);
+
+                string validExtension;
+                if (exporterParameters.writeTextures)
+                {
+                    validExtension = tryWriteImageFunc(sourceTexturePath, textureName);
+                }
+                else
+                {
+                    validExtension = Path.GetExtension(sourceTexturePath);
+                }
 
                 if (validExtension == null)
                 {
