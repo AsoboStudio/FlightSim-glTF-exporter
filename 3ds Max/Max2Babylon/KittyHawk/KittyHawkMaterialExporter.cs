@@ -48,6 +48,17 @@ namespace Max2Babylon
     }
 
     [DataContract]
+    class GLTFExtensionAsoboMaterialDrawOrder : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_draw_order";
+        [DataMember(EmitDefaultValue = false)] public float? drawOrderOffset;
+        public static class Defaults
+        {
+            public static readonly int drawOrderOffset = 0;
+        }
+    }
+
+    [DataContract]
     class GLTFExtensionAsoboAlphaModeDither : GLTFProperty
     {
         public const string SerializedName = "ASOBO_material_alphamode_dither";
@@ -424,6 +435,8 @@ namespace Max2Babylon
             string behindWindowMapTexPath = null;
 
             float glassReflectionMaskFactor = GLTFExtensionAsoboKittyGlass.Defaults.glassReflectionMaskFactor;
+
+            int drawOrderOffset = GLTFExtensionAsoboMaterialDrawOrder.Defaults.drawOrderOffset;
 
             #region Material Type (Standard, Decal, Windshield, ...)
             // - Standard
@@ -868,7 +881,42 @@ namespace Max2Babylon
                 }
             }
             #endregion
-            
+
+            #region Draw Order
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "DRAWORDER":
+                            {
+                                if (!property.GetPropertyValue(ref int_out, param_t))
+                                {
+                                    RaiseError("Could not retrieve DRAWORDER property.");
+                                    continue;
+                                }
+                                int drawOrder = int_out;
+                                if (drawOrder > 0)
+                                {
+                                    GLTFExtensionAsoboMaterialDrawOrder drawOrderExtensionObject = new GLTFExtensionAsoboMaterialDrawOrder();
+                                    drawOrderExtensionObject.drawOrderOffset = drawOrder;
+                                    materialExtensions.Add(GLTFExtensionAsoboMaterialDrawOrder.SerializedName, drawOrderExtensionObject);
+                                }
+                                break;
+                            }
+                    }
+                }
+            }
+            #endregion
+
             #region Textures & AlphaMode
 
             for (int i = 0; i < numProps; ++i)
