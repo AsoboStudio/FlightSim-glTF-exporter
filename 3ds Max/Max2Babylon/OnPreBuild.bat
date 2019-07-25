@@ -11,4 +11,3 @@ taskkill  /im 3dsmax.exe /f /fi "STATUS eq RUNNING"
 
 pause
 exit
-

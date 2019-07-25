@@ -651,7 +651,6 @@ namespace Max2Babylon
             }
         }
 
-
         public bool isPhysicalMaterial(IIGameMaterial materialNode)
         {
             return ClassIDWrapper.Physical_Material.Equals(materialNode.MaxMaterial.ClassID);
