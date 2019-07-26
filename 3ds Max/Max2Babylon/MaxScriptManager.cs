@@ -25,7 +25,7 @@ namespace Max2Babylon
 
         public static void Export()
         {
-            string storedModelPath = Loader.Core.RootNode.GetStringProperty(ExportParameters.ModelFilePathProperty, string.Empty);
+            string storedModelPath = Loader.Core.RootNode.GetStringProperty(MaxExportParameters.ModelFilePathProperty, string.Empty);
             string userRelativePath = Tools.ResolveRelativePath(storedModelPath);
             string absoluteModelPath = PathUtilities.UnformatPath(userRelativePath);
             Export(InitParameters(absoluteModelPath));
@@ -36,7 +36,7 @@ namespace Max2Babylon
             Export(InitParameters(outputPath));
         }
 
-        public static void Export(ExportParameters exportParameters)
+        public static void Export(MaxExportParameters exportParameters)
         {
             if (Loader.Class_ID == null)
             {
@@ -76,11 +76,12 @@ namespace Max2Babylon
 
 
         //leave the possibility to do get the outputh path from the babylon exporter with all the settings as presaved
-        public static ExportParameters InitParameters(string outputPath)
+        public static MaxExportParameters InitParameters(string outputPath)
         {
             long txtQuality = 100;
             float scaleFactor = 1f;
-            ExportParameters exportParameters = new ExportParameters();
+
+            MaxExportParameters exportParameters = new MaxExportParameters();
             exportParameters.outputPath = outputPath;
             exportParameters.outputFormat = Path.GetExtension(outputPath)?.Substring(1);
             exportParameters.textureFolder = Loader.Core.RootNode.GetStringProperty("textureFolderPathProperty", string.Empty);
@@ -98,10 +99,15 @@ namespace Max2Babylon
             exportParameters.enableKHRLightsPunctual = Loader.Core.RootNode.GetBoolProperty("babylonjs_khrLightsPunctual");
             exportParameters.enableKHRTextureTransform = Loader.Core.RootNode.GetBoolProperty("babylonjs_khrTextureTransform");
             exportParameters.enableKHRMaterialsUnlit = Loader.Core.RootNode.GetBoolProperty("babylonjs_khr_materials_unlit");
+            exportParameters.animgroupExportNonAnimated = Loader.Core.RootNode.GetBoolProperty("babylonjs_animgroupexportnonanimated");
+            exportParameters.optimizeAnimations = !Loader.Core.RootNode.GetBoolProperty("babylonjs_donotoptimizeanimations");
             exportParameters.exportMaterials = Loader.Core.RootNode.GetBoolProperty("babylonjs_export_materials");
+            exportParameters.exportMorphTangents = Loader.Core.RootNode.GetBoolProperty("babylonjs_export_Morph_Tangents");
+            exportParameters.exportMorphNormals = Loader.Core.RootNode.GetBoolProperty("babylonjs_export_Morph_Normals");
             exportParameters.pbrFull = Loader.Core.RootNode.GetBoolProperty(ExportParameters.PBRFullPropertyName);
             exportParameters.pbrNoLight = Loader.Core.RootNode.GetBoolProperty(ExportParameters.PBRNoLightPropertyName);
             exportParameters.pbrEnvironment = Loader.Core.RootNode.GetStringProperty(ExportParameters.PBREnvironmentPathPropertyName, string.Empty);
+            exportParameters.exportNode = null;
 
 			exportParameters.removeLodPrefix = Loader.Core.RootNode.GetBoolProperty("kittyhawk_removelodprefix");
             exportParameters.removeNamespaces = Loader.Core.RootNode.GetBoolProperty("kittyhawk_removenamespaces");
