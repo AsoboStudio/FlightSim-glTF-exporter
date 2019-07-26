@@ -277,7 +277,7 @@ namespace Max2Babylon
                 string modelAbsolutePath = multiExport ? exportItem.ExportFilePathAbsolute : PathUtilities.UnformatPath(txtModelName.Text);
                 ExportParameters exportParameters = new MaxExportParameters
                 {
-                    outputPath = PathUtilities.UnformatPath(txtModelName.Text),
+                    outputPath = PathUtilities.UnformatPath(modelAbsolutePath),
                     outputTexturePath = textureExportPath,
                     textureFolder = PathUtilities.UnformatPath(txtTextureName.Text),
                     outputFormat = comboOutputFormat.SelectedItem.ToString(),
