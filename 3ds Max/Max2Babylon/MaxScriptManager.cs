@@ -114,6 +114,11 @@ namespace Max2Babylon
             return exportParameters;
         }
 
+        public static void DisableBabylonAutoSave()
+        {
+            Loader.Core.RootNode.SetUserPropBool("babylonjs_autosave",false);
+        }
+
         public static void ImportAnimationGroups(string jsonPath)
         {
             AnimationGroupList animationGroups = new AnimationGroupList();
