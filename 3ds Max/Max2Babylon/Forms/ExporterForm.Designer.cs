@@ -132,6 +132,7 @@
             // 
             this.butModelBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.butModelBrowse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.butModelBrowse.Location = new System.Drawing.Point(800, 12);
             this.butModelBrowse.Name = "butModelBrowse";
             this.butModelBrowse.Size = new System.Drawing.Size(28, 23);
             this.butModelBrowse.TabIndex = 3;
@@ -759,7 +760,7 @@
             // 
             this.groupBox2.Controls.Add(this.removeNamespaces_checkbox);
             this.groupBox2.Controls.Add(this.removeLodPrefix);
-            this.groupBox2.Location = new System.Drawing.Point(474, 202);
+            this.groupBox2.Location = new System.Drawing.Point(916, 253);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(347, 199);
             this.groupBox2.TabIndex = 111;
