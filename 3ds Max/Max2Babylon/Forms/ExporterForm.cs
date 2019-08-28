@@ -209,8 +209,8 @@ namespace Max2Babylon
                     Loader.Core.FileHold();
                 }
 
-            await DoExport(singleExportItem);
-        }
+                await DoExport(singleExportItem);
+            }
             catch{}
             finally
             {
@@ -375,15 +375,16 @@ namespace Max2Babylon
                     exportMaterials = chkExportMaterials.Checked,
                     optimizeAnimations = !chkDoNotOptimizeAnimations.Checked,
                     animgroupExportNonAnimated = chkAnimgroupExportNonAnimated.Checked,
-					removeLodPrefix = removeLodPrefix.Checked,
-                    removeNamespaces = removeNamespaces_checkbox.Checked,
-                    exportNode = exportItem != null ? exportItem.Node : null,
+                    exportNode = exportItem?.Node,
+                    exportLayers = exportItem?.Layers,
                     pbrNoLight = chkNoAutoLight.Checked,
                     pbrFull = chkFullPBR.Checked,
                     pbrEnvironment = txtEnvironmentName.Text,
                     usePreExportProcess = chkUsePreExportProces.Checked,
                     flattenScene = chkFlatten.Checked,
-                    mergeInheritedContainers = chkMrgInheritedContainers.Checked
+                    mergeInheritedContainers = chkMrgInheritedContainers.Checked,
+					removeLodPrefix = removeLodPrefix.Checked,
+                    removeNamespaces = removeNamespaces_checkbox.Checked
                 };
 
                 exporter.callerForm = this;
@@ -667,16 +668,16 @@ namespace Max2Babylon
             }
                 catch{}
                 finally
-            {
-                    if (chkUsePreExportProces.Checked)
                 {
+                    if (chkUsePreExportProces.Checked)
+                    {
                         Loader.Core.SetQuietMode(true);
                         Loader.Core.FileFetch();
                         Loader.Core.SetQuietMode(false);
                     }
                 }
             }
-                }
+        }
 
         private void chkUsePreExportProces_CheckedChanged(object sender, EventArgs e)
         {
