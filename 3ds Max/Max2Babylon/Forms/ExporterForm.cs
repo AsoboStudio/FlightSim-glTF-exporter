@@ -592,8 +592,11 @@ namespace Max2Babylon
                     break;
             }
 
-            string newModelPath = Path.ChangeExtension(txtModelName.Text, this.saveFileDialog.DefaultExt);
-            this.txtModelName.MaxPath(newModelPath);
+            if (!string.IsNullOrEmpty(txtModelName.Text) && !string.IsNullOrEmpty(this.saveFileDialog.DefaultExt))
+            {
+                string newModelPath = Path.ChangeExtension(txtModelName.Text, this.saveFileDialog.DefaultExt);
+                this.txtModelName.MaxPath(newModelPath);
+            }
         }
 
         /// <summary>
