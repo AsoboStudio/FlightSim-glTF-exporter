@@ -103,7 +103,7 @@ namespace Max2Babylon
 
             Tools.PrepareCheckBox(chkUsePreExportProces, Loader.Core.RootNode, "babylonjs_preproces", 0);
             Tools.PrepareCheckBox(chkFlatten, Loader.Core.RootNode, "babylonjs_flattenScene", 0);
-            Tools.PrepareCheckBox(chkMrgInheritedContainers, Loader.Core.RootNode, "babylonjs_mergeinheritedcontainers",0);
+            Tools.PrepareCheckBox(chkMrgContainersAndXref, Loader.Core.RootNode, "babylonjs_mergecontainersandxref",0);
         }
 
         private void butModelBrowse_Click(object sender, EventArgs e)
@@ -280,7 +280,7 @@ namespace Max2Babylon
 
             Tools.UpdateCheckBox(chkUsePreExportProces, Loader.Core.RootNode, "babylonjs_preproces");
             Tools.UpdateCheckBox(chkFlatten, Loader.Core.RootNode, "babylonjs_flattenScene");
-            Tools.UpdateCheckBox(chkMrgInheritedContainers, Loader.Core.RootNode, "babylonjs_mergeinheritedcontainers");
+            Tools.UpdateCheckBox(chkMrgContainersAndXref, Loader.Core.RootNode, "babylonjs_mergecontainersandxref");
         }
 
         private async Task<bool> DoExport(ExportItem exportItem, bool multiExport = false, bool clearLogs = true)
@@ -382,7 +382,7 @@ namespace Max2Babylon
                     pbrEnvironment = txtEnvironmentName.Text,
                     usePreExportProcess = chkUsePreExportProces.Checked,
                     flattenScene = chkFlatten.Checked,
-                    mergeInheritedContainers = chkMrgInheritedContainers.Checked,
+                    mergeContainersAndXRef = chkMrgContainersAndXref.Checked,
 					removeLodPrefix = removeLodPrefix.Checked,
                     removeNamespaces = removeNamespaces_checkbox.Checked
                 };
@@ -594,9 +594,9 @@ namespace Max2Babylon
 
             if (!string.IsNullOrEmpty(txtModelName.Text) && !string.IsNullOrEmpty(this.saveFileDialog.DefaultExt))
             {
-                string newModelPath = Path.ChangeExtension(txtModelName.Text, this.saveFileDialog.DefaultExt);
-                this.txtModelName.MaxPath(newModelPath);
-            }
+            string newModelPath = Path.ChangeExtension(txtModelName.Text, this.saveFileDialog.DefaultExt);
+            this.txtModelName.MaxPath(newModelPath);
+        }
         }
 
         /// <summary>
@@ -667,8 +667,8 @@ namespace Max2Babylon
                     {
                         Loader.Core.FileHold();
                     }
-                await DoExport(exportItemList);
-            }
+                    await DoExport(exportItemList);
+                }
                 catch{}
                 finally
                 {
@@ -686,12 +686,12 @@ namespace Max2Babylon
         {
             if (!chkUsePreExportProces.Checked)
             {
-                chkMrgInheritedContainers.Enabled = false;
+                chkMrgContainersAndXref.Enabled = false;
                 chkFlatten.Enabled = false;
             }
             else
             {
-                chkMrgInheritedContainers.Enabled = true;
+                chkMrgContainersAndXref.Enabled = true;
                 chkFlatten.Enabled = true;
             }
         }

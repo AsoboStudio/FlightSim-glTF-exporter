@@ -41,7 +41,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.chkWriteTextures = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.chkMrgInheritedContainers = new System.Windows.Forms.CheckBox();
+            this.chkMrgContainersAndXref = new System.Windows.Forms.CheckBox();
             this.chkUsePreExportProces = new System.Windows.Forms.CheckBox();
             this.chkFlatten = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
@@ -223,7 +223,7 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.chkMrgInheritedContainers);
+            this.groupBox1.Controls.Add(this.chkMrgContainersAndXref);
             this.groupBox1.Controls.Add(this.chkUsePreExportProces);
             this.groupBox1.Controls.Add(this.chkFlatten);
             this.groupBox1.Controls.Add(this.label5);
@@ -271,18 +271,18 @@
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             // 
-            // chkMrgInheritedContainers
+            // chkMrgContainersAndXref
             // 
-            this.chkMrgInheritedContainers.AutoSize = true;
-            this.chkMrgInheritedContainers.Enabled = false;
-            this.chkMrgInheritedContainers.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkMrgInheritedContainers.Location = new System.Drawing.Point(18, 281);
-            this.chkMrgInheritedContainers.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.chkMrgInheritedContainers.Name = "chkMrgInheritedContainers";
-            this.chkMrgInheritedContainers.Size = new System.Drawing.Size(150, 17);
-            this.chkMrgInheritedContainers.TabIndex = 37;
-            this.chkMrgInheritedContainers.Text = "Merge Inherited Containers";
-            this.chkMrgInheritedContainers.UseVisualStyleBackColor = true;
+            this.chkMrgContainersAndXref.AutoSize = true;
+            this.chkMrgContainersAndXref.Enabled = false;
+            this.chkMrgContainersAndXref.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkMrgContainersAndXref.Location = new System.Drawing.Point(18, 281);
+            this.chkMrgContainersAndXref.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkMrgContainersAndXref.Name = "chkMrgContainersAndXref";
+            this.chkMrgContainersAndXref.Size = new System.Drawing.Size(155, 17);
+            this.chkMrgContainersAndXref.TabIndex = 37;
+            this.chkMrgContainersAndXref.Text = "Merge Containers And XRef";
+            this.chkMrgContainersAndXref.UseVisualStyleBackColor = true;
             // 
             // chkUsePreExportProces
             // 
@@ -803,12 +803,12 @@
             this.Controls.Add(this.treeView);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.butExport);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MinimumSize = new System.Drawing.Size(846, 388);
             this.Name = "ExporterForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Babylon.js - Export scene to babylon or glTF format";
+            this.TopMost = true;
             this.Activated += new System.EventHandler(this.ExporterForm_Activated);
             this.Deactivate += new System.EventHandler(this.ExporterForm_Deactivate);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ExporterForm_FormClosed);
@@ -875,10 +875,10 @@
         private System.Windows.Forms.CheckBox chkDoNotOptimizeAnimations;
         private System.Windows.Forms.CheckBox chkExportMorphTangents;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.CheckBox chkExportMorphNormals;		
+        private System.Windows.Forms.CheckBox chkExportMorphNormals;
         private System.Windows.Forms.CheckBox chkFlatten;
         private System.Windows.Forms.CheckBox chkUsePreExportProces;
-        private System.Windows.Forms.CheckBox chkMrgInheritedContainers;
+        private System.Windows.Forms.CheckBox chkMrgContainersAndXref;
 		private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.CheckBox removeNamespaces_checkbox;
         private System.Windows.Forms.CheckBox removeLodPrefix;
