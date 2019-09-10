@@ -72,6 +72,12 @@ namespace Max2Babylon
     }
 
     [DataContract]
+    class GLTFExtensionAsoboMaterialFakeTerrain : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_fake_terrain";
+    }
+
+    [DataContract]
     class GLTFExtensionAsoboMaterialDetail
     {
         public const string SerializedName = "ASOBO_material_detail_map";
@@ -214,7 +220,8 @@ namespace Max2Babylon
             Anisotropic,
             Hair,
             SSS,
-            InvisibleCollision
+            InvisibleCollision,
+            FakeTerrain
         }
 
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
@@ -446,6 +453,7 @@ namespace Max2Babylon
             // only create if needed
             GLTFExtensionAsoboMaterialGeometryDecal decalExtensionObject = null;
             GLTFExtensionAsoboMaterialInvisibleCollision invisibleCollisionExtensionObject = null;
+            GLTFExtensionAsoboMaterialFakeTerrain fakeTerrainExtensionObject = null;
             GLTFExtensions materialExtensions = new GLTFExtensions();
             GLTFExtensions materialExtras = new GLTFExtensions();
 
@@ -513,7 +521,11 @@ namespace Max2Babylon
                                 case 12:
                                     materialType = MaterialType.InvisibleCollision;
                                     invisibleCollisionExtensionObject = new GLTFExtensionAsoboMaterialInvisibleCollision();
-                                    break;                                
+                                    break;
+                                case 13:
+                                    materialType = MaterialType.FakeTerrain;
+                                    fakeTerrainExtensionObject = new GLTFExtensionAsoboMaterialFakeTerrain();
+                                    break;
                                 default:
                                     materialType = MaterialType.Standard;
                                     break;
@@ -1374,6 +1386,9 @@ namespace Max2Babylon
 
             if (invisibleCollisionExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialInvisibleCollision.SerializedName, invisibleCollisionExtensionObject);
+
+            if (fakeTerrainExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboMaterialFakeTerrain.SerializedName, fakeTerrainExtensionObject);
 
             if (materialExtensions.Count > 0)
             {
