@@ -18,7 +18,7 @@ namespace GLTFExport.Entities
                 }
                 else
                 {
-                    _uri = Uri.EscapeDataString(value);
+                    _uri = value;
                 }
             }
         }
