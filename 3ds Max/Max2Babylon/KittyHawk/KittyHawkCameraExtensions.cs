@@ -13,6 +13,17 @@ namespace Max2Babylon.KittyHawkExtension
     {
         public const string SerializedName = "ASOBO_animation_camera_yfov";
         [DataMember(EmitDefaultValue = false)] public List<GLTFCameraChannel> channels;
+
+        public static void Parse(GLTFExtensionCameraYFOV camera)
+        {
+            foreach (GLTFCameraChannel gltfCameraChannel in camera.channels)
+            {
+                if (gltfCameraChannel.target != null && gltfCameraChannel.target.path == "fov")
+                {
+                    gltfCameraChannel.target.path = "yfov";
+                }
+            }
+        }
     }
 
     [DataContract]

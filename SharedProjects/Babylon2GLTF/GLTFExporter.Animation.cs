@@ -522,6 +522,7 @@ namespace Babylon2GLTF
 
                     GLTFExtensionCameraYFOV cameraYfov = new GLTFExtensionCameraYFOV();
                     cameraYfov.channels = channelListExtension;
+                    GLTFExtensionCameraYFOV.Parse(cameraYfov);
 
                     animationExtensions.Add(GLTFExtensionCameraYFOV.SerializedName,cameraYfov);
 
