@@ -34,7 +34,11 @@ namespace Babylon2GLTF
             this.logger = logger;
 
             logger.RaiseMessage("GLTFExporter | Exportation started", Color.Blue);
-
+#if DEBUG
+            var watch = new Stopwatch();
+            watch.Start();
+#endif
+            
             // Force output file extension to be gltf
             outputFileName = Path.ChangeExtension(outputFileName, "gltf");
 
@@ -58,7 +62,11 @@ namespace Babylon2GLTF
                 // no minVersion
             };
 
-            gltf.asset.generator = $"babylon.js glTF exporter for {exportParameters.softwarePackageName} {exportParameters.softwareVersion} v{exportParameters.exporterVersion}";
+            var softwarePackageName = babylonScene.producer != null ? babylonScene.producer.name : "";
+            var softwareVersion = babylonScene.producer != null ? babylonScene.producer.version : "";
+            var exporterVersion = babylonScene.producer != null ? babylonScene.producer.exporter_version : "";
+
+            gltf.asset.generator = $"babylon.js glTF exporter for {softwarePackageName} {softwareVersion} v{exporterVersion}";
 
             // Scene
             gltf.scene = 0;
@@ -80,7 +88,11 @@ namespace Babylon2GLTF
                 logger.ReportProgressChanged((int)progression);
                 logger.CheckCancelled();
             }
-
+#if DEBUG
+            var t1 = watch.ElapsedMilliseconds / 1000.0;
+            logger.RaiseMessage(string.Format("GLTFMeshes exported in {0:0.00}s", t1), Color.Blue);
+#endif
+ 
 
             // Root nodes
             logger.RaiseMessage("GLTFExporter | Exporting nodes");
@@ -97,7 +109,10 @@ namespace Babylon2GLTF
                 logger.ReportProgressChanged((int)progression);
                 logger.CheckCancelled();
             });
-
+#if DEBUG
+            var t2 = watch.ElapsedMilliseconds / 1000.0 -t1;
+            logger.RaiseMessage(string.Format("GLTFNodes exported in {0:0.00}s", t2), Color.Blue);
+#endif
             // Materials
             logger.RaiseMessage("GLTFExporter | Exporting materials");
             foreach (var babylonMaterial in babylonMaterialsToExport)
@@ -106,11 +121,17 @@ namespace Babylon2GLTF
                 logger.CheckCancelled();
             };
             logger.RaiseMessage(string.Format("GLTFExporter | Nb materials exported: {0}", gltf.MaterialsList.Count), Color.Gray, 1);
-
+#if DEBUG
+            var t3 = watch.ElapsedMilliseconds / 1000.0 -t2;
+            logger.RaiseMessage(string.Format("GLTFMaterials exported in {0:0.00}s", t3), Color.Blue);
+#endif
             // Animations
             logger.RaiseMessage("GLTFExporter | Exporting Animations");
             ExportAnimationGroups(gltf, babylonScene);
-
+#if DEBUG
+            var t4 = watch.ElapsedMilliseconds / 1000.0 -t3;
+            logger.RaiseMessage(string.Format("GLTFAnimations exported in {0:0.00}s", t4), Color.Blue);
+#endif
             // Prepare buffers
             gltf.BuffersList.ForEach(buffer =>
             {
