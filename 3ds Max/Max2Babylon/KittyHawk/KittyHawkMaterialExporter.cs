@@ -78,6 +78,19 @@ namespace Max2Babylon
     }
 
     [DataContract]
+    class GLTFExtensionAsoboMaterialFresnelFade : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_fresnel_fade";
+        [DataMember(EmitDefaultValue = false)] public float? fresnelFactor;
+        [DataMember(EmitDefaultValue = false)] public float? fresnelOpacityOffset;
+        public static class Defaults
+        {
+            public static readonly float fresnelFactor = 1;
+            public static readonly float fresnelOpacityOffset = 1;
+        }
+    }
+
+    [DataContract]
     class GLTFExtensionAsoboMaterialDetail
     {
         public const string SerializedName = "ASOBO_material_detail_map";
@@ -221,7 +234,8 @@ namespace Max2Babylon
             Hair,
             SSS,
             InvisibleCollision,
-            FakeTerrain
+            FakeTerrain,
+            FresnelFade
         }
 
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
@@ -441,6 +455,9 @@ namespace Max2Babylon
             string heightMapTexPath = null;
             string behindWindowMapTexPath = null;
 
+            float fresnelFactor = GLTFExtensionAsoboMaterialFresnelFade.Defaults.fresnelFactor;
+            float fresnelOpacityOffset = GLTFExtensionAsoboMaterialFresnelFade.Defaults.fresnelOpacityOffset;
+
             float glassReflectionMaskFactor = GLTFExtensionAsoboKittyGlass.Defaults.glassReflectionMaskFactor;
 
             int drawOrderOffset = GLTFExtensionAsoboMaterialDrawOrder.Defaults.drawOrderOffset;
@@ -525,6 +542,9 @@ namespace Max2Babylon
                                 case 13:
                                     materialType = MaterialType.FakeTerrain;
                                     fakeTerrainExtensionObject = new GLTFExtensionAsoboMaterialFakeTerrain();
+                                    break;
+                                case 14:
+                                    materialType = MaterialType.FresnelFade;
                                     break;
                                 default:
                                     materialType = MaterialType.Standard;
@@ -868,11 +888,50 @@ namespace Max2Babylon
                     }
                 }
             }
-            #endregion
+                #endregion
 
-            #region ClearCoat Extension Properties
-            {
-                for (int i = 0; i < numProps; ++i)
+                #region FresnelFade Extension Properties
+                {
+                    for (int i = 0; i < numProps; ++i)
+                    {
+                        IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                        if (property == null)
+                            continue;
+
+                        IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                        string propertyName = property.Name.ToUpperInvariant();
+
+                        switch (propertyName)
+                        {
+                            case "FRESNELFACTOR":
+                                {
+                                    if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                    {
+                                        RaiseError("Could not retrieve FRESNELFACTOR property.");
+                                        continue;
+                                    }
+                                    fresnelFactor = float_out;
+                                    break;
+                                }
+                            case "FRESNELOPACITYOFFSET":
+                                {
+                                    if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                    {
+                                        RaiseError("Could not retrieve FRESNELOPACITYOFFSET property.");
+                                        continue;
+                                    }
+                                    fresnelOpacityOffset = float_out;
+                                    break;
+                                }
+                        }
+                    }
+                }
+                #endregion
+
+                #region ClearCoat Extension Properties
+                {
+                    for (int i = 0; i < numProps; ++i)
                 {
                     IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
 
@@ -1268,6 +1327,16 @@ namespace Max2Babylon
                 }
             }
 
+            // fresnel extension
+            GLTFExtensionAsoboMaterialFresnelFade fresnelFadeExtensionObject = null;
+            if (materialType == MaterialType.FresnelFade)
+            {
+                fresnelFadeExtensionObject = new GLTFExtensionAsoboMaterialFresnelFade();
+
+                fresnelFadeExtensionObject.fresnelFactor = fresnelFactor;
+                fresnelFadeExtensionObject.fresnelOpacityOffset = fresnelOpacityOffset;
+            }
+
             // KittyGlass extension, replacing glass extra, set by KittyGlass OR glass material
             GLTFExtensionAsoboKittyGlass kittyGlassExtensionObject = null;
             if (materialType == MaterialType.Glass)
@@ -1389,6 +1458,9 @@ namespace Max2Babylon
 
             if (fakeTerrainExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialFakeTerrain.SerializedName, fakeTerrainExtensionObject);
+
+            if (fresnelFadeExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboMaterialFresnelFade.SerializedName, fresnelFadeExtensionObject);
 
             if (materialExtensions.Count > 0)
             {
