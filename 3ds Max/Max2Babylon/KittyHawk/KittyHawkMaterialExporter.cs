@@ -170,9 +170,11 @@ namespace Max2Babylon
     {
         public const string SerializedName = "ASOBO_material_kitty_glass";
         [DataMember(EmitDefaultValue = false)] public float? glassReflectionMaskFactor { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float? glassDeformationFactor { get; set; }
         public static class Defaults
         {
             public static readonly float glassReflectionMaskFactor = 0;
+            public static readonly float glassDeformationFactor = 0;
         }
     }
 
@@ -455,10 +457,12 @@ namespace Max2Babylon
             string heightMapTexPath = null;
             string behindWindowMapTexPath = null;
 
+
             float fresnelFactor = GLTFExtensionAsoboMaterialFresnelFade.Defaults.fresnelFactor;
             float fresnelOpacityOffset = GLTFExtensionAsoboMaterialFresnelFade.Defaults.fresnelOpacityOffset;
 
             float glassReflectionMaskFactor = GLTFExtensionAsoboKittyGlass.Defaults.glassReflectionMaskFactor;
+            float glassDeformationFactor = GLTFExtensionAsoboKittyGlass.Defaults.glassDeformationFactor;
 
             int drawOrderOffset = GLTFExtensionAsoboMaterialDrawOrder.Defaults.drawOrderOffset;
 
@@ -883,6 +887,16 @@ namespace Max2Babylon
                                     continue;
                                 }
                                 glassReflectionMaskFactor = float_out;
+                                break;
+                            }
+                        case "GLASSDEFORMATIONFACTOR":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve GLASSDEFORMATIONFACTOR property.");
+                                    continue;
+                                }
+                                glassDeformationFactor = float_out;
                                 break;
                             }
                     }
@@ -1343,6 +1357,7 @@ namespace Max2Babylon
             {
                 kittyGlassExtensionObject = new GLTFExtensionAsoboKittyGlass();
                 kittyGlassExtensionObject.glassReflectionMaskFactor = glassReflectionMaskFactor;
+                kittyGlassExtensionObject.glassDeformationFactor = glassDeformationFactor;
             }
 
             //Clear Coat extension, requiert a dirtTex (lacquer comp) and Clear Coat material
