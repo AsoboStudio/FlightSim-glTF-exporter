@@ -4,13 +4,14 @@ using GLTFExport.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
+using Max2Babylon.KittyHawkExtension;
 using Utilities;
 
 namespace Babylon2GLTF
 {
     partial class GLTFExporter
     {
-
         private void ExportAnimationGroups(GLTF gltf, BabylonScene babylonScene)
         {
             // Retreive and parse animation group data
@@ -67,15 +68,24 @@ namespace Babylon2GLTF
                         GLTFNode gltfNode;
 
                         if (babylonNode != null && nodeToGltfNodeMap.TryGetValue(babylonNode, out gltfNode))
-                        {
+                    {
+                            if (babylonNode is BabylonCamera)
+                            {
+                                ExportCameraAnimation(gltfAnimation, startFrame, endFrame, gltf, babylonNode, gltfNode, babylonScene);
+                            }
+                            else
+                            {
                             ExportNodeAnimation(gltfAnimation, startFrame, endFrame, gltf, babylonNode, gltfNode, babylonScene);
+                    }
+
+                            
                         }
 
                         // export all bones that match this id
                         foreach (KeyValuePair<BabylonBone, GLTFNode> pair in boneToGltfNodeMap)
                         {
                             if (pair.Key.id.Equals(id))
-                            {
+                    {
                                 ExportBoneAnimation(gltfAnimation, startFrame, endFrame, gltf, pair.Key, pair.Value);
                             }
                         }
@@ -414,6 +424,15 @@ namespace Babylon2GLTF
                         GLTFAccessor.TypeEnum.VEC3
                     );
                     break;
+                case "fov":
+                    accessorOutput = GLTFBufferService.Instance.CreateAccessor(
+                        gltf,
+                        GLTFBufferService.Instance.GetBufferViewAnimationFloatScalar(gltf, buffer),
+                        "accessorAnimationFovs",
+                        GLTFAccessor.ComponentType.FLOAT,
+                        GLTFAccessor.TypeEnum.SCALAR
+                    );
+                    break;
             }
             return accessorOutput;
         }
@@ -700,5 +719,244 @@ namespace Babylon2GLTF
                     return null;
             }
         }
+
+        private string _getExtensionTargetPath(string babylonProperty)
+        {
+            switch (babylonProperty)
+            {
+                case "fov":
+                    return "fov";
+                default:
+                    return null;
+            }
+        }
+
+        ///KittyHawk Addition
+        
+        private void ExportCameraAnimation(GLTFAnimation gltfAnimation, int startFrame, int endFrame, GLTF gltf, BabylonNode babylonNode, GLTFNode gltfNode, BabylonScene babylonScene)
+        {
+            var channelList = gltfAnimation.ChannelList;
+            var samplerList = gltfAnimation.SamplerList;
+
+            bool exportNonAnimated = exportParameters.animgroupExportNonAnimated;
+
+            // Combine babylon animations from .babylon file and cached ones
+            List<BabylonAnimation> babylonAnimations = new List<BabylonAnimation>();
+            List<BabylonAnimation> babylonAnimationsExtension = new List<BabylonAnimation>();
+
+            if (babylonNode.animations != null)
+            {
+                babylonAnimations.AddRange(babylonNode.animations);
+            }
+            if (babylonNode.extraAnimations != null)
+            {
+                babylonAnimations.AddRange(babylonNode.extraAnimations);
+            }
+
+            // Filter animations to keep extended Animations 
+            babylonAnimationsExtension = babylonAnimations.FindAll(babylonAnimation => _getExtensionTargetPath(babylonAnimation.property) != null);
+            // Filter animations to only keep TRS ones
+            babylonAnimations = babylonAnimations.FindAll(babylonAnimation => _getTargetPath(babylonAnimation.property) != null);
+           
+            if (babylonAnimations.Count > 0 || exportNonAnimated)
+            {
+                if (babylonAnimations.Count > 0)
+                {
+                    logger.RaiseMessage("GLTFExporter.Animation | Export animations of node named: " + babylonNode.name, 2);
+                }
+                else if (exportNonAnimated)
+                {
+                    logger.RaiseMessage("GLTFExporter.Animation | Export dummy animation for node named: " + babylonNode.name, 2);
+                    // Export a dummy animation
+                    babylonAnimations.Add(GetDummyAnimation(gltfNode, startFrame, endFrame, babylonScene));
+                }
+
+                foreach (BabylonAnimation babylonAnimation in babylonAnimations)
+                {
+                    // Target
+                    var gltfTarget = new GLTFChannelTarget
+                    {
+                        node = gltfNode.index
+                    };
+                    gltfTarget.path = _getTargetPath(babylonAnimation.property);
+
+                    // --- Input ---
+                    var accessorInput = _createAndPopulateInput(gltf, babylonAnimation, startFrame, endFrame);
+                    if (accessorInput == null)
+                        continue;
+
+                    // --- Output ---
+                    GLTFAccessor accessorOutput = _createAccessorOfPath(gltfTarget.path, gltf);
+
+                    // Populate accessor
+                    int numKeys = 0;
+                    foreach (var babylonAnimationKey in babylonAnimation.keys)
+                    {
+                        if (babylonAnimationKey.frame < startFrame)
+                            continue;
+
+                        if (babylonAnimationKey.frame > endFrame)
+                            continue;
+
+                        numKeys++;
+
+                        // copy data before changing it in case animation groups overlap
+                        float[] outputValues = new float[babylonAnimationKey.values.Length];
+                        babylonAnimationKey.values.CopyTo(outputValues,0);
+
+                        // Switch coordinate system at object level
+                        if (babylonAnimation.property == "position")
+                        {
+                            outputValues[2] *= -1;
+                            outputValues[0] *= exportParameters.scaleFactor;
+                            outputValues[1] *= exportParameters.scaleFactor;
+                            outputValues[2] *= exportParameters.scaleFactor;
+                        }
+                        else if (babylonAnimation.property == "rotationQuaternion")
+                        {
+                            outputValues[0] *= -1;
+                            outputValues[1] *= -1;
+                        }
+
+                        // Store values as bytes
+                        foreach (var outputValue in outputValues)
+                        {
+                            accessorOutput.bytesList.AddRange(BitConverter.GetBytes(outputValue));
+                        }
+                    };
+                    accessorOutput.count = numKeys;
+
+                    // bail out if no keyframes to export (?)
+                    // todo [KeyInterpolation]: bail out only when there are no keyframes at all (?) and otherwise add the appropriate (interpolated) keyframes
+                    if (numKeys == 0)
+                        continue;
+
+                    // Animation sampler
+                    var gltfAnimationSampler = new GLTFAnimationSampler
+                    {
+                        input = accessorInput.index,
+                        output = accessorOutput.index
+                    };
+                    gltfAnimationSampler.index = samplerList.Count;
+                    samplerList.Add(gltfAnimationSampler);
+
+                    // Channel
+                    var gltfChannel = new GLTFChannel
+                    {
+                        sampler = gltfAnimationSampler.index,
+                        target = gltfTarget
+                    };
+                    channelList.Add(gltfChannel);
+                }
+            }
+
+            //export all extensions
+            var channelListExtension = new List<GLTFCameraChannel>();
+
+            if (babylonAnimationsExtension.Count > 0)
+            {
+                logger.RaiseMessage("GLTFExporter.Animation | Export extension animations of node named: " + babylonNode.name, 2);
+
+                GLTFExtensions animationExtensions = new GLTFExtensions();
+
+                foreach (BabylonAnimation babylonAnimation in babylonAnimationsExtension)
+                {
+                    // Target
+                    var gltfTarget = new GLTFChannelCameraTarget
+                    {
+                        camera = gltfNode.camera
+                    };
+                    gltfTarget.path = _getExtensionTargetPath(babylonAnimation.property);
+
+                    // --- Input ---
+                    var accessorInput = _createAndPopulateInput(gltf, babylonAnimation, startFrame, endFrame);
+                    if (accessorInput == null)
+                        continue;
+
+                    // --- Output ---
+                    GLTFAccessor accessorOutput = _createAccessorOfPath(gltfTarget.path, gltf);
+
+                    // Populate accessor
+                    int numKeys = 0;
+                    foreach (var babylonAnimationKey in babylonAnimation.keys)
+                    {
+                        if (babylonAnimationKey.frame < startFrame)
+                            continue;
+
+                        if (babylonAnimationKey.frame > endFrame)
+                            continue;
+
+                        numKeys++;
+
+                        // copy data before changing it in case animation groups overlap
+                        float[] outputValues = new float[babylonAnimationKey.values.Length];
+                        babylonAnimationKey.values.CopyTo(outputValues,0);
+
+                        // Store values as bytes
+                        foreach (var outputValue in outputValues)
+                        {
+                            accessorOutput.bytesList.AddRange(BitConverter.GetBytes(outputValue));
+                        }
+                    };
+                    accessorOutput.count = numKeys;
+
+                    // bail out if no keyframes to export (?)
+                    // todo [KeyInterpolation]: bail out only when there are no keyframes at all (?) and otherwise add the appropriate (interpolated) keyframes
+                    if (numKeys == 0)
+                        continue;
+
+                    // Animation sampler
+                    var gltfAnimationSampler = new GLTFAnimationSampler
+                    {
+                        input = accessorInput.index,
+                        output = accessorOutput.index
+                    };
+                    gltfAnimationSampler.index = samplerList.Count;
+                    samplerList.Add(gltfAnimationSampler);
+
+                    // Channel
+                    var gltfChannel = new GLTFCameraChannel()
+                    {
+                        sampler = gltfAnimationSampler.index,
+                        target = gltfTarget
+                    };
+                    channelListExtension.Add(gltfChannel);
+
+                    
+
+                    GLTFExtensionCameraYFOV cameraYfov = new GLTFExtensionCameraYFOV();
+                    cameraYfov.channels = channelListExtension;
+                    GLTFExtensionCameraYFOV.Parse(cameraYfov);
+
+                    animationExtensions.Add(GLTFExtensionCameraYFOV.SerializedName,cameraYfov);
+
+                    if (animationExtensions.Count > 0)
+                    {
+                        gltfAnimation.extensions = animationExtensions;
+
+                        // set all extensions as used but not required
+                        foreach (var pair in gltfAnimation.extensions)
+                        {
+                            if (!gltf.extensionsUsed.Contains(pair.Key))
+                                gltf.extensionsUsed.Add(pair.Key);
+                        }
+                    }
+                }
+            }
+            
+
+            if (babylonNode.GetType() == typeof(BabylonMesh))
+            {
+                var babylonMesh = babylonNode as BabylonMesh;
+
+                // Morph targets
+                var babylonMorphTargetManager = GetBabylonMorphTargetManager(babylonScene, babylonMesh);
+                if (babylonMorphTargetManager != null)
+                {
+                    ExportMorphTargetWeightAnimation(babylonMorphTargetManager, gltf, gltfNode, channelList, samplerList, startFrame, endFrame, babylonScene);
+                }
+            }
+        }
+
     }
 }
