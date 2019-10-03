@@ -66,9 +66,37 @@ namespace Max2Babylon
     }
 
     [DataContract]
-    class GLTFExtensionAsoboMaterialInvisibleCollision : GLTFProperty
+    class GLTFExtensionAsoboMaterialInvisible : GLTFProperty
     {
-        public const string SerializedName = "ASOBO_material_invisible_collision";
+        public const string SerializedName = "ASOBO_material_invisible";
+    }
+
+    [DataContract]
+    class GLTFExtensionAsoboMaterialUVOptions : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_UV_options";
+        [DataMember(EmitDefaultValue = false)] public bool? AOUseUV2 { get; set; }
+        public static class Defaults
+        {
+            public static readonly bool AOUseUV2 = false;
+        }
+    }
+
+    [DataContract]
+    class GLTFExtensionAsoboMaterialShadowOptions : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_shadow_options";
+        [DataMember(EmitDefaultValue = false)] public bool? noCastShadow { get; set; }
+        public static class Defaults
+        {
+            public static readonly bool noCastShadow = false;
+        }
+    }
+
+    [DataContract]
+    class GLTFExtensionAsoboCollisionObject : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_collision_object";
     }
 
     [DataContract]
@@ -235,7 +263,7 @@ namespace Max2Babylon
             Anisotropic,
             Hair,
             SSS,
-            InvisibleCollision,
+            Invisible,
             FakeTerrain,
             FresnelFade
         }
@@ -473,8 +501,9 @@ namespace Max2Babylon
 
             // only create if needed
             GLTFExtensionAsoboMaterialGeometryDecal decalExtensionObject = null;
-            GLTFExtensionAsoboMaterialInvisibleCollision invisibleCollisionExtensionObject = null;
             GLTFExtensionAsoboMaterialFakeTerrain fakeTerrainExtensionObject = null;
+            GLTFExtensionAsoboMaterialInvisible invisibleExtensionObject = null;
+            GLTFExtensionAsoboCollisionObject collisionExtensionObject = null;
             GLTFExtensions materialExtensions = new GLTFExtensions();
             GLTFExtensions materialExtras = new GLTFExtensions();
 
@@ -540,8 +569,8 @@ namespace Max2Babylon
                                     materialType = MaterialType.SSS;
                                     break;
                                 case 12:
-                                    materialType = MaterialType.InvisibleCollision;
-                                    invisibleCollisionExtensionObject = new GLTFExtensionAsoboMaterialInvisibleCollision();
+                                    materialType = MaterialType.Invisible;
+                                    invisibleExtensionObject = new GLTFExtensionAsoboMaterialInvisible();
                                     break;
                                 case 13:
                                     materialType = MaterialType.FakeTerrain;
@@ -904,48 +933,48 @@ namespace Max2Babylon
             }
                 #endregion
 
-                #region FresnelFade Extension Properties
+            #region FresnelFade Extension Properties
+            {
+                for (int i = 0; i < numProps; ++i)
                 {
-                    for (int i = 0; i < numProps; ++i)
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
                     {
-                        IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
-
-                        if (property == null)
-                            continue;
-
-                        IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
-                        string propertyName = property.Name.ToUpperInvariant();
-
-                        switch (propertyName)
-                        {
-                            case "FRESNELFACTOR":
+                        case "FRESNELFACTOR":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
                                 {
-                                    if (!property.GetPropertyValue(ref float_out, param_t, param_p))
-                                    {
-                                        RaiseError("Could not retrieve FRESNELFACTOR property.");
-                                        continue;
-                                    }
-                                    fresnelFactor = float_out;
-                                    break;
+                                    RaiseError("Could not retrieve FRESNELFACTOR property.");
+                                    continue;
                                 }
-                            case "FRESNELOPACITYOFFSET":
+                                fresnelFactor = float_out;
+                                break;
+                            }
+                        case "FRESNELOPACITYOFFSET":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
                                 {
-                                    if (!property.GetPropertyValue(ref float_out, param_t, param_p))
-                                    {
-                                        RaiseError("Could not retrieve FRESNELOPACITYOFFSET property.");
-                                        continue;
-                                    }
-                                    fresnelOpacityOffset = float_out;
-                                    break;
+                                    RaiseError("Could not retrieve FRESNELOPACITYOFFSET property.");
+                                    continue;
                                 }
-                        }
+                                fresnelOpacityOffset = float_out;
+                                break;
+                            }
                     }
                 }
-                #endregion
+            }
+            #endregion
 
-                #region ClearCoat Extension Properties
-                {
-                    for (int i = 0; i < numProps; ++i)
+            #region ClearCoat Extension Properties
+            {
+                for (int i = 0; i < numProps; ++i)
                 {
                     IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
 
@@ -994,6 +1023,110 @@ namespace Max2Babylon
                                     GLTFExtensionAsoboMaterialDrawOrder drawOrderExtensionObject = new GLTFExtensionAsoboMaterialDrawOrder();
                                     drawOrderExtensionObject.drawOrderOffset = drawOrder;
                                     materialExtensions.Add(GLTFExtensionAsoboMaterialDrawOrder.SerializedName, drawOrderExtensionObject);
+                                }
+                                break;
+                            }
+                    }
+                }
+            }
+            #endregion
+
+            #region UV Options
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "AOUSEUV2":
+                            {
+                                if (!property.GetPropertyValue(ref int_out, param_t))
+                                {
+                                    RaiseError("Could not retrieve AOUSEUV2 property.");
+                                    continue;
+                                }
+                                bool AOUseUV2 = (int_out != 0);
+                                if (AOUseUV2)
+                                {
+                                    GLTFExtensionAsoboMaterialUVOptions UVOptionsExtensionObject = new GLTFExtensionAsoboMaterialUVOptions();
+                                    UVOptionsExtensionObject.AOUseUV2 = AOUseUV2;
+                                    materialExtensions.Add(GLTFExtensionAsoboMaterialUVOptions.SerializedName, UVOptionsExtensionObject);
+                                }
+                                break;
+                            }
+                    }
+                }
+            }
+            #endregion
+
+            #region Collision
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "COLLISIONMATERIAL":
+                            {
+                                if (!property.GetPropertyValue(ref int_out, param_t))
+                                {
+                                    RaiseError("Could not retrieve COLLISIONMATERIAL property.");
+                                    continue;
+                                }
+                                bool collisionMaterial = (int_out != 0);
+                                if (collisionMaterial)
+                                {
+                                    GLTFExtensionAsoboCollisionObject collisionMaterialExtensionObject = new GLTFExtensionAsoboCollisionObject();
+                                    materialExtensions.Add(GLTFExtensionAsoboCollisionObject.SerializedName, collisionMaterialExtensionObject);
+                                }
+                                break;
+                            }
+                    }
+                }
+            }
+            #endregion
+
+            #region Shadow Options
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "NOCASTSHADOW":
+                            {
+                                if (!property.GetPropertyValue(ref int_out, param_t))
+                                {
+                                    RaiseError("Could not retrieve NOCASTSHADOW property.");
+                                    continue;
+                                }
+                                bool noCastShadow = (int_out != 0);
+                                if (noCastShadow)
+                                {
+                                    GLTFExtensionAsoboMaterialShadowOptions shadowOptionMaterialExtensionObject = new GLTFExtensionAsoboMaterialShadowOptions();
+                                    shadowOptionMaterialExtensionObject.noCastShadow = noCastShadow;
+                                    materialExtensions.Add(GLTFExtensionAsoboMaterialShadowOptions.SerializedName, shadowOptionMaterialExtensionObject);
                                 }
                                 break;
                             }
@@ -1139,7 +1272,7 @@ namespace Max2Babylon
                             }
                             material.SetBaseColorFactor(point4_out.X, point4_out.Y, point4_out.Z);
 
-                            if (invisibleCollisionExtensionObject != null)
+                            if (invisibleExtensionObject != null)
                                 material.SetBaseColorFactorAlpha(0.7f);
                             else
                                 material.SetBaseColorFactorAlpha(point4_out.W);
@@ -1468,14 +1601,17 @@ namespace Max2Babylon
             if (kittyGlassExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboKittyGlass.SerializedName, kittyGlassExtensionObject);
 
-            if (invisibleCollisionExtensionObject != null)
-                materialExtensions.Add(GLTFExtensionAsoboMaterialInvisibleCollision.SerializedName, invisibleCollisionExtensionObject);
+            if (invisibleExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboMaterialInvisible.SerializedName, invisibleExtensionObject);
 
             if (fakeTerrainExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialFakeTerrain.SerializedName, fakeTerrainExtensionObject);
 
             if (fresnelFadeExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialFresnelFade.SerializedName, fresnelFadeExtensionObject);
+
+            if (collisionExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboMaterialFresnelFade.SerializedName, collisionExtensionObject);
 
             if (materialExtensions.Count > 0)
             {
