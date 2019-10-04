@@ -149,6 +149,9 @@
     <Compile Include="..\BabylonSkipFlatten.cs">
       <Link>BabylonSkipFlatten.cs</Link>
     </Compile>
+    <Compile Include="..\BabylonToggleBakeAnimation.cs">
+      <Link>BabylonToggleBakeAnimation.cs</Link>
+    </Compile>
     <Compile Include="..\Descriptor.cs">
       <Link>Descriptor.cs</Link>
     </Compile>
@@ -395,17 +398,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="VBIDE">
-      <Guid>{0002E157-0000-0000-C000-000000000046}</Guid>
-      <VersionMajor>5</VersionMajor>
-      <VersionMinor>3</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="..\..\..\SharedProjects\BabylonExport.Entities\BabylonExport.Entities.projitems" Label="Shared" />
   <Import Project="..\..\..\SharedProjects\BabylonFileConverter\BabylonFileConverter.projitems" Label="Shared" />
   <Import Project="..\..\..\SharedProjects\GltfExport.Entities\GltfExport.Entities.projitems" Label="Shared" />
