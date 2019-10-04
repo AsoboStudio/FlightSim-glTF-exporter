@@ -12,10 +12,14 @@
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
@@ -288,6 +292,15 @@
     <Compile Include="..\GlobalUtility.cs">
       <Link>GlobalUtility.cs</Link>
     </Compile>
+    <Compile Include="..\KittyHawk\KittyHawkCameraExtensions.cs">
+      <Link>KittyHawkExtension\KittyHawkCameraExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\KittyHawk\KittyHawkMaterialExporter.cs">
+      <Link>KittyHawkExtension\KittyHawkMaterialExporter.cs</Link>
+    </Compile>
+    <Compile Include="..\KittyHawk\KittyHawkUtilities.cs">
+      <Link>KittyHawkExtension\KittyHawkUtilities.cs</Link>
+    </Compile>
     <Compile Include="..\Loader.cs">
       <Link>Loader.cs</Link>
     </Compile>
@@ -385,6 +398,7 @@
     <Content Include="Refs\Autodesk.Max.dll" />
     <None Include="Resources\MaxExporter.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\..\..\SharedProjects\BabylonExport.Entities\BabylonExport.Entities.projitems" Label="Shared" />
   <Import Project="..\..\..\SharedProjects\BabylonFileConverter\BabylonFileConverter.projitems" Label="Shared" />
   <Import Project="..\..\..\SharedProjects\GltfExport.Entities\GltfExport.Entities.projitems" Label="Shared" />

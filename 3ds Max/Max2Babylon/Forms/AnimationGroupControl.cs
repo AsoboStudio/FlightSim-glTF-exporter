@@ -12,7 +12,6 @@ namespace Max2Babylon
         public Color ChangedTextColor { get; set; } = Color.Red;
 
         AnimationGroup currentInfo = null;
-        private SelectNameForm selectNameForm = null;
 
         // Typically called when the user presses confirm, but can also happen when scene changes are detected.
         public event Action<AnimationGroup> InfoChanged;
@@ -247,23 +246,6 @@ namespace Max2Babylon
                 return;
 
             endTextBox.Text = Tools.CalculateEndFrameFromAnimationGroupNodes(currentInfo).ToString();
-        }
-
-        private void preDefNameButtonClick(object sender, EventArgs e)
-        {
-            if (currentInfo == null)
-            {
-                MessageBox.Show("Select at least one Animation Group");
-                return;
-            }
-
-            if (selectNameForm == null || selectNameForm.IsDisposed)
-            {
-                selectNameForm = new SelectNameForm(nameTextBox, currentInfo, MaxNodeTree);
-            }
-
-            selectNameForm.TopMost = true;
-            selectNameForm.Show();
         }
     }
 }

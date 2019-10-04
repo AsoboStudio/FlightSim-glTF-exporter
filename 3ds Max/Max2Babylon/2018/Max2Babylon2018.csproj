@@ -288,19 +288,14 @@
     <Compile Include="..\GlobalUtility.cs">
       <Link>GlobalUtility.cs</Link>
     </Compile>
+    <Compile Include="..\KittyHawk\KittyHawkCameraExtensions.cs">
+      <Link>KittyHawkExtension\KittyHawkCameraExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\KittyHawk\KittyHawkMaterialExporter.cs">
       <Link>KittyHawkExtension\KittyHawkMaterialExporter.cs</Link>
     </Compile>
     <Compile Include="..\KittyHawk\KittyHawkUtilities.cs">
       <Link>KittyHawkExtension\KittyHawkUtilities.cs</Link>
-    </Compile>
-    <Compile Include="..\KittyHawk\SelectNameForm.cs">
-      <Link>KittyHawkExtension\SelectNameForm.cs</Link>
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="..\KittyHawk\SelectNameForm.designer.cs">
-      <Link>KittyHawkExtension\SelectNameForm.designer.cs</Link>
-      <DependentUpon>SelectNameForm.cs</DependentUpon>
     </Compile>
     <Compile Include="..\Loader.cs">
       <Link>Loader.cs</Link>
@@ -384,10 +379,6 @@
       <Link>Forms\MaxNodeTreeView.resx</Link>
       <DependentUpon>MaxNodeTreeView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\KittyHawk\SelectNameForm.resx">
-      <Link>KittyHawkExtension\SelectNameForm.resx</Link>
-      <DependentUpon>SelectNameForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -400,24 +391,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <COMReference Include="Microsoft.Office.Core">
-      <Guid>{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}</Guid>
-      <VersionMajor>2</VersionMajor>
-      <VersionMinor>8</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
-    <COMReference Include="Microsoft.Office.Interop.Excel">
-      <Guid>{00020813-0000-0000-C000-000000000046}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>9</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
     <COMReference Include="VBIDE">
       <Guid>{0002E157-0000-0000-C000-000000000046}</Guid>
       <VersionMajor>5</VersionMajor>
