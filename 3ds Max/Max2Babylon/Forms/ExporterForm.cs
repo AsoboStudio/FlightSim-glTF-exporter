@@ -326,6 +326,7 @@ namespace Max2Babylon
                 }
                 catch
                 {
+                    //do nothing
                 }
                 Application.DoEvents();
             };
@@ -339,6 +340,7 @@ namespace Max2Babylon
                 }
                 catch
                 {
+                    //do nothing
                 }
                 Application.DoEvents();
             };
@@ -356,6 +358,7 @@ namespace Max2Babylon
                 }
                 catch
                 {
+                    //do nothing
                 }
                 Application.DoEvents();
             };
@@ -402,6 +405,7 @@ namespace Max2Babylon
                     usePreExportProcess = chkUsePreExportProces.Checked,
                     flattenScene = chkFlatten.Checked,
                     mergeContainersAndXRef = chkMrgContainersAndXref.Checked,
+					useMultiExporter = multiExport,
 					removeLodPrefix = removeLodPrefix.Checked,
                     removeNamespaces = removeNamespaces_checkbox.Checked
                 };
@@ -715,12 +719,10 @@ namespace Max2Babylon
             if (!chkUsePreExportProces.Checked)
             {
                 chkMrgContainersAndXref.Enabled = false;
-                chkFlatten.Enabled = false;
             }
             else
             {
                 chkMrgContainersAndXref.Enabled = true;
-                chkFlatten.Enabled = true;
             }
         }
     }
