@@ -76,9 +76,15 @@ namespace Max2Babylon
     {
         public const string SerializedName = "ASOBO_material_UV_options";
         [DataMember(EmitDefaultValue = false)] public bool? AOUseUV2 { get; set; }
+        [DataMember(EmitDefaultValue = false)] public bool? clampUVX { get; set; }
+        [DataMember(EmitDefaultValue = false)] public bool? clampUVY { get; set; }
+        [DataMember(EmitDefaultValue = false)] public bool? clampUVZ { get; set; }
         public static class Defaults
         {
             public static readonly bool AOUseUV2 = false;
+            public static readonly bool clampUVX = false;
+            public static readonly bool clampUVY = false;
+            public static readonly bool clampUVZ = false;
         }
     }
 
@@ -485,12 +491,16 @@ namespace Max2Babylon
             string heightMapTexPath = null;
             string behindWindowMapTexPath = null;
 
-
             float fresnelFactor = GLTFExtensionAsoboMaterialFresnelFade.Defaults.fresnelFactor;
             float fresnelOpacityOffset = GLTFExtensionAsoboMaterialFresnelFade.Defaults.fresnelOpacityOffset;
 
             float glassReflectionMaskFactor = GLTFExtensionAsoboKittyGlass.Defaults.glassReflectionMaskFactor;
             float glassDeformationFactor = GLTFExtensionAsoboKittyGlass.Defaults.glassDeformationFactor;
+
+            bool AOUseUV2 = GLTFExtensionAsoboMaterialUVOptions.Defaults.AOUseUV2;
+            bool clampUVX = GLTFExtensionAsoboMaterialUVOptions.Defaults.clampUVX;
+            bool clampUVY = GLTFExtensionAsoboMaterialUVOptions.Defaults.clampUVY;
+            bool clampUVZ = GLTFExtensionAsoboMaterialUVOptions.Defaults.clampUVZ;
 
             int drawOrderOffset = GLTFExtensionAsoboMaterialDrawOrder.Defaults.drawOrderOffset;
 
@@ -1052,13 +1062,37 @@ namespace Max2Babylon
                                     RaiseError("Could not retrieve AOUSEUV2 property.");
                                     continue;
                                 }
-                                bool AOUseUV2 = (int_out != 0);
-                                if (AOUseUV2)
+                                AOUseUV2 = (int_out != 0);
+                                break;
+                            }
+                        case "CLAMPUVX":
+                            {
+                                if (!property.GetPropertyValue(ref int_out, param_t))
                                 {
-                                    GLTFExtensionAsoboMaterialUVOptions UVOptionsExtensionObject = new GLTFExtensionAsoboMaterialUVOptions();
-                                    UVOptionsExtensionObject.AOUseUV2 = AOUseUV2;
-                                    materialExtensions.Add(GLTFExtensionAsoboMaterialUVOptions.SerializedName, UVOptionsExtensionObject);
+                                    RaiseError("Could not retrieve CLAMPUVX property.");
+                                    continue;
                                 }
+                                clampUVX = (int_out != 0);
+                                break;
+                            }
+                        case "CLAMPUVY":
+                            {
+                                if (!property.GetPropertyValue(ref int_out, param_t))
+                                {
+                                    RaiseError("Could not retrieve CLAMPUVY property.");
+                                    continue;
+                                }
+                                clampUVY = (int_out != 0);
+                                break;
+                            }
+                        case "CLAMPUVZ":
+                            {
+                                if (!property.GetPropertyValue(ref int_out, param_t))
+                                {
+                                    RaiseError("Could not retrieve CLAMPUVZ property.");
+                                    continue;
+                                }
+                                clampUVZ = (int_out != 0);
                                 break;
                             }
                     }
@@ -1474,6 +1508,18 @@ namespace Max2Babylon
                 }
             }
 
+            // UV Option extension
+            GLTFExtensionAsoboMaterialUVOptions UVOptionsExtensionObject = null;
+            if (AOUseUV2 || clampUVX || clampUVY || clampUVZ)
+            {
+                UVOptionsExtensionObject = new GLTFExtensionAsoboMaterialUVOptions();
+
+                UVOptionsExtensionObject.AOUseUV2 = AOUseUV2;
+                UVOptionsExtensionObject.clampUVX = clampUVX;
+                UVOptionsExtensionObject.clampUVY = clampUVY;
+                UVOptionsExtensionObject.clampUVZ = clampUVZ;
+            }
+
             // fresnel extension
             GLTFExtensionAsoboMaterialFresnelFade fresnelFadeExtensionObject = null;
             if (materialType == MaterialType.FresnelFade)
@@ -1612,6 +1658,9 @@ namespace Max2Babylon
 
             if (collisionExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialFresnelFade.SerializedName, collisionExtensionObject);
+
+            if(UVOptionsExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboMaterialUVOptions.SerializedName, UVOptionsExtensionObject);
 
             if (materialExtensions.Count > 0)
             {
