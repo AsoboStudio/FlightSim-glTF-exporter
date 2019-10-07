@@ -556,7 +556,7 @@ namespace Max2Babylon
                                     break;
                                 case 5:
                                     materialType = MaterialType.Glass;
-                                    //materialExtras.Add(FlightSimGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Glass.ToString());
+                                    //materialExtras.Add(FlightSimGLTFExtras.Name_ASOBO_material_code, FlightSimGLTFExtras.MaterialCode.Code.Glass.ToString());
                                     break;
                                 case 6:
                                     materialType = MaterialType.GeoDecalFrosted;
