@@ -300,6 +300,14 @@
     <Compile Include="..\KittyHawk\KittyHawkUtilities.cs">
       <Link>KittyHawkExtension\KittyHawkUtilities.cs</Link>
     </Compile>
+    <Compile Include="..\KittyHawk\SelectNameForm.cs">
+      <Link>KittyHawkExtension\SelectNameForm.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\KittyHawk\SelectNameForm.designer.cs">
+      <Link>KittyHawkExtension\SelectNameForm.designer.cs</Link>
+      <DependentUpon>SelectNameForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="..\Loader.cs">
       <Link>Loader.cs</Link>
     </Compile>
@@ -386,6 +394,10 @@
     <EmbeddedResource Include="..\Forms\MaxNodeTreeView.resx">
       <Link>Forms\MaxNodeTreeView.resx</Link>
       <DependentUpon>MaxNodeTreeView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\KittyHawk\SelectNameForm.resx">
+      <Link>KittyHawkExtension\SelectNameForm.resx</Link>
+      <DependentUpon>SelectNameForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
