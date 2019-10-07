@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GLTFExport.Entities;
 
-namespace Max2Babylon.KittyHawkExtension
+namespace Max2Babylon.FlightSimExtension
 {
     [DataContract]
     class GLTFExtensionCameraYFOV : GLTFProperty

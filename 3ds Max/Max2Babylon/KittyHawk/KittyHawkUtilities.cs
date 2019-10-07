@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Autodesk.Max;
 
-namespace Max2Babylon.KittyHawkExtension
+namespace Max2Babylon.FlightSimExtension
 {
-    static class KittyHawkUtilities
+    static class FlightSimUtilities
     {
         public static bool ExportItemHasClosedContainers(IINode itemRootNode)
         {

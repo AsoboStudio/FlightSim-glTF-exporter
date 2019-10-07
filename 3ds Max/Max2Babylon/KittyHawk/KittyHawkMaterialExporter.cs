@@ -904,7 +904,7 @@ namespace Max2Babylon
             }
             #endregion
 
-            #region KittyGlass Extension Properties
+            #region FlightSim Extension Properties
             {
                 for (int i = 0; i < numProps; ++i)
                 {
@@ -1530,13 +1530,13 @@ namespace Max2Babylon
                 fresnelFadeExtensionObject.fresnelOpacityOffset = fresnelOpacityOffset;
             }
 
-            // KittyGlass extension, replacing glass extra, set by KittyGlass OR glass material
-            GLTFExtensionAsoboKittyGlass kittyGlassExtensionObject = null;
+            // FlightSim extension, replacing glass extra, set by KittyGlass OR glass material
+            GLTFExtensionAsoboKittyGlass flightSimGlassExtensionObject = null;
             if (materialType == MaterialType.Glass)
             {
-                kittyGlassExtensionObject = new GLTFExtensionAsoboKittyGlass();
-                kittyGlassExtensionObject.glassReflectionMaskFactor = glassReflectionMaskFactor;
-                kittyGlassExtensionObject.glassDeformationFactor = glassDeformationFactor;
+                flightSimGlassExtensionObject = new GLTFExtensionAsoboKittyGlass();
+                flightSimGlassExtensionObject.glassReflectionMaskFactor = glassReflectionMaskFactor;
+                flightSimGlassExtensionObject.glassDeformationFactor = glassDeformationFactor;
             }
 
             //Clear Coat extension, requiert a dirtTex (lacquer comp) and Clear Coat material
@@ -1644,8 +1644,8 @@ namespace Max2Babylon
             if (parallaxWindowExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboParallaxWindow.SerializedName, parallaxWindowExtensionObject);
 
-            if (kittyGlassExtensionObject != null)
-                materialExtensions.Add(GLTFExtensionAsoboKittyGlass.SerializedName, kittyGlassExtensionObject);
+            if (flightSimGlassExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboKittyGlass.SerializedName, flightSimGlassExtensionObject);
 
             if (invisibleExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialInvisible.SerializedName, invisibleExtensionObject);
@@ -2015,7 +2015,7 @@ namespace Max2Babylon
         }
     }
     
-    static class KittyClassExtensions
+    static class FlightSimClassExtensions
     {
         public static class Defaults
         {
@@ -2268,9 +2268,4 @@ namespace Max2Babylon
 
         #endregion
     }
-
-    //public class KittyHawkMaterial : Autodesk.Max.Plugins.MtlBase
-    //{
-    //
-    //}
 }

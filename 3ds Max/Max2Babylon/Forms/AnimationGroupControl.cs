@@ -191,7 +191,7 @@ namespace Max2Babylon
             {
                 IINode node = Loader.Core.GetSelNode(i);
 
-                //added in kittyhawk to add lod node "x0_name" and all other lod relative
+                //added in flightsim to add lod node "x0_name" and all other lod relative
                 // x1_name,x2_name etc
                 //todo expost addnode to maxscript and call this outside
                 if (node.Name.StartsWith("x"))

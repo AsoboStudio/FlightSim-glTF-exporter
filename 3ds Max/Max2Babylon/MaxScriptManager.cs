@@ -108,8 +108,8 @@ namespace Max2Babylon
             exportParameters.pbrEnvironment = Loader.Core.RootNode.GetStringProperty(ExportParameters.PBREnvironmentPathPropertyName, string.Empty);
             exportParameters.exportNode = null;
 
-			exportParameters.removeLodPrefix = Loader.Core.RootNode.GetBoolProperty("kittyhawk_removelodprefix");
-            exportParameters.removeNamespaces = Loader.Core.RootNode.GetBoolProperty("kittyhawk_removenamespaces");
+			exportParameters.removeLodPrefix = Loader.Core.RootNode.GetBoolProperty("flightsim_removelodprefix");
+            exportParameters.removeNamespaces = Loader.Core.RootNode.GetBoolProperty("flightsim_removenamespaces");
             return exportParameters;
         }
 

@@ -89,8 +89,8 @@ namespace Max2Babylon
             Tools.PrepareComboBox(cmbBakeAnimationOptions, Loader.Core.RootNode, "babylonjs_bakeAnimationsType", (int)BakeAnimationType.DoNotBakeAnimation);
             Tools.PrepareCheckBox(chkApplyPreprocessToScene, Loader.Core.RootNode, "babylonjs_applyPreprocess", 0);
 
-            Tools.PrepareCheckBox(removeLodPrefix, Loader.Core.RootNode, "kittyhawk_removelodprefix",1);
-            Tools.PrepareCheckBox(removeNamespaces_checkbox, Loader.Core.RootNode, "kittyhawk_removenamespaces",1);
+            Tools.PrepareCheckBox(removeLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix",1);
+            Tools.PrepareCheckBox(removeNamespaces_checkbox, Loader.Core.RootNode, "flightsim_removenamespaces",1);
 
             if (comboOutputFormat.SelectedText == "babylon" || comboOutputFormat.SelectedText == "binary babylon" || !gltfPipelineInstalled)
             {
@@ -274,8 +274,8 @@ namespace Max2Babylon
 			Tools.UpdateComboBoxByIndex(cmbBakeAnimationOptions, Loader.Core.RootNode, "babylonjs_bakeAnimationsType");
             Tools.UpdateCheckBox(chkApplyPreprocessToScene,Loader.Core.RootNode, "babylonjs_applyPreprocess");
 
-			Tools.UpdateCheckBox(removeLodPrefix, Loader.Core.RootNode, "kittyhawk_removelodprefix");
-            Tools.UpdateCheckBox(removeNamespaces_checkbox, Loader.Core.RootNode, "kittyhawk_removenamespaces");            
+			Tools.UpdateCheckBox(removeLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix");
+            Tools.UpdateCheckBox(removeNamespaces_checkbox, Loader.Core.RootNode, "flightsim_removenamespaces");            
 
             Loader.Core.RootNode.SetStringProperty(ExportParameters.ModelFilePathProperty, Tools.RelativePathStore(txtModelName.Text));
             Loader.Core.RootNode.SetStringProperty(ExportParameters.TextureFolderPathProperty, Tools.RelativePathStore(txtTextureName.Text));

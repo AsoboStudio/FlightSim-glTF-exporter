@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using Max2Babylon.KittyHawkExtension;
+using Max2Babylon.FlightSimExtension;
 using Utilities;
 
 namespace Babylon2GLTF
@@ -731,7 +731,7 @@ namespace Babylon2GLTF
             }
         }
 
-        ///KittyHawk Addition
+        ///flightsim Addition
         
         private void ExportCameraAnimation(GLTFAnimation gltfAnimation, int startFrame, int endFrame, GLTF gltf, BabylonNode babylonNode, GLTFNode gltfNode, BabylonScene babylonScene)
         {

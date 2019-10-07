@@ -27,7 +27,7 @@ SET dest_dir="%max_location%bin\assemblies"
 GOTO CopyFiles
 
 :OnRelease
-SET dest_dir="%KITTY_HAWK%\ASSETS\KittyHawk_Data\Tools\3DSMAX\KittyHawkPackage\src\plugins\glTF_Exporter\%max_version%"
+SET dest_dir="%FLIGHT_SIM%\ASSETS\KittyHawk_Data\Tools\3DSMAX\KittyHawkPackage\src\plugins\glTF_Exporter\%max_version%"
 GOTO CopyFiles
 
 :CopyFiles

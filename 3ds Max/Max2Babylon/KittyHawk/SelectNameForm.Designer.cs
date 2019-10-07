@@ -47,7 +47,7 @@
             this.Controls.Add(this.preDefiniedNameList);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "SelectNameForm";
-            this.Text = "KittyHawk - Select Name";
+            this.Text = "Flight Sim - Select Name";
             this.Load += new System.EventHandler(this.SelectNameForm_Load);
             this.ResumeLayout(false);
 

@@ -808,7 +808,7 @@
             this.groupBox2.Size = new System.Drawing.Size(347, 199);
             this.groupBox2.TabIndex = 111;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "KITTY HAWK";
+            this.groupBox2.Text = "Microsoft Flight Sim";
             // 
             // removeNamespaces_checkbox
             // 
