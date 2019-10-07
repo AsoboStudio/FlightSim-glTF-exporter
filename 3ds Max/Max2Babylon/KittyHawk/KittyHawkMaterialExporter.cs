@@ -200,9 +200,9 @@ namespace Max2Babylon
     }
 
     [DataContract]
-    class GLTFExtensionAsoboKittyGlass : GLTFProperty
+    class GLTFExtensionAsoboFlightSimGlass : GLTFProperty
     {
-        public const string SerializedName = "ASOBO_material_kitty_glass";
+        public const string SerializedName = "ASOBO_material_glass";
         [DataMember(EmitDefaultValue = false)] public float? glassReflectionMaskFactor { get; set; }
         [DataMember(EmitDefaultValue = false)] public float? glassDeformationFactor { get; set; }
         public static class Defaults
@@ -221,7 +221,7 @@ namespace Max2Babylon
 
     #region Serializable Extras
 
-    public static class KittyGLTFExtras
+    public static class FlightSimGLTFExtras
     {
         public static string Name_ASOBO_material_code = "ASOBO_material_code";
 
@@ -254,7 +254,7 @@ namespace Max2Babylon
 
     #endregion
 
-    public class KittyHawkMaterialExporter : IMaxGLTFMaterialExporter
+    public class FlightSimMaterialExporter : IMaxGLTFMaterialExporter
     {
         enum MaterialType
         {
@@ -278,7 +278,7 @@ namespace Max2Babylon
 
         ClassIDWrapper IMaxMaterialExporter.MaterialClassID => class_ID;
 
-        public KittyHawkMaterialExporter() { }
+        public FlightSimMaterialExporter() { }
 
         ExportParameters exporterParameters;
         GLTF gltf;
@@ -494,8 +494,8 @@ namespace Max2Babylon
             float fresnelFactor = GLTFExtensionAsoboMaterialFresnelFade.Defaults.fresnelFactor;
             float fresnelOpacityOffset = GLTFExtensionAsoboMaterialFresnelFade.Defaults.fresnelOpacityOffset;
 
-            float glassReflectionMaskFactor = GLTFExtensionAsoboKittyGlass.Defaults.glassReflectionMaskFactor;
-            float glassDeformationFactor = GLTFExtensionAsoboKittyGlass.Defaults.glassDeformationFactor;
+            float glassReflectionMaskFactor = GLTFExtensionAsoboFlightSimGlass.Defaults.glassReflectionMaskFactor;
+            float glassDeformationFactor = GLTFExtensionAsoboFlightSimGlass.Defaults.glassDeformationFactor;
 
             bool AOUseUV2 = GLTFExtensionAsoboMaterialUVOptions.Defaults.AOUseUV2;
             bool clampUVX = GLTFExtensionAsoboMaterialUVOptions.Defaults.clampUVX;
@@ -548,20 +548,20 @@ namespace Max2Babylon
                                     break;
                                 case 3:
                                     materialType = MaterialType.Windshield;
-                                    materialExtras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Windshield.ToString());
+                                    materialExtras.Add(FlightSimGLTFExtras.Name_ASOBO_material_code, FlightSimGLTFExtras.MaterialCode.Code.Windshield.ToString());
                                     break;
                                 case 4:
                                     materialType = MaterialType.Porthole;
-                                    materialExtras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Porthole.ToString());
+                                    materialExtras.Add(FlightSimGLTFExtras.Name_ASOBO_material_code, FlightSimGLTFExtras.MaterialCode.Code.Porthole.ToString());
                                     break;
                                 case 5:
                                     materialType = MaterialType.Glass;
-                                    //materialExtras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.Glass.ToString());
+                                    //materialExtras.Add(FlightSimGLTFExtras.Name_ASOBO_material_code, FlightSimGLTFExtras.MaterialCode.Code.Glass.ToString());
                                     break;
                                 case 6:
                                     materialType = MaterialType.GeoDecalFrosted;
                                     decalExtensionObject = new GLTFExtensionAsoboMaterialGeometryDecal();
-                                    materialExtras.Add(KittyGLTFExtras.Name_ASOBO_material_code, KittyGLTFExtras.MaterialCode.Code.GeoDecalFrosted.ToString());
+                                    materialExtras.Add(FlightSimGLTFExtras.Name_ASOBO_material_code, FlightSimGLTFExtras.MaterialCode.Code.GeoDecalFrosted.ToString());
                                     break;
                                 case 7:
                                     materialType = MaterialType.ClearCoat;
@@ -1530,11 +1530,11 @@ namespace Max2Babylon
                 fresnelFadeExtensionObject.fresnelOpacityOffset = fresnelOpacityOffset;
             }
 
-            // FlightSim extension, replacing glass extra, set by KittyGlass OR glass material
-            GLTFExtensionAsoboKittyGlass flightSimGlassExtensionObject = null;
+            // FlightSim extension, replacing glass extra, set by FlightSimGlass OR glass material
+            GLTFExtensionAsoboFlightSimGlass flightSimGlassExtensionObject = null;
             if (materialType == MaterialType.Glass)
             {
-                flightSimGlassExtensionObject = new GLTFExtensionAsoboKittyGlass();
+                flightSimGlassExtensionObject = new GLTFExtensionAsoboFlightSimGlass();
                 flightSimGlassExtensionObject.glassReflectionMaskFactor = glassReflectionMaskFactor;
                 flightSimGlassExtensionObject.glassDeformationFactor = glassDeformationFactor;
             }
@@ -1645,7 +1645,7 @@ namespace Max2Babylon
                 materialExtensions.Add(GLTFExtensionAsoboParallaxWindow.SerializedName, parallaxWindowExtensionObject);
 
             if (flightSimGlassExtensionObject != null)
-                materialExtensions.Add(GLTFExtensionAsoboKittyGlass.SerializedName, flightSimGlassExtensionObject);
+                materialExtensions.Add(GLTFExtensionAsoboFlightSimGlass.SerializedName, flightSimGlassExtensionObject);
 
             if (invisibleExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialInvisible.SerializedName, invisibleExtensionObject);
