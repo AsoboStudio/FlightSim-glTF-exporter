@@ -274,7 +274,7 @@ namespace Max2Babylon
             FresnelFade
         }
 
-        readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x53196aaa, 0x57b6ad6a);
+        readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x5ac74889, 0x27e705cd);
 
         ClassIDWrapper IMaxMaterialExporter.MaterialClassID => class_ID;
 
