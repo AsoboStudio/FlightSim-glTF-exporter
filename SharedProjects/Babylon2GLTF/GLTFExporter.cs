@@ -11,6 +11,7 @@ using Color = System.Drawing.Color;
 using System.Linq;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Max2Babylon;
 using Utilities;
 
 namespace Babylon2GLTF
@@ -21,6 +22,7 @@ namespace Babylon2GLTF
         ExportParameters exportParameters;
 
         private List<BabylonNode> babylonNodes;
+        private BabylonScene babylonScene;
 
         ILoggingProvider logger;
 
@@ -38,7 +40,8 @@ namespace Babylon2GLTF
             var watch = new Stopwatch();
             watch.Start();
 #endif
-            
+            this.babylonScene = babylonScene;
+
             // Force output file extension to be gltf
             outputFileName = Path.ChangeExtension(outputFileName, "gltf");
 
@@ -73,6 +76,7 @@ namespace Babylon2GLTF
 
             // Scenes
             GLTFScene scene = new GLTFScene();
+            ExportGLTFExtension( babylonScene, ref scene);
             GLTFScene[] scenes = { scene };
             gltf.scenes = scenes;
 
@@ -572,7 +576,32 @@ namespace Babylon2GLTF
             gltfNode.rotation[0] *= -1;
             gltfNode.rotation[1] *= -1;
 
+            ExportGLTFExtension(babylonNode,ref gltfNode);
+            
             return gltfNode;
+        }
+
+        private void ExportGLTFExtension<T1,T2>(T1 babylonObject, ref T2 gltfObject) where T2:GLTFProperty
+        {
+            GLTFExtensions nodeExtensions = gltfObject.extensions;
+            if (nodeExtensions == null)nodeExtensions = new GLTFExtensions();
+            
+            foreach (KeyValuePair<Type, IBabylonExtensionExporter> extensionExporter in babylonScene.BabylonToGLTFExtensions)
+            {
+                if (extensionExporter.Key == typeof(T2))
+                {
+                    string extensionName = extensionExporter.Value.GetGLTFExtensionName();
+                    object extensionObject = extensionExporter.Value.ExportBabylonExtension(babylonObject);
+                    if (extensionObject != null && !string.IsNullOrEmpty(extensionName))
+                    {
+                        nodeExtensions.Add(extensionName,extensionObject);
+                    }
+                }
+            }
+            if (nodeExtensions.Count > 0)
+            {
+                gltfObject.extensions = nodeExtensions;
+            }
         }
     }
 }
