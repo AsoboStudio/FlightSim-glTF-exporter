@@ -10,7 +10,7 @@ using Babylon2GLTF;
 using BabylonExport.Entities;
 using GLTFExport.Entities;
 
-namespace Max2Babylon.KittyHawkExtension
+namespace Max2Babylon.FlightSimExtension
 {
     [DataContract]
     class GLTFExtensionAsoboCollider : GLTFProperty

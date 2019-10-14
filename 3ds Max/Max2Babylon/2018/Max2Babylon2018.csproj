@@ -197,6 +197,25 @@
     <Compile Include="..\Extensions\ScaleSystem.cs">
       <Link>Extensions\ScaleSystem.cs</Link>
     </Compile>
+    <Compile Include="..\FlightSim\FlightSimCameraExtensions.cs">
+      <Link>FlightSim\FlightSimCameraExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\FlightSim\FlightSimColliderExtension.cs">
+      <Link>FlightSim\FlightSimColliderExtension.cs</Link>
+    </Compile>
+    <Compile Include="..\FlightSim\FlightSimFadeExtension.cs">
+      <Link>FlightSim\FlightSimFadeExtension.cs</Link>
+    </Compile>
+    <Compile Include="..\FlightSim\FlightSimMaterialExporter.cs">
+      <Link>FlightSim\FlightSimMaterialExporter.cs</Link>
+    </Compile>
+    <Compile Include="..\FlightSim\FlightSimUtilities.cs">
+      <Link>FlightSim\FlightSimUtilities.cs</Link>
+    </Compile>
+    <Compile Include="..\FlightSim\SelectNameForm.cs">
+      <Link>FlightSim\SelectNameForm.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="..\Forms\AnimationForm.cs">
       <Link>Forms\AnimationForm.cs</Link>
       <SubType>Form</SubType>
@@ -288,29 +307,6 @@
     <Compile Include="..\GlobalUtility.cs">
       <Link>GlobalUtility.cs</Link>
     </Compile>
-    <Compile Include="..\KittyHawk\FlightSimColliderExtension.cs">
-      <Link>KittyHawkExtension\FlightSimColliderExtension.cs</Link>
-    </Compile>
-    <Compile Include="..\KittyHawk\FlightSimFadeExtension.cs">
-      <Link>KittyHawkExtension\FlightSimFadeExtension.cs</Link>
-    </Compile>
-    <Compile Include="..\KittyHawk\KittyHawkCameraExtensions.cs">
-      <Link>KittyHawkExtension\KittyHawkCameraExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\KittyHawk\KittyHawkMaterialExporter.cs">
-      <Link>KittyHawkExtension\KittyHawkMaterialExporter.cs</Link>
-    </Compile>
-    <Compile Include="..\KittyHawk\KittyHawkUtilities.cs">
-      <Link>KittyHawkExtension\KittyHawkUtilities.cs</Link>
-    </Compile>
-    <Compile Include="..\KittyHawk\SelectNameForm.cs">
-      <Link>KittyHawkExtension\SelectNameForm.cs</Link>
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="..\KittyHawk\SelectNameForm.designer.cs">
-      <Link>KittyHawkExtension\SelectNameForm.designer.cs</Link>
-      <DependentUpon>SelectNameForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="..\Loader.cs">
       <Link>Loader.cs</Link>
     </Compile>
@@ -393,10 +389,6 @@
       <Link>Forms\MaxNodeTreeView.resx</Link>
       <DependentUpon>MaxNodeTreeView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\KittyHawk\SelectNameForm.resx">
-      <Link>KittyHawkExtension\SelectNameForm.resx</Link>
-      <DependentUpon>SelectNameForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -441,6 +433,7 @@
     <Content Include="Refs\Autodesk.Max.dll" />
     <None Include="Resources\MaxExporter.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\..\..\SharedProjects\BabylonExport.Entities\BabylonExport.Entities.projitems" Label="Shared" />
   <Import Project="..\..\..\SharedProjects\BabylonFileConverter\BabylonFileConverter.projitems" Label="Shared" />
   <Import Project="..\..\..\SharedProjects\GltfExport.Entities\GltfExport.Entities.projitems" Label="Shared" />
