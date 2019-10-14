@@ -15,9 +15,9 @@ namespace Max2Babylon.KittyHawkExtension
     [DataContract]
     class GLTFExtensionAsoboCollider : GLTFProperty
     {
-        [DataMember(EmitDefaultValue = false)] public string Type { get; set; }
-        [DataMember(EmitDefaultValue = false)] public object Translation;
-        [DataMember] public object Params { get; set; }
+        [DataMember(EmitDefaultValue = false,Name = "type")] public string Type { get; set; }
+        [DataMember(EmitDefaultValue = false, Name = "translation")] public object Translation;
+        [DataMember(Name = "params")] public object Params { get; set; }
     }
 
     [DataContract]
