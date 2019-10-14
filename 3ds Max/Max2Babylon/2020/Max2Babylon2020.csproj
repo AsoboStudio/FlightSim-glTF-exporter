@@ -295,14 +295,11 @@
     <Compile Include="..\GlobalUtility.cs">
       <Link>GlobalUtility.cs</Link>
     </Compile>
-    <Compile Include="..\KittyHawk\FlightSimBoxColliderExtension.cs">
-      <Link>KittyHawkExtension\FlightSimBoxColliderExtension.cs</Link>
+    <Compile Include="..\KittyHawk\FlightSimColliderExtension.cs">
+      <Link>KittyHawkExtension\FlightSimColliderExtension.cs</Link>
     </Compile>
-    <Compile Include="..\KittyHawk\FlightSimCylinderColliderExtension.cs">
-      <Link>KittyHawkExtension\FlightSimCylinderColliderExtension.cs</Link>
-    </Compile>
-    <Compile Include="..\KittyHawk\FlightSimSphereColliderExtension.cs">
-      <Link>KittyHawkExtension\FlightSimSphereColliderExtension.cs</Link>
+    <Compile Include="..\KittyHawk\FlightSimFadeExtension.cs">
+      <Link>KittyHawkExtension\FlightSimFadeExtension.cs</Link>
     </Compile>
     <Compile Include="..\KittyHawk\KittyHawkCameraExtensions.cs">
       <Link>KittyHawkExtension\KittyHawkCameraExtensions.cs</Link>

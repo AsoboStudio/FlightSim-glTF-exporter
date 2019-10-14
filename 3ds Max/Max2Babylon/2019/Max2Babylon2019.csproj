@@ -298,6 +298,9 @@
     <Compile Include="..\KittyHawk\FlightSimColliderExtension.cs">
       <Link>KittyHawkExtension\FlightSimColliderExtension.cs</Link>
     </Compile>
+    <Compile Include="..\KittyHawk\FlightSimFadeExtension.cs">
+      <Link>KittyHawkExtension\FlightSimFadeExtension.cs</Link>
+    </Compile>
     <Compile Include="..\KittyHawk\KittyHawkCameraExtensions.cs">
       <Link>KittyHawkExtension\KittyHawkCameraExtensions.cs</Link>
     </Compile>
