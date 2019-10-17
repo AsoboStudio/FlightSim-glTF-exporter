@@ -11,7 +11,6 @@ using Color = System.Drawing.Color;
 using System.Linq;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Max2Babylon;
 using Utilities;
 
 namespace Babylon2GLTF
