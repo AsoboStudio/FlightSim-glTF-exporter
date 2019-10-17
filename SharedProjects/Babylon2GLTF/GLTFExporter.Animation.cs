@@ -32,11 +32,14 @@ namespace Babylon2GLTF
 
                 foreach (var pair in nodeToGltfNodeMap)
                 {
+                    if (pair.Key.animations != null && pair.Key.animations[0].property == "_matrix")
+                    {
+                        ExportBoneAnimation(gltfAnimation, minFrame, maxFrame, gltf, pair.Key, pair.Value);
+                    }
+                    else
+                    {
                     ExportNodeAnimation(gltfAnimation, minFrame, maxFrame, gltf, pair.Key, pair.Value, babylonScene);
                 }
-                foreach(var pair in boneToGltfNodeMap)
-                {
-                    ExportBoneAnimation(gltfAnimation, minFrame, maxFrame, gltf, pair.Key, pair.Value);
                 }
 
                 if (gltfAnimation.ChannelList.Count > 0)
@@ -68,25 +71,14 @@ namespace Babylon2GLTF
                         GLTFNode gltfNode;
 
                         if (babylonNode != null && nodeToGltfNodeMap.TryGetValue(babylonNode, out gltfNode))
-                    {
-                            if (babylonNode is BabylonCamera)
+                        {
+                            if (babylonNode.animations != null && babylonNode.animations[0].property == "_matrix")
                             {
-                                ExportCameraAnimation(gltfAnimation, startFrame, endFrame, gltf, babylonNode, gltfNode, babylonScene);
+                                ExportBoneAnimation(gltfAnimation, startFrame, endFrame, gltf, babylonNode, gltfNode);
                             }
                             else
                             {
-                            ExportNodeAnimation(gltfAnimation, startFrame, endFrame, gltf, babylonNode, gltfNode, babylonScene);
-                    }
-
-                            
-                        }
-
-                        // export all bones that match this id
-                        foreach (KeyValuePair<BabylonBone, GLTFNode> pair in boneToGltfNodeMap)
-                        {
-                            if (pair.Key.id.Equals(id))
-                    {
-                                ExportBoneAnimation(gltfAnimation, startFrame, endFrame, gltf, pair.Key, pair.Value);
+                                ExportNodeAnimation(gltfAnimation, startFrame, endFrame, gltf, babylonNode, gltfNode, babylonScene);
                             }
                         }
                     }
@@ -231,16 +223,16 @@ namespace Babylon2GLTF
             ExportGLTFExtension(babylonNode, ref gltfAnimation);
         }
 
-        private void ExportBoneAnimation(GLTFAnimation gltfAnimation, int startFrame, int endFrame, GLTF gltf, BabylonBone babylonBone, GLTFNode gltfNode)
+        private void ExportBoneAnimation(GLTFAnimation gltfAnimation, int startFrame, int endFrame, GLTF gltf, BabylonNode babylonNode, GLTFNode gltfNode)
         {
             var channelList = gltfAnimation.ChannelList;
             var samplerList = gltfAnimation.SamplerList;
 
-            if (babylonBone.animation != null && babylonBone.animation.property == "_matrix")
+            if (babylonNode.animations != null && babylonNode.animations[0].property == "_matrix")
             {
-                logger.RaiseMessage("GLTFExporter.Animation | Export animation of bone named: " + babylonBone.name, 2);
+                logger.RaiseMessage("GLTFExporter.Animation | Export animation of bone named: " + babylonNode.name, 2);
 
-                var babylonAnimation = babylonBone.animation;
+                var babylonAnimation = babylonNode.animations[0];
 
                 // --- Input ---
                 var accessorInput = _createAndPopulateInput(gltf, babylonAnimation, startFrame, endFrame);
@@ -329,7 +321,7 @@ namespace Babylon2GLTF
                 }
             }
 
-            ExportGLTFExtension(babylonBone, ref gltfAnimation);
+            ExportGLTFExtension(babylonNode, ref gltfAnimation);
         }
 
         private BabylonAnimation GetDummyAnimation(GLTFNode gltfNode, int startFrame, int endFrame, BabylonScene babylonScene)
