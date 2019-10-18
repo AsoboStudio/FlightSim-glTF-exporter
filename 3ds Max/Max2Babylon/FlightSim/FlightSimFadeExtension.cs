@@ -15,6 +15,12 @@ namespace Max2Babylon.FlightSimExtension
     [DataContract]
     class GLTFExtensionAsoboFade : GLTFProperty
     {
+        [DataMember(Name = "fade_objects")]
+        public List<GLTFExtensionFade> fades { get; set; }
+    }
+    [DataContract]
+    class GLTFExtensionFade : GLTFProperty
+    {
         [DataMember(EmitDefaultValue = false,Name = "type")] public string Type { get; set; }
         [DataMember(EmitDefaultValue = false, Name = "translation")] public object Translation;
         [DataMember(Name = "params")] public object Params { get; set; }
@@ -48,7 +54,9 @@ namespace Max2Babylon.FlightSimExtension
             var babylonMesh = babylonObject as BabylonMesh;
             if (babylonMesh != null)
             {
-                List<GLTFExtensionAsoboFade> fadeObjects = new List<GLTFExtensionAsoboFade>();
+                GLTFExtensionAsoboFade fade = new GLTFExtensionAsoboFade();
+                List<GLTFExtensionFade> fadeObjects = new List<GLTFExtensionFade>();
+                fade.fades = fadeObjects;
                 Guid guid = Guid.Empty;
                 Guid.TryParse(babylonMesh.id, out guid);
                 IINode maxNode = Tools.GetINodeByGuid(guid);
@@ -57,7 +65,7 @@ namespace Max2Babylon.FlightSimExtension
                     IObject obj = node.ObjectRef;
                     if (new ClassIDWrapper(obj.ClassID).Equals(SphereFadeClassID))
                     {
-                        GLTFExtensionAsoboFade fadeSphere = new GLTFExtensionAsoboFade();
+                        GLTFExtensionFade fadeSphere = new GLTFExtensionFade();
                         GLTFExtensionAsoboFadeSphereParams sphereParams = new GLTFExtensionAsoboFadeSphereParams();
                         float radius = GetGizmoParameter(node,"SphereGizmo", "radius");
                         fadeSphere.Translation = GetTranslation(node);
@@ -69,7 +77,7 @@ namespace Max2Babylon.FlightSimExtension
                 }
                 if(fadeObjects.Count>0)
                 {
-                    return fadeObjects;
+                    return fade;
                 }
             }
             return null;

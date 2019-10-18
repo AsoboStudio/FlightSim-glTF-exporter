@@ -15,6 +15,13 @@ namespace Max2Babylon.FlightSimExtension
     [DataContract]
     class GLTFExtensionAsoboCollider : GLTFProperty
     {
+        [DataMember(Name = "collision_objects")] 
+        public List<GLTFExtensionCollider> colliders { get; set; }
+    }
+
+    [DataContract]
+    class GLTFExtensionCollider : GLTFProperty
+    {
         [DataMember(EmitDefaultValue = false,Name = "type")] public string Type { get; set; }
         [DataMember(EmitDefaultValue = false, Name = "translation")] public object Translation;
         [DataMember(Name = "params")] public object Params { get; set; }
@@ -66,7 +73,10 @@ namespace Max2Babylon.FlightSimExtension
             var babylonMesh = babylonObject as BabylonMesh;
             if (babylonMesh != null)
             {
-                List<GLTFExtensionAsoboCollider> collisions = new List<GLTFExtensionAsoboCollider>();
+                GLTFExtensionAsoboCollider gltfExtensionAsoboCollider = new GLTFExtensionAsoboCollider();
+                List<GLTFExtensionCollider> collisions = new List<GLTFExtensionCollider>();
+                gltfExtensionAsoboCollider.colliders = collisions;
+
                 Guid guid = Guid.Empty;
                 Guid.TryParse(babylonMesh.id, out guid);
                 IINode maxNode = Tools.GetINodeByGuid(guid);
@@ -75,7 +85,7 @@ namespace Max2Babylon.FlightSimExtension
                     IObject obj = node.ObjectRef;
                     if (new ClassIDWrapper(obj.ClassID).Equals(BoxColliderClassID))
                     {
-                        GLTFExtensionAsoboCollider collider = new GLTFExtensionAsoboCollider();
+                        GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboBoxParams boxParams = new GLTFExtensionAsoboBoxParams();
                         float height = GetGizmoParameter(node, "BoxGizmo", "height");
                         float width = GetGizmoParameter(node, "BoxGizmo","width");
@@ -90,7 +100,7 @@ namespace Max2Babylon.FlightSimExtension
                     }
                     else if (new ClassIDWrapper(obj.ClassID).Equals(CylinderColliderClassID))
                     {
-                        GLTFExtensionAsoboCollider collider = new GLTFExtensionAsoboCollider();
+                        GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboCylinderParams cylinderParams = new GLTFExtensionAsoboCylinderParams();
                         float radius = GetGizmoParameter(node,"CylGizmo", "radius");
                         float height = GetGizmoParameter(node,"CylGizmo", "height");
@@ -103,7 +113,7 @@ namespace Max2Babylon.FlightSimExtension
                     }
                     else if (new ClassIDWrapper(obj.ClassID).Equals(SphereColliderClassID))
                     {
-                        GLTFExtensionAsoboCollider collider = new GLTFExtensionAsoboCollider();
+                        GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboSphereParams sphereParams = new GLTFExtensionAsoboSphereParams();
                         float radius = GetGizmoParameter(node,"SphereGizmo", "radius");
                         collider.Translation = GetTranslation(node);
@@ -115,7 +125,7 @@ namespace Max2Babylon.FlightSimExtension
                 }
                 if(collisions.Count>0)
                 {
-                    return collisions;
+                    return gltfExtensionAsoboCollider;
                 }
             }
             return null;
