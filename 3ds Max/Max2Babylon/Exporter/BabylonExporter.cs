@@ -246,7 +246,7 @@ namespace Max2Babylon
             {
                 if (!containerObject.IsInherited)continue;
                 ScriptsUtilities.ExecuteMaxScriptCommand($@"(getNodeByName(""{containerObject.ContainerNode.Name}"")).LoadContainer()");
-                bool update = containerObject.UpdateContainer();
+                ScriptsUtilities.ExecuteMaxScriptCommand($@"(getNodeByName(""{containerObject.ContainerNode.Name}"")).UpdateContainer()");
                 bool makeUnique = containerObject.MakeUnique;
                 RaiseMessage($"Update and merge container {containerObject.ContainerNode.Name}...");
             }
@@ -466,13 +466,13 @@ namespace Max2Babylon
 
                 if (typeof(IMaxMaterialExporter).IsAssignableFrom(type))
                 {
-                    IMaxMaterialExporter exporter = Activator.CreateInstance(type) as IMaxMaterialExporter;
+                IMaxMaterialExporter exporter = Activator.CreateInstance(type) as IMaxMaterialExporter;
 
-                    if (exporter == null)
-                        RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
+                if (exporter == null)
+                    RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
 
-                    materialExporters.Add(exporter.MaterialClassID, exporter);
-                }
+                materialExporters.Add(exporter.MaterialClassID, exporter);
+            }
             }
 
             // Sounds
