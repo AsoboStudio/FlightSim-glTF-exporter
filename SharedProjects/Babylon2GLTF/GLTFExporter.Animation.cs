@@ -32,7 +32,8 @@ namespace Babylon2GLTF
 
                 foreach (var pair in nodeToGltfNodeMap)
                 {
-                    if (pair.Key.animations != null && pair.Key.animations[0].property == "_matrix")
+                    if (pair.Key.animations == null || pair.Key.animations.Length <= 0 || pair.Key.animations[0] == null) continue;
+                    if (pair.Key.animations[0].property == "_matrix")
                     {
                         ExportBoneAnimation(gltfAnimation, minFrame, maxFrame, gltf, pair.Key, pair.Value);
                     }
@@ -70,18 +71,17 @@ namespace Babylon2GLTF
 
                         GLTFNode gltfNode;
 
-                        if (babylonNode != null && nodeToGltfNodeMap.TryGetValue(babylonNode, out gltfNode))
-                        {
-                            if (babylonNode.animations != null && babylonNode.animations[0].property == "_matrix")
+                        if (babylonNode == null || !nodeToGltfNodeMap.TryGetValue(babylonNode, out gltfNode)) continue;
+                        if (babylonNode.animations == null || babylonNode.animations.Length <= 0 ||babylonNode.animations[0] == null) continue;
+                        if (babylonNode.animations[0].property == "_matrix")
                             {
                                 ExportBoneAnimation(gltfAnimation, startFrame, endFrame, gltf, babylonNode, gltfNode);
-                            }
+                    }
                             else
-                            {
+                        {
                                 ExportNodeAnimation(gltfAnimation, startFrame, endFrame, gltf, babylonNode, gltfNode, babylonScene);
                             }
                         }
-                    }
 
                     if (gltfAnimation.ChannelList.Count > 0)
                     {
@@ -128,6 +128,7 @@ namespace Babylon2GLTF
                     // Export a dummy animation
                     babylonAnimations.Add(GetDummyAnimation(gltfNode, startFrame, endFrame, babylonScene));
                 }
+
 
                 foreach (BabylonAnimation babylonAnimation in babylonAnimations)
                 {
