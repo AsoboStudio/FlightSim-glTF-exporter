@@ -914,6 +914,8 @@ namespace Max2Babylon
             {
                 if (File.Exists(targetFilePath))
                 {
+                    FileInfo fileInfo = new FileInfo(targetFilePath);
+                    fileInfo.IsReadOnly = false;
                     File.Delete(targetFilePath);
                 }
                 File.Move(sourceFilePath, targetFilePath);
