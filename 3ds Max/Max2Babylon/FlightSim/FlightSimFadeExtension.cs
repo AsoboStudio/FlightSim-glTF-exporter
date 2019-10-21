@@ -68,7 +68,7 @@ namespace Max2Babylon.FlightSimExtension
                         GLTFExtensionFade fadeSphere = new GLTFExtensionFade();
                         GLTFExtensionAsoboFadeSphereParams sphereParams = new GLTFExtensionAsoboFadeSphereParams();
                         float radius = GetGizmoParameter(node,"SphereGizmo", "radius");
-                        fadeSphere.Translation = GetTranslation(node);
+                        fadeSphere.Translation = GetTranslation(node,maxNode);
                         sphereParams.radius = radius;
                         fadeSphere.Type = "sphere";
                         fadeSphere.Params = sphereParams;
@@ -93,16 +93,16 @@ namespace Max2Babylon.FlightSimExtension
             return r;
         }
 
-        private float[] GetTranslation(IINode node)
+        private float[] GetTranslation(IINode node,IINode renderedNode)
         {
             float[] res = new float[3];
-            string mxs = $"(maxOps.getNodeByHandle {node.Handle}).transform.pos * inverse (maxOps.getNodeByHandle {node.Handle}).parent.transform";
+            string mxs = $"(maxOps.getNodeByHandle {node.Handle}).center * inverse (maxOps.getNodeByHandle {renderedNode.Handle}).transform";
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
             var r=  mxsRetVal.P;
             res[0] = r.X;
-            res[1] = r.Y;
-            res[2] = r.Z;
+            res[1] = r.Z;
+            res[2] = r.Y;
             return res;
         }
     }

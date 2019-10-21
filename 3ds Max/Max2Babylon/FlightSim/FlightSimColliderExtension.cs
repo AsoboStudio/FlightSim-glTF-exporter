@@ -24,6 +24,7 @@ namespace Max2Babylon.FlightSimExtension
     {
         [DataMember(EmitDefaultValue = false,Name = "type")] public string Type { get; set; }
         [DataMember(EmitDefaultValue = false, Name = "translation")] public object Translation;
+        [DataMember(EmitDefaultValue = false, Name = "rotation")] public object Rotation;
         [DataMember(Name = "params")] public object Params { get; set; }
     }
 
@@ -90,7 +91,8 @@ namespace Max2Babylon.FlightSimExtension
                         float height = GetGizmoParameter(node, "BoxGizmo", "height");
                         float width = GetGizmoParameter(node, "BoxGizmo","width");
                         float length = GetGizmoParameter(node,"BoxGizmo", "length");
-                        collider.Translation = GetTranslation(node);
+                        collider.Translation = GetTranslation(node,maxNode);
+                        collider.Rotation = GetRotation(node, maxNode);
                         boxParams.height = height;
                         boxParams.length = length;
                         boxParams.width = width;
@@ -104,7 +106,8 @@ namespace Max2Babylon.FlightSimExtension
                         GLTFExtensionAsoboCylinderParams cylinderParams = new GLTFExtensionAsoboCylinderParams();
                         float radius = GetGizmoParameter(node,"CylGizmo", "radius");
                         float height = GetGizmoParameter(node,"CylGizmo", "height");
-                        collider.Translation = GetTranslation(node);
+                        collider.Translation = GetTranslation(node,maxNode);
+                        collider.Rotation = GetRotation(node, maxNode);
                         cylinderParams.height = height;
                         cylinderParams.radius = radius;
                         collider.Params = cylinderParams;
@@ -116,7 +119,8 @@ namespace Max2Babylon.FlightSimExtension
                         GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboSphereParams sphereParams = new GLTFExtensionAsoboSphereParams();
                         float radius = GetGizmoParameter(node,"SphereGizmo", "radius");
-                        collider.Translation = GetTranslation(node);
+                        collider.Translation = GetTranslation(node,maxNode);
+                        collider.Rotation = GetRotation(node, maxNode);
                         sphereParams.radius = radius;
                         collider.Type = "sphere";
                         collider.Params = sphereParams;
@@ -141,16 +145,35 @@ namespace Max2Babylon.FlightSimExtension
             return r;
         }
 
-        private float[] GetTranslation(IINode node)
+        private float[] GetTranslation(IINode node,IINode renderedNode)
         {
             float[] res = new float[3];
-            string mxs = $"(maxOps.getNodeByHandle {node.Handle}).transform.pos * inverse (maxOps.getNodeByHandle {node.Handle}).parent.transform";
+            string mxs = $"(maxOps.getNodeByHandle {node.Handle}).center * inverse (maxOps.getNodeByHandle {renderedNode.Handle}).transform";
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
             var r=  mxsRetVal.P;
             res[0] = r.X;
-            res[1] = r.Y;
-            res[2] = r.Z;
+            res[1] = r.Z;
+            res[2] = r.Y;
+            return res;
+        }
+
+        private float[] GetRotation(IINode node,IINode renderedNode)
+        {
+            float[] res = new float[4];
+            string mxs = $"(maxOps.getNodeByHandle {node.Handle}).rotation * inverse (maxOps.getNodeByHandle {renderedNode.Handle}).transform";
+            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
+            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
+            var r=  mxsRetVal.Q;
+            //max to babylon
+            BabylonQuaternion qFix = new BabylonQuaternion((float)Math.Sin(-Math.PI / 4), 0, 0, (float)Math.Cos(-Math.PI / 4));
+            BabylonQuaternion quaternion = new BabylonQuaternion(r[0], r[1], r[2], r[3]);
+            BabylonQuaternion rotationQuaternion = quaternion.MultiplyWith(qFix);
+            
+            res[0] = rotationQuaternion.X;
+            res[1] = rotationQuaternion.Y;
+            res[2] = -rotationQuaternion.Z;
+            res[3] = -rotationQuaternion.W;
             return res;
         }
     }
