@@ -164,7 +164,8 @@ namespace Max2Babylon.FlightSimExtension
             string mxs = $"(maxOps.getNodeByHandle {node.Handle}).rotation * inverse (maxOps.getNodeByHandle {renderedNode.Handle}).transform";
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-            var r=  mxsRetVal.Q;
+            IQuat r=  mxsRetVal.Q;
+            r.Normalize();
             //max to babylon
             BabylonQuaternion qFix = new BabylonQuaternion((float)Math.Sin(-Math.PI / 4), 0, 0, (float)Math.Cos(-Math.PI / 4));
             BabylonQuaternion quaternion = new BabylonQuaternion(r[0], r[1], r[2], r[3]);
