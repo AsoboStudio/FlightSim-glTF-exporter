@@ -74,9 +74,9 @@ namespace Babylon2GLTF
                         if (babylonNode == null || !nodeToGltfNodeMap.TryGetValue(babylonNode, out gltfNode)) continue;
                         if (babylonNode.animations == null || babylonNode.animations.Length <= 0 ||babylonNode.animations[0] == null) continue;
                         if (babylonNode.animations[0].property == "_matrix")
-                            {
+                        {
                                 ExportBoneAnimation(gltfAnimation, startFrame, endFrame, gltf, babylonNode, gltfNode);
-                    }
+                        }
                             else
                         {
                                 ExportNodeAnimation(gltfAnimation, startFrame, endFrame, gltf, babylonNode, gltfNode, babylonScene);
@@ -221,7 +221,7 @@ namespace Babylon2GLTF
                 }
             }
 
-            ExportGLTFExtension(babylonNode, ref gltfAnimation);
+            ExportGLTFExtension(babylonNode, ref gltfAnimation,gltf);
         }
 
         private void ExportBoneAnimation(GLTFAnimation gltfAnimation, int startFrame, int endFrame, GLTF gltf, BabylonNode babylonNode, GLTFNode gltfNode)
@@ -322,7 +322,7 @@ namespace Babylon2GLTF
                 }
             }
 
-            ExportGLTFExtension(babylonNode, ref gltfAnimation);
+            ExportGLTFExtension(babylonNode, ref gltfAnimation,gltf);
         }
 
         private BabylonAnimation GetDummyAnimation(GLTFNode gltfNode, int startFrame, int endFrame, BabylonScene babylonScene)

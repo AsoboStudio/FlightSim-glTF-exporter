@@ -149,7 +149,7 @@ namespace Babylon2GLTF
             }
             gltfSkin.joints = gltfJoints.ToArray();
 
-            ExportGLTFExtension(babylonSkeleton, ref gltfNode);
+            ExportGLTFExtension(babylonSkeleton, ref gltfNode,gltf);
 
             return gltfSkin;
         }
