@@ -161,6 +161,13 @@ namespace Max2Babylon.FlightSimExtension
             if (!string.IsNullOrEmpty(mxsRetVal.S))
             {
                 float[] r = PointStringToVector3(mxsRetVal.S);
+
+                //var o = new BabylonVector3(r[0],r[1],r[2]);
+                //float f = (float)-Math.Sqrt(2) / 2;
+                //var q = new BabylonQuaternion(0,f,f,0);
+
+                //var m = q.Rotate(o);
+
                 res[0] = -r[0];
                 res[1] = r[2];
                 res[2] = r[1];
@@ -179,16 +186,20 @@ namespace Max2Babylon.FlightSimExtension
             if (!string.IsNullOrEmpty(mxsRetVal.S))
             {
                 float[] r = QuaternionStringToVector4(mxsRetVal.S);
-                //max to babylon
-                BabylonQuaternion qFix = new BabylonQuaternion((float) Math.Sin(Math.PI / 4), 0, 0, (float) Math.Cos(Math.PI / 4));
-                BabylonQuaternion quaternion = new BabylonQuaternion(r[0], r[1], r[2], r[3]);
-                BabylonQuaternion rotationQuaternion = quaternion.MultiplyWith(qFix);
+
+                var v = new BabylonVector3(0,0,1);
+                var o = new BabylonQuaternion(r[0],r[1],r[2],r[3]);
+                float f = (float)-Math.Sqrt(2) / 2;
+                var q = new BabylonQuaternion(0,f,f,0);
+
+                var m = q.MultiplyWith(o);
+                var p = m.Rotate(v);
 
                 //babylon to GLTF
-                res[0] = -rotationQuaternion.X;
-                res[1] = -rotationQuaternion.Z;
-                res[2] = rotationQuaternion.Y;
-                res[3] = rotationQuaternion.W;
+                res[0] = m.X;
+                res[1] = m.Y;
+                res[2] = m.Z;
+                res[3] = m.W;
             }
 
             return res;
