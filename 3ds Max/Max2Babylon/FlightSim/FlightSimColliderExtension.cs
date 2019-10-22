@@ -166,15 +166,11 @@ namespace Max2Babylon.FlightSimExtension
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
             IQuat r=  mxsRetVal.Q;
             r.Normalize();
-            //max to babylon
-            BabylonQuaternion qFix = new BabylonQuaternion((float)Math.Sin(-Math.PI / 4), 0, 0, (float)Math.Cos(-Math.PI / 4));
-            BabylonQuaternion quaternion = new BabylonQuaternion(r[0], r[1], r[2], r[3]);
-            BabylonQuaternion rotationQuaternion = quaternion.MultiplyWith(qFix);
             
-            res[0] = rotationQuaternion.X;
-            res[1] = rotationQuaternion.Y;
-            res[2] = -rotationQuaternion.Z;
-            res[3] = -rotationQuaternion.W;
+            res[0] = -r.X;
+            res[1] = -r.Z;
+            res[2] = r.Y;
+            res[3] = r.W;
             return res;
         }
     }
