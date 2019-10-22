@@ -92,7 +92,11 @@ namespace Max2Babylon.FlightSimExtension
                         float width = GetGizmoParameter(node, "BoxGizmo","width");
                         float length = GetGizmoParameter(node,"BoxGizmo", "length");
                         collider.Translation = GetTranslation(node,maxNode);
-                        collider.Rotation = GetRotation(node, maxNode);
+                        float[] rotation = GetRotation(node, maxNode);
+                        if (!IsDefaultRotation(rotation))
+                        {
+                            collider.Rotation = GetRotation(node, maxNode);
+                        }
                         boxParams.height = height;
                         boxParams.length = length;
                         boxParams.width = width;
@@ -107,7 +111,11 @@ namespace Max2Babylon.FlightSimExtension
                         float radius = GetGizmoParameter(node,"CylGizmo", "radius");
                         float height = GetGizmoParameter(node,"CylGizmo", "height");
                         collider.Translation = GetTranslation(node,maxNode);
-                        collider.Rotation = GetRotation(node, maxNode);
+                        float[] rotation = GetRotation(node, maxNode);
+                        if (!IsDefaultRotation(rotation))
+                        {
+                            collider.Rotation = GetRotation(node, maxNode);
+                        }
                         cylinderParams.height = height;
                         cylinderParams.radius = radius;
                         collider.Params = cylinderParams;
@@ -120,7 +128,6 @@ namespace Max2Babylon.FlightSimExtension
                         GLTFExtensionAsoboSphereParams sphereParams = new GLTFExtensionAsoboSphereParams();
                         float radius = GetGizmoParameter(node,"SphereGizmo", "radius");
                         collider.Translation = GetTranslation(node,maxNode);
-                        collider.Rotation = GetRotation(node, maxNode);
                         sphereParams.radius = radius;
                         collider.Type = "sphere";
                         collider.Params = sphereParams;
@@ -152,7 +159,7 @@ namespace Max2Babylon.FlightSimExtension
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
             var r=  mxsRetVal.P;
-            res[0] = r.X;
+            res[0] = -r.X;
             res[1] = r.Z;
             res[2] = r.Y;
             return res;
@@ -166,12 +173,24 @@ namespace Max2Babylon.FlightSimExtension
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
             IQuat r=  mxsRetVal.Q;
             r.Normalize();
+
+            //max to babylon
+            BabylonQuaternion qFix = new BabylonQuaternion((float)Math.Sin(Math.PI / 4), 0, 0, (float)Math.Cos(Math.PI / 4));
+            BabylonQuaternion quaternion = new BabylonQuaternion(r[0], r[1], r[2], r[3]);
+            BabylonQuaternion rotationQuaternion = quaternion.MultiplyWith(qFix);
             
-            res[0] = -r.X;
-            res[1] = -r.Z;
-            res[2] = r.Y;
-            res[3] = r.W;
+            //babylon to GLTF
+            res[0] = -rotationQuaternion.X;
+            res[1] = -rotationQuaternion.Z;
+            res[2] = rotationQuaternion.Y;
+            res[3] = rotationQuaternion.W;
             return res;
+        }
+
+        private bool IsDefaultRotation(float[] rotation)
+        {
+            if (rotation[0] == 0 && rotation[1] == 0 && rotation[2] == 0 && rotation[3] == 1) return true;
+            return false;
         }
     }
 }
