@@ -466,13 +466,13 @@ namespace Max2Babylon
 
                 if (typeof(IMaxMaterialExporter).IsAssignableFrom(type))
                 {
-                IMaxMaterialExporter exporter = Activator.CreateInstance(type) as IMaxMaterialExporter;
+                    IMaxMaterialExporter exporter = Activator.CreateInstance(type) as IMaxMaterialExporter;
 
-                if (exporter == null)
-                    RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
+                    if (exporter == null)
+                        RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
 
-                materialExporters.Add(exporter.MaterialClassID, exporter);
-            }
+                    materialExporters.Add(exporter.MaterialClassID, exporter);
+                }
             }
 
             // Sounds
