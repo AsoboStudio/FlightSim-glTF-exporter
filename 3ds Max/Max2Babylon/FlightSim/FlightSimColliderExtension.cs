@@ -9,6 +9,7 @@ using Autodesk.Max;
 using Babylon2GLTF;
 using BabylonExport.Entities;
 using GLTFExport.Entities;
+using Max2Babylon.FlightSim;
 
 namespace Max2Babylon.FlightSimExtension
 {
@@ -81,25 +82,26 @@ namespace Max2Babylon.FlightSimExtension
                 Guid guid = Guid.Empty;
                 Guid.TryParse(babylonMesh.id, out guid);
                 IINode maxNode = Tools.GetINodeByGuid(guid);
-                foreach (IINode node in maxNode.NodeTree())
+                foreach (IINode node in maxNode.DirectChildren())
                 {
                     IObject obj = node.ObjectRef;
                     if (new ClassIDWrapper(obj.ClassID).Equals(BoxColliderClassID))
                     {
                         GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboBoxParams boxParams = new GLTFExtensionAsoboBoxParams();
-                        float height = GetGizmoParameter(node, "BoxGizmo", "height");
-                        float width = GetGizmoParameter(node, "BoxGizmo","width");
-                        float length = GetGizmoParameter(node,"BoxGizmo", "length");
-                        collider.Translation = GetTranslation(node,maxNode);
-                        float[] rotation = GetRotation(node, maxNode);
-                        if (!IsDefaultRotation(rotation))
+                        float height = FlightSimExtensionUtility.GetGizmoParameter(node, "BoxGizmo", "height");
+                        float width = FlightSimExtensionUtility.GetGizmoParameter(node, "BoxGizmo","width");
+                        float length = FlightSimExtensionUtility.GetGizmoParameter(node,"BoxGizmo", "length");
+                        collider.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
+                        float[] rotation = FlightSimExtensionUtility.GetRotation(node, maxNode);
+                        if (!FlightSimExtensionUtility.IsDefaultRotation(rotation))
                         {
                             collider.Rotation = rotation;
                         }
+                        boxParams.width = width;
                         boxParams.height = height;
                         boxParams.length = length;
-                        boxParams.width = width;
+
                         collider.Params = boxParams;
                         collider.Type = "box";
                         collisions.Add(collider);
@@ -108,11 +110,11 @@ namespace Max2Babylon.FlightSimExtension
                     {
                         GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboCylinderParams cylinderParams = new GLTFExtensionAsoboCylinderParams();
-                        float radius = GetGizmoParameter(node,"CylGizmo", "radius");
-                        float height = GetGizmoParameter(node,"CylGizmo", "height");
-                        collider.Translation = GetTranslation(node,maxNode);
-                        float[] rotation = GetRotation(node, maxNode);
-                        if (!IsDefaultRotation(rotation))
+                        float radius = FlightSimExtensionUtility.GetGizmoParameter(node,"CylGizmo", "radius");
+                        float height = FlightSimExtensionUtility.GetGizmoParameter(node,"CylGizmo", "height");
+                        collider.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
+                        float[] rotation = FlightSimExtensionUtility.GetRotation(node, maxNode);
+                        if (!FlightSimExtensionUtility.IsDefaultRotation(rotation))
                         {
                             collider.Rotation = rotation;
                         }
@@ -126,8 +128,8 @@ namespace Max2Babylon.FlightSimExtension
                     {
                         GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboSphereParams sphereParams = new GLTFExtensionAsoboSphereParams();
-                        float radius = GetGizmoParameter(node,"SphereGizmo", "radius");
-                        collider.Translation = GetTranslation(node,maxNode);
+                        float radius = FlightSimExtensionUtility.GetGizmoParameter(node,"SphereGizmo", "radius");
+                        collider.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
                         sphereParams.radius = radius;
                         collider.Type = "sphere";
                         collider.Params = sphereParams;
@@ -143,102 +145,6 @@ namespace Max2Babylon.FlightSimExtension
         }
         #endregion
 
-        private float GetGizmoParameter(IINode node, string gizmoClass, string paramName)
-        {
-            string mxs = $"(maxOps.getNodeByHandle {node.Handle}).{gizmoClass}.{paramName}";
-            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-            var r=  mxsRetVal.F;
-            return r;
-        }
-
-        private float[] GetTranslation(IINode node,IINode renderedNode)
-        {
-            float[] res = new float[3];
-            string mxs = $"((maxOps.getNodeByHandle {node.Handle}).center * inverse (maxOps.getNodeByHandle {renderedNode.Handle}).transform) as string";
-            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-            if (!string.IsNullOrEmpty(mxsRetVal.S))
-            {
-                float[] r = PointStringToVector3(mxsRetVal.S);
-
-                //var o = new BabylonVector3(r[0],r[1],r[2]);
-                //float f = (float)-Math.Sqrt(2) / 2;
-                //var q = new BabylonQuaternion(0,f,f,0);
-
-                //var m = q.Rotate(o);
-
-                res[0] = -r[0];
-                res[1] = r[2];
-                res[2] = r[1];
-            }
-            
-            return res;
-        }
-
-        private float[] GetRotation(IINode node,IINode renderedNode)
-        {
-            float[] res = new float[4];
-            string mxs = $"((maxOps.getNodeByHandle {node.Handle}).rotation * inverse (maxOps.getNodeByHandle {renderedNode.Handle}).transform) as string";
-            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-
-            if (!string.IsNullOrEmpty(mxsRetVal.S))
-            {
-                float[] r = QuaternionStringToVector4(mxsRetVal.S);
-
-                var v = new BabylonVector3(0,0,1);
-                var o = new BabylonQuaternion(r[0],r[1],r[2],r[3]);
-                float f = (float)-Math.Sqrt(2) / 2;
-                var q = new BabylonQuaternion(0,f,f,0);
-
-                var m = q.MultiplyWith(o);
-                var p = m.Rotate(v);
-
-                //babylon to GLTF
-                res[0] = m.X;
-                res[1] = m.Y;
-                res[2] = m.Z;
-                res[3] = m.W;
-            }
-
-            return res;
-        }
-
-        private bool IsDefaultRotation(float[] rotation)
-        {
-            if (rotation[0] == 0 && rotation[1] == 0 && rotation[2] == 0 && rotation[3] == 1) return true;
-            return false;
-        }
-
-        private float[] PointStringToVector3(string pointString)
-        {
-            string[] mxsRes = pointString.Substring(1, pointString.Length - 2).Split(',');
-            float[] result = new float[mxsRes.Length];
-            for (int i = 0; i < mxsRes.Length; i++)
-            {
-                float r = 0;
-                float.TryParse(mxsRes[i], out r);
-                result[i] = r;
-            }
-
-            return result;
-        }
-
-        private float[] QuaternionStringToVector4(string quaternionString)
-        {
-            quaternionString = quaternionString.Replace("quat ", "");
-            quaternionString = quaternionString.Substring(1, quaternionString.Length - 2);
-            string[] mxsRes = quaternionString.Split(' ');
-            float[] result = new float[mxsRes.Length];
-            for (int i = 0; i < mxsRes.Length; i++)
-            {
-                float r = 0;
-                float.TryParse(mxsRes[i], out r);
-                result[i] = r;
-            }
-
-            return result;
-        }
+        
     }
 }

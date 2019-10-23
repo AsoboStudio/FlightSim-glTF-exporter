@@ -9,6 +9,7 @@ using Autodesk.Max;
 using Babylon2GLTF;
 using BabylonExport.Entities;
 using GLTFExport.Entities;
+using Max2Babylon.FlightSim;
 
 namespace Max2Babylon.FlightSimExtension
 {
@@ -60,15 +61,15 @@ namespace Max2Babylon.FlightSimExtension
                 Guid guid = Guid.Empty;
                 Guid.TryParse(babylonMesh.id, out guid);
                 IINode maxNode = Tools.GetINodeByGuid(guid);
-                foreach (IINode node in maxNode.NodeTree())
+                foreach (IINode node in maxNode.DirectChildren())
                 {
                     IObject obj = node.ObjectRef;
                     if (new ClassIDWrapper(obj.ClassID).Equals(SphereFadeClassID))
                     {
                         GLTFExtensionFade fadeSphere = new GLTFExtensionFade();
                         GLTFExtensionAsoboFadeSphereParams sphereParams = new GLTFExtensionAsoboFadeSphereParams();
-                        float radius = GetGizmoParameter(node,"SphereGizmo", "radius");
-                        fadeSphere.Translation = GetTranslation(node,maxNode);
+                        float radius = FlightSimExtensionUtility.GetGizmoParameter(node,"SphereGizmo", "radius");
+                        fadeSphere.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
                         sphereParams.radius = radius;
                         fadeSphere.Type = "sphere";
                         fadeSphere.Params = sphereParams;
@@ -84,26 +85,5 @@ namespace Max2Babylon.FlightSimExtension
         }
         #endregion
 
-        private float GetGizmoParameter(IINode node, string gizmoClass, string paramName)
-        {
-            string mxs = $"(maxOps.getNodeByHandle {node.Handle}).{gizmoClass}.{paramName}";
-            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-            var r=  mxsRetVal.F;
-            return r;
-        }
-
-        private float[] GetTranslation(IINode node,IINode renderedNode)
-        {
-            float[] res = new float[3];
-            string mxs = $"(maxOps.getNodeByHandle {node.Handle}).center * inverse (maxOps.getNodeByHandle {renderedNode.Handle}).transform";
-            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-            var r=  mxsRetVal.P;
-            res[0] = r.X;
-            res[1] = r.Z;
-            res[2] = r.Y;
-            return res;
-        }
     }
 }
