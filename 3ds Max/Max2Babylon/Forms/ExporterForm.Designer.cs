@@ -41,14 +41,27 @@
             this.label2 = new System.Windows.Forms.Label();
             this.chkWriteTextures = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.chkASBAnimationRetargeting = new System.Windows.Forms.CheckBox();
+            this.grpGeometry = new System.Windows.Forms.GroupBox();
+            this.chkOverwriteTextures = new System.Windows.Forms.CheckBox();
+            this.chkMergeAOwithMR = new System.Windows.Forms.CheckBox();
+            this.chkExportMaterials = new System.Windows.Forms.CheckBox();
+            this.chkDracoCompression = new System.Windows.Forms.CheckBox();
+            this.chkExportTangents = new System.Windows.Forms.CheckBox();
+            this.chkFlatten = new System.Windows.Forms.CheckBox();
+            this.grpAnimations = new System.Windows.Forms.GroupBox();
+            this.cmbExportAnimationType = new System.Windows.Forms.ComboBox();
+            this.chkDoNotOptimizeAnimations = new System.Windows.Forms.CheckBox();
+            this.chkAnimgroupExportNonAnimated = new System.Windows.Forms.CheckBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.chkExportMorphTangents = new System.Windows.Forms.CheckBox();
+            this.chkExportMorphNormals = new System.Windows.Forms.CheckBox();
             this.lblBakeAnimation = new System.Windows.Forms.Label();
             this.cmbBakeAnimationOptions = new System.Windows.Forms.ComboBox();
             this.chkApplyPreprocessToScene = new System.Windows.Forms.CheckBox();
             this.chkMrgContainersAndXref = new System.Windows.Forms.CheckBox();
             this.chkUsePreExportProces = new System.Windows.Forms.CheckBox();
-            this.chkFlatten = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.txtEnvironmentName = new System.Windows.Forms.RichTextBox();
             this.label6 = new System.Windows.Forms.Label();
@@ -58,20 +71,11 @@
             this.textureLabel = new System.Windows.Forms.Label();
             this.txtTextureName = new System.Windows.Forms.RichTextBox();
             this.btnTxtBrowse = new System.Windows.Forms.Button();
-            this.chkExportMaterials = new System.Windows.Forms.CheckBox();
             this.chkKHRMaterialsUnlit = new System.Windows.Forms.CheckBox();
             this.chkKHRTextureTransform = new System.Windows.Forms.CheckBox();
             this.chkKHRLightsPunctual = new System.Windows.Forms.CheckBox();
-            this.chkOverwriteTextures = new System.Windows.Forms.CheckBox();
-            this.chkDoNotOptimizeAnimations = new System.Windows.Forms.CheckBox();
-            this.chkAnimgroupExportNonAnimated = new System.Windows.Forms.CheckBox();
-            this.chkDracoCompression = new System.Windows.Forms.CheckBox();
-            this.chkMergeAOwithMR = new System.Windows.Forms.CheckBox();
             this.txtQuality = new System.Windows.Forms.TextBox();
             this.labelQuality = new System.Windows.Forms.Label();
-            this.chkExportMorphNormals = new System.Windows.Forms.CheckBox();
-            this.chkExportMorphTangents = new System.Windows.Forms.CheckBox();
-            this.chkExportTangents = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
             this.txtScaleFactor = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -86,12 +90,14 @@
             this.saveOptionBtn = new System.Windows.Forms.Button();
             this.envFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.removeNamespaces_checkbox = new System.Windows.Forms.CheckBox();
-            this.removeLodPrefix = new System.Windows.Forms.CheckBox();
+            this.grp_FlightSim = new System.Windows.Forms.GroupBox();
+            this.chk_RemoveLodPrefix = new System.Windows.Forms.CheckBox();
+            this.chkRemoveNamespace = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
+            this.grpGeometry.SuspendLayout();
+            this.grpAnimations.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
-            this.groupBox2.SuspendLayout();
+            this.grp_FlightSim.SuspendLayout();
             this.SuspendLayout();
             // 
             // butExport
@@ -191,7 +197,8 @@
             // 
             this.chkManifest.AutoSize = true;
             this.chkManifest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkManifest.Location = new System.Drawing.Point(320, 171);
+            this.chkManifest.Location = new System.Drawing.Point(11, 194);
+            this.chkManifest.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkManifest.Name = "chkManifest";
             this.chkManifest.Size = new System.Drawing.Size(112, 17);
             this.chkManifest.TabIndex = 14;
@@ -214,7 +221,8 @@
             this.chkWriteTextures.Checked = true;
             this.chkWriteTextures.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkWriteTextures.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkWriteTextures.Location = new System.Drawing.Point(18, 125);
+            this.chkWriteTextures.Location = new System.Drawing.Point(7, 27);
+            this.chkWriteTextures.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkWriteTextures.Name = "chkWriteTextures";
             this.chkWriteTextures.Size = new System.Drawing.Size(92, 17);
             this.chkWriteTextures.TabIndex = 11;
@@ -226,14 +234,15 @@
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.chkASBAnimationRetargeting);
+            this.groupBox1.Controls.Add(this.grpGeometry);
+            this.groupBox1.Controls.Add(this.grpAnimations);
             this.groupBox1.Controls.Add(this.lblBakeAnimation);
             this.groupBox1.Controls.Add(this.cmbBakeAnimationOptions);
             this.groupBox1.Controls.Add(this.chkApplyPreprocessToScene);
             this.groupBox1.Controls.Add(this.chkMrgContainersAndXref);
             this.groupBox1.Controls.Add(this.chkUsePreExportProces);
-            this.groupBox1.Controls.Add(this.chkFlatten);
             this.groupBox1.Controls.Add(this.label5);
-            this.groupBox1.Controls.Add(this.label8);
             this.groupBox1.Controls.Add(this.label7);
             this.groupBox1.Controls.Add(this.txtEnvironmentName);
             this.groupBox1.Controls.Add(this.label6);
@@ -243,20 +252,11 @@
             this.groupBox1.Controls.Add(this.textureLabel);
             this.groupBox1.Controls.Add(this.txtTextureName);
             this.groupBox1.Controls.Add(this.btnTxtBrowse);
-            this.groupBox1.Controls.Add(this.chkExportMaterials);
             this.groupBox1.Controls.Add(this.chkKHRMaterialsUnlit);
             this.groupBox1.Controls.Add(this.chkKHRTextureTransform);
             this.groupBox1.Controls.Add(this.chkKHRLightsPunctual);
-            this.groupBox1.Controls.Add(this.chkOverwriteTextures);
-            this.groupBox1.Controls.Add(this.chkDoNotOptimizeAnimations);
-            this.groupBox1.Controls.Add(this.chkAnimgroupExportNonAnimated);
-            this.groupBox1.Controls.Add(this.chkDracoCompression);
-            this.groupBox1.Controls.Add(this.chkMergeAOwithMR);
             this.groupBox1.Controls.Add(this.txtQuality);
             this.groupBox1.Controls.Add(this.labelQuality);
-            this.groupBox1.Controls.Add(this.chkExportMorphNormals);
-            this.groupBox1.Controls.Add(this.chkExportMorphTangents);
-            this.groupBox1.Controls.Add(this.chkExportTangents);
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.txtScaleFactor);
             this.groupBox1.Controls.Add(this.label3);
@@ -265,7 +265,6 @@
             this.groupBox1.Controls.Add(this.chkAutoSave);
             this.groupBox1.Controls.Add(this.chkHidden);
             this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.chkWriteTextures);
             this.groupBox1.Controls.Add(this.txtModelName);
             this.groupBox1.Controls.Add(this.chkManifest);
             this.groupBox1.Controls.Add(this.butModelBrowse);
@@ -277,11 +276,210 @@
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             // 
+            // chkASBAnimationRetargeting
+            // 
+            this.chkASBAnimationRetargeting.AutoSize = true;
+            this.chkASBAnimationRetargeting.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkASBAnimationRetargeting.Location = new System.Drawing.Point(461, 455);
+            this.chkASBAnimationRetargeting.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkASBAnimationRetargeting.Name = "chkASBAnimationRetargeting";
+            this.chkASBAnimationRetargeting.Size = new System.Drawing.Size(167, 17);
+            this.chkASBAnimationRetargeting.TabIndex = 42;
+            this.chkASBAnimationRetargeting.Text = "ASOBO_animation_retargeting";
+            this.chkASBAnimationRetargeting.UseVisualStyleBackColor = true;
+            // 
+            // grpGeometry
+            // 
+            this.grpGeometry.Controls.Add(this.chkWriteTextures);
+            this.grpGeometry.Controls.Add(this.chkOverwriteTextures);
+            this.grpGeometry.Controls.Add(this.chkMergeAOwithMR);
+            this.grpGeometry.Controls.Add(this.chkExportMaterials);
+            this.grpGeometry.Controls.Add(this.chkDracoCompression);
+            this.grpGeometry.Controls.Add(this.chkExportTangents);
+            this.grpGeometry.Controls.Add(this.chkFlatten);
+            this.grpGeometry.Location = new System.Drawing.Point(180, 128);
+            this.grpGeometry.Name = "grpGeometry";
+            this.grpGeometry.Size = new System.Drawing.Size(290, 134);
+            this.grpGeometry.TabIndex = 41;
+            this.grpGeometry.TabStop = false;
+            this.grpGeometry.Text = "Geometry";
+            // 
+            // chkOverwriteTextures
+            // 
+            this.chkOverwriteTextures.AutoSize = true;
+            this.chkOverwriteTextures.Checked = true;
+            this.chkOverwriteTextures.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkOverwriteTextures.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkOverwriteTextures.Location = new System.Drawing.Point(7, 54);
+            this.chkOverwriteTextures.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkOverwriteTextures.Name = "chkOverwriteTextures";
+            this.chkOverwriteTextures.Size = new System.Drawing.Size(112, 17);
+            this.chkOverwriteTextures.TabIndex = 19;
+            this.chkOverwriteTextures.Text = "Overwrite Textures";
+            this.chkOverwriteTextures.UseVisualStyleBackColor = true;
+            // 
+            // chkMergeAOwithMR
+            // 
+            this.chkMergeAOwithMR.AutoSize = true;
+            this.chkMergeAOwithMR.Checked = true;
+            this.chkMergeAOwithMR.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkMergeAOwithMR.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkMergeAOwithMR.Location = new System.Drawing.Point(140, 27);
+            this.chkMergeAOwithMR.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkMergeAOwithMR.Name = "chkMergeAOwithMR";
+            this.chkMergeAOwithMR.Size = new System.Drawing.Size(94, 17);
+            this.chkMergeAOwithMR.TabIndex = 17;
+            this.chkMergeAOwithMR.Text = "Merge AO map";
+            this.chkMergeAOwithMR.UseVisualStyleBackColor = true;
+            this.chkMergeAOwithMR.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
+            // 
+            // chkExportMaterials
+            // 
+            this.chkExportMaterials.AutoSize = true;
+            this.chkExportMaterials.Checked = true;
+            this.chkExportMaterials.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkExportMaterials.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkExportMaterials.Location = new System.Drawing.Point(7, 81);
+            this.chkExportMaterials.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkExportMaterials.Name = "chkExportMaterials";
+            this.chkExportMaterials.Size = new System.Drawing.Size(98, 17);
+            this.chkExportMaterials.TabIndex = 23;
+            this.chkExportMaterials.Text = "Export Materials";
+            this.chkExportMaterials.UseVisualStyleBackColor = true;
+            // 
+            // chkDracoCompression
+            // 
+            this.chkDracoCompression.AutoSize = true;
+            this.chkDracoCompression.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkDracoCompression.Location = new System.Drawing.Point(140, 54);
+            this.chkDracoCompression.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkDracoCompression.Name = "chkDracoCompression";
+            this.chkDracoCompression.Size = new System.Drawing.Size(136, 17);
+            this.chkDracoCompression.TabIndex = 18;
+            this.chkDracoCompression.Text = "Use Draco compression";
+            this.chkDracoCompression.UseVisualStyleBackColor = true;
+            this.chkDracoCompression.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
+            // 
+            // chkExportTangents
+            // 
+            this.chkExportTangents.AutoSize = true;
+            this.chkExportTangents.Checked = true;
+            this.chkExportTangents.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkExportTangents.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkExportTangents.Location = new System.Drawing.Point(320, 148);
+            this.chkExportTangents.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkExportTangents.Name = "chkExportTangents";
+            this.chkExportTangents.Size = new System.Drawing.Size(97, 17);
+            this.chkExportTangents.TabIndex = 16;
+            this.chkExportTangents.Text = "Export tangents";
+            this.chkExportTangents.UseVisualStyleBackColor = true;
+            this.chkExportTangents.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
+            // 
+            // chkFlatten
+            // 
+            this.chkFlatten.AutoSize = true;
+            this.chkFlatten.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkFlatten.Location = new System.Drawing.Point(140, 81);
+            this.chkFlatten.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkFlatten.Name = "chkFlatten";
+            this.chkFlatten.Size = new System.Drawing.Size(111, 17);
+            this.chkFlatten.TabIndex = 35;
+            this.chkFlatten.Text = "Flatten Hierarchies";
+            this.chkFlatten.UseVisualStyleBackColor = true;
+            // 
+            // grpAnimations
+            // 
+            this.grpAnimations.Controls.Add(this.cmbExportAnimationType);
+            this.grpAnimations.Controls.Add(this.chkDoNotOptimizeAnimations);
+            this.grpAnimations.Controls.Add(this.chkAnimgroupExportNonAnimated);
+            this.grpAnimations.Controls.Add(this.label8);
+            this.grpAnimations.Controls.Add(this.chkExportMorphTangents);
+            this.grpAnimations.Controls.Add(this.chkExportMorphNormals);
+            this.grpAnimations.Location = new System.Drawing.Point(494, 128);
+            this.grpAnimations.Name = "grpAnimations";
+            this.grpAnimations.Size = new System.Drawing.Size(300, 134);
+            this.grpAnimations.TabIndex = 40;
+            this.grpAnimations.TabStop = false;
+            this.grpAnimations.Text = "Animations";
+            // 
+            // cmbExportAnimationType
+            // 
+            this.cmbExportAnimationType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbExportAnimationType.FormattingEnabled = true;
+            this.cmbExportAnimationType.Items.AddRange(new object[] {
+            "Export",
+            "Not Export",
+            "Export ONLY"});
+            this.cmbExportAnimationType.Location = new System.Drawing.Point(9, 16);
+            this.cmbExportAnimationType.Name = "cmbExportAnimationType";
+            this.cmbExportAnimationType.Size = new System.Drawing.Size(121, 21);
+            this.cmbExportAnimationType.TabIndex = 34;
+            this.cmbExportAnimationType.SelectedIndexChanged += new System.EventHandler(this.cmbExportAnimationType_SelectedIndexChanged);
+            // 
+            // chkDoNotOptimizeAnimations
+            // 
+            this.chkDoNotOptimizeAnimations.AutoSize = true;
+            this.chkDoNotOptimizeAnimations.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkDoNotOptimizeAnimations.Location = new System.Drawing.Point(12, 46);
+            this.chkDoNotOptimizeAnimations.Name = "chkDoNotOptimizeAnimations";
+            this.chkDoNotOptimizeAnimations.Size = new System.Drawing.Size(154, 17);
+            this.chkDoNotOptimizeAnimations.TabIndex = 18;
+            this.chkDoNotOptimizeAnimations.Text = "Do Not Optimize Animations";
+            this.chkDoNotOptimizeAnimations.UseVisualStyleBackColor = true;
+            this.chkDoNotOptimizeAnimations.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
+            // 
+            // chkAnimgroupExportNonAnimated
+            // 
+            this.chkAnimgroupExportNonAnimated.AutoSize = true;
+            this.chkAnimgroupExportNonAnimated.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkAnimgroupExportNonAnimated.Location = new System.Drawing.Point(12, 69);
+            this.chkAnimgroupExportNonAnimated.Name = "chkAnimgroupExportNonAnimated";
+            this.chkAnimgroupExportNonAnimated.Size = new System.Drawing.Size(249, 17);
+            this.chkAnimgroupExportNonAnimated.TabIndex = 18;
+            this.chkAnimgroupExportNonAnimated.Text = "(Animation Group) Export Non-Animated Objects";
+            this.chkAnimgroupExportNonAnimated.UseVisualStyleBackColor = true;
+            this.chkAnimgroupExportNonAnimated.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(6, 89);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(113, 13);
+            this.label8.TabIndex = 33;
+            this.label8.Text = "Morph Target Options:";
+            // 
+            // chkExportMorphTangents
+            // 
+            this.chkExportMorphTangents.AutoSize = true;
+            this.chkExportMorphTangents.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkExportMorphTangents.Location = new System.Drawing.Point(18, 105);
+            this.chkExportMorphTangents.Name = "chkExportMorphTangents";
+            this.chkExportMorphTangents.Size = new System.Drawing.Size(129, 17);
+            this.chkExportMorphTangents.TabIndex = 16;
+            this.chkExportMorphTangents.Text = "Export morph tangents";
+            this.chkExportMorphTangents.UseVisualStyleBackColor = true;
+            this.chkExportMorphTangents.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
+            // 
+            // chkExportMorphNormals
+            // 
+            this.chkExportMorphNormals.AutoSize = true;
+            this.chkExportMorphNormals.Checked = true;
+            this.chkExportMorphNormals.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkExportMorphNormals.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkExportMorphNormals.Location = new System.Drawing.Point(166, 105);
+            this.chkExportMorphNormals.Name = "chkExportMorphNormals";
+            this.chkExportMorphNormals.Size = new System.Drawing.Size(124, 17);
+            this.chkExportMorphNormals.TabIndex = 16;
+            this.chkExportMorphNormals.Text = "Export morph normals";
+            this.chkExportMorphNormals.UseVisualStyleBackColor = true;
+            this.chkExportMorphNormals.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
+            // 
             // lblBakeAnimation
             // 
             this.lblBakeAnimation.AutoSize = true;
             this.lblBakeAnimation.Enabled = false;
-            this.lblBakeAnimation.Location = new System.Drawing.Point(195, 264);
+            this.lblBakeAnimation.Location = new System.Drawing.Point(184, 284);
             this.lblBakeAnimation.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblBakeAnimation.Name = "lblBakeAnimation";
             this.lblBakeAnimation.Size = new System.Drawing.Size(125, 13);
@@ -296,7 +494,7 @@
             "Do not bake animations",
             "Bake all animations",
             "Selective bake"});
-            this.cmbBakeAnimationOptions.Location = new System.Drawing.Point(328, 261);
+            this.cmbBakeAnimationOptions.Location = new System.Drawing.Point(317, 281);
             this.cmbBakeAnimationOptions.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.cmbBakeAnimationOptions.Name = "cmbBakeAnimationOptions";
             this.cmbBakeAnimationOptions.Size = new System.Drawing.Size(178, 21);
@@ -339,18 +537,6 @@
             this.chkUsePreExportProces.UseVisualStyleBackColor = true;
             this.chkUsePreExportProces.CheckedChanged += new System.EventHandler(this.chkUsePreExportProces_CheckedChanged);
             // 
-            // chkFlatten
-            // 
-            this.chkFlatten.AutoSize = true;
-            this.chkFlatten.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkFlatten.Location = new System.Drawing.Point(18, 240);
-            this.chkFlatten.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.chkFlatten.Name = "chkFlatten";
-            this.chkFlatten.Size = new System.Drawing.Size(111, 17);
-            this.chkFlatten.TabIndex = 35;
-            this.chkFlatten.Text = "Flatten Hierarchies";
-            this.chkFlatten.UseVisualStyleBackColor = true;
-            // 
             // label5
             // 
             this.label5.AutoSize = true;
@@ -360,15 +546,6 @@
             this.label5.Size = new System.Drawing.Size(66, 13);
             this.label5.TabIndex = 29;
             this.label5.Text = "Environment";
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(6, 340);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(113, 13);
-            this.label8.TabIndex = 33;
-            this.label8.Text = "Morph Target Options:";
             // 
             // label7
             // 
@@ -472,19 +649,6 @@
             this.btnTxtBrowse.UseVisualStyleBackColor = true;
             this.btnTxtBrowse.Click += new System.EventHandler(this.btnTextureBrowse_Click);
             // 
-            // chkExportMaterials
-            // 
-            this.chkExportMaterials.AutoSize = true;
-            this.chkExportMaterials.Checked = true;
-            this.chkExportMaterials.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkExportMaterials.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkExportMaterials.Location = new System.Drawing.Point(18, 195);
-            this.chkExportMaterials.Name = "chkExportMaterials";
-            this.chkExportMaterials.Size = new System.Drawing.Size(98, 17);
-            this.chkExportMaterials.TabIndex = 23;
-            this.chkExportMaterials.Text = "Export Materials";
-            this.chkExportMaterials.UseVisualStyleBackColor = true;
-            // 
             // chkKHRMaterialsUnlit
             // 
             this.chkKHRMaterialsUnlit.AutoSize = true;
@@ -521,69 +685,6 @@
             this.chkKHRLightsPunctual.Text = "KHR_lights_punctual";
             this.chkKHRLightsPunctual.UseVisualStyleBackColor = true;
             // 
-            // chkOverwriteTextures
-            // 
-            this.chkOverwriteTextures.AutoSize = true;
-            this.chkOverwriteTextures.Checked = true;
-            this.chkOverwriteTextures.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkOverwriteTextures.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkOverwriteTextures.Location = new System.Drawing.Point(18, 149);
-            this.chkOverwriteTextures.Name = "chkOverwriteTextures";
-            this.chkOverwriteTextures.Size = new System.Drawing.Size(112, 17);
-            this.chkOverwriteTextures.TabIndex = 19;
-            this.chkOverwriteTextures.Text = "Overwrite Textures";
-            this.chkOverwriteTextures.UseVisualStyleBackColor = true;
-            // 
-            // chkDoNotOptimizeAnimations
-            // 
-            this.chkDoNotOptimizeAnimations.AutoSize = true;
-            this.chkDoNotOptimizeAnimations.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkDoNotOptimizeAnimations.Location = new System.Drawing.Point(166, 195);
-            this.chkDoNotOptimizeAnimations.Name = "chkDoNotOptimizeAnimations";
-            this.chkDoNotOptimizeAnimations.Size = new System.Drawing.Size(154, 17);
-            this.chkDoNotOptimizeAnimations.TabIndex = 18;
-            this.chkDoNotOptimizeAnimations.Text = "Do Not Optimize Animations";
-            this.chkDoNotOptimizeAnimations.UseVisualStyleBackColor = true;
-            this.chkDoNotOptimizeAnimations.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
-            // 
-            // chkAnimgroupExportNonAnimated
-            // 
-            this.chkAnimgroupExportNonAnimated.AutoSize = true;
-            this.chkAnimgroupExportNonAnimated.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkAnimgroupExportNonAnimated.Location = new System.Drawing.Point(18, 218);
-            this.chkAnimgroupExportNonAnimated.Name = "chkAnimgroupExportNonAnimated";
-            this.chkAnimgroupExportNonAnimated.Size = new System.Drawing.Size(249, 17);
-            this.chkAnimgroupExportNonAnimated.TabIndex = 18;
-            this.chkAnimgroupExportNonAnimated.Text = "(Animation Group) Export Non-Animated Objects";
-            this.chkAnimgroupExportNonAnimated.UseVisualStyleBackColor = true;
-            this.chkAnimgroupExportNonAnimated.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
-            // 
-            // chkDracoCompression
-            // 
-            this.chkDracoCompression.AutoSize = true;
-            this.chkDracoCompression.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkDracoCompression.Location = new System.Drawing.Point(166, 171);
-            this.chkDracoCompression.Name = "chkDracoCompression";
-            this.chkDracoCompression.Size = new System.Drawing.Size(136, 17);
-            this.chkDracoCompression.TabIndex = 18;
-            this.chkDracoCompression.Text = "Use Draco compression";
-            this.chkDracoCompression.UseVisualStyleBackColor = true;
-            this.chkDracoCompression.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
-            // 
-            // chkMergeAOwithMR
-            // 
-            this.chkMergeAOwithMR.AutoSize = true;
-            this.chkMergeAOwithMR.Checked = true;
-            this.chkMergeAOwithMR.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkMergeAOwithMR.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkMergeAOwithMR.Location = new System.Drawing.Point(18, 171);
-            this.chkMergeAOwithMR.Name = "chkMergeAOwithMR";
-            this.chkMergeAOwithMR.Size = new System.Drawing.Size(94, 17);
-            this.chkMergeAOwithMR.TabIndex = 17;
-            this.chkMergeAOwithMR.Text = "Merge AO map";
-            this.chkMergeAOwithMR.UseVisualStyleBackColor = true;
-            this.chkMergeAOwithMR.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
-            // 
             // txtQuality
             // 
             this.txtQuality.Location = new System.Drawing.Point(403, 92);
@@ -602,46 +703,6 @@
             this.labelQuality.Size = new System.Drawing.Size(79, 13);
             this.labelQuality.TabIndex = 8;
             this.labelQuality.Text = "Texture quality:";
-            // 
-            // chkExportMorphNormals
-            // 
-            this.chkExportMorphNormals.AutoSize = true;
-            this.chkExportMorphNormals.Checked = true;
-            this.chkExportMorphNormals.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkExportMorphNormals.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkExportMorphNormals.Location = new System.Drawing.Point(166, 356);
-            this.chkExportMorphNormals.Name = "chkExportMorphNormals";
-            this.chkExportMorphNormals.Size = new System.Drawing.Size(124, 17);
-            this.chkExportMorphNormals.TabIndex = 16;
-            this.chkExportMorphNormals.Text = "Export morph normals";
-            this.chkExportMorphNormals.UseVisualStyleBackColor = true;
-            this.chkExportMorphNormals.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
-            // 
-            // chkExportMorphTangents
-            // 
-            this.chkExportMorphTangents.AutoSize = true;
-            this.chkExportMorphTangents.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkExportMorphTangents.Location = new System.Drawing.Point(18, 356);
-            this.chkExportMorphTangents.Name = "chkExportMorphTangents";
-            this.chkExportMorphTangents.Size = new System.Drawing.Size(129, 17);
-            this.chkExportMorphTangents.TabIndex = 16;
-            this.chkExportMorphTangents.Text = "Export morph tangents";
-            this.chkExportMorphTangents.UseVisualStyleBackColor = true;
-            this.chkExportMorphTangents.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
-            // 
-            // chkExportTangents
-            // 
-            this.chkExportTangents.AutoSize = true;
-            this.chkExportTangents.Checked = true;
-            this.chkExportTangents.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkExportTangents.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkExportTangents.Location = new System.Drawing.Point(320, 148);
-            this.chkExportTangents.Name = "chkExportTangents";
-            this.chkExportTangents.Size = new System.Drawing.Size(97, 17);
-            this.chkExportTangents.TabIndex = 16;
-            this.chkExportTangents.Text = "Export tangents";
-            this.chkExportTangents.UseVisualStyleBackColor = true;
-            this.chkExportTangents.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
             // 
             // label4
             // 
@@ -690,7 +751,8 @@
             // 
             this.chkOnlySelected.AutoSize = true;
             this.chkOnlySelected.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkOnlySelected.Location = new System.Drawing.Point(320, 125);
+            this.chkOnlySelected.Location = new System.Drawing.Point(11, 171);
+            this.chkOnlySelected.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkOnlySelected.Name = "chkOnlySelected";
             this.chkOnlySelected.Size = new System.Drawing.Size(118, 17);
             this.chkOnlySelected.TabIndex = 13;
@@ -702,7 +764,8 @@
             // 
             this.chkAutoSave.AutoSize = true;
             this.chkAutoSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkAutoSave.Location = new System.Drawing.Point(166, 148);
+            this.chkAutoSave.Location = new System.Drawing.Point(11, 125);
+            this.chkAutoSave.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkAutoSave.Name = "chkAutoSave";
             this.chkAutoSave.Size = new System.Drawing.Size(130, 17);
             this.chkAutoSave.TabIndex = 15;
@@ -714,7 +777,8 @@
             // 
             this.chkHidden.AutoSize = true;
             this.chkHidden.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkHidden.Location = new System.Drawing.Point(166, 125);
+            this.chkHidden.Location = new System.Drawing.Point(11, 148);
+            this.chkHidden.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkHidden.Name = "chkHidden";
             this.chkHidden.Size = new System.Drawing.Size(125, 17);
             this.chkHidden.TabIndex = 12;
@@ -799,44 +863,44 @@
             this.pictureBox2.TabIndex = 9;
             this.pictureBox2.TabStop = false;
             // 
-            // groupBox2
+            // grp_FlightSim
             // 
-            this.groupBox2.Controls.Add(this.removeNamespaces_checkbox);
-            this.groupBox2.Controls.Add(this.removeLodPrefix);
-            this.groupBox2.Location = new System.Drawing.Point(916, 253);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(347, 199);
-            this.groupBox2.TabIndex = 111;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Microsoft Flight Sim";
+            this.grp_FlightSim.Controls.Add(this.chkRemoveNamespace);
+            this.grp_FlightSim.Controls.Add(this.chk_RemoveLodPrefix);
+            this.grp_FlightSim.Location = new System.Drawing.Point(919, 211);
+            this.grp_FlightSim.Name = "grp_FlightSim";
+            this.grp_FlightSim.Size = new System.Drawing.Size(344, 114);
+            this.grp_FlightSim.TabIndex = 111;
+            this.grp_FlightSim.TabStop = false;
+            this.grp_FlightSim.Text = "FlightSim";
             // 
-            // removeNamespaces_checkbox
+            // chk_RemoveLodPrefix
             // 
-            this.removeNamespaces_checkbox.AutoSize = true;
-            this.removeNamespaces_checkbox.Location = new System.Drawing.Point(6, 40);
-            this.removeNamespaces_checkbox.Name = "removeNamespaces_checkbox";
-            this.removeNamespaces_checkbox.Size = new System.Drawing.Size(126, 17);
-            this.removeNamespaces_checkbox.TabIndex = 1;
-            this.removeNamespaces_checkbox.Text = "Remove Namespace";
-            this.removeNamespaces_checkbox.UseVisualStyleBackColor = true;
+            this.chk_RemoveLodPrefix.AutoSize = true;
+            this.chk_RemoveLodPrefix.Location = new System.Drawing.Point(16, 29);
+            this.chk_RemoveLodPrefix.Name = "chk_RemoveLodPrefix";
+            this.chk_RemoveLodPrefix.Size = new System.Drawing.Size(119, 17);
+            this.chk_RemoveLodPrefix.TabIndex = 0;
+            this.chk_RemoveLodPrefix.Text = "Remove LOD prefix";
+            this.chk_RemoveLodPrefix.UseVisualStyleBackColor = true;
             // 
-            // removeLodPrefix
+            // chkRemoveNamespace
             // 
-            this.removeLodPrefix.AutoSize = true;
-            this.removeLodPrefix.Location = new System.Drawing.Point(7, 20);
-            this.removeLodPrefix.Name = "removeLodPrefix";
-            this.removeLodPrefix.Size = new System.Drawing.Size(116, 17);
-            this.removeLodPrefix.TabIndex = 0;
-            this.removeLodPrefix.Text = "Remove Lod Prefix";
-            this.removeLodPrefix.UseVisualStyleBackColor = true;
+            this.chkRemoveNamespace.AutoSize = true;
+            this.chkRemoveNamespace.Location = new System.Drawing.Point(16, 60);
+            this.chkRemoveNamespace.Name = "chkRemoveNamespace";
+            this.chkRemoveNamespace.Size = new System.Drawing.Size(126, 17);
+            this.chkRemoveNamespace.TabIndex = 1;
+            this.chkRemoveNamespace.Text = "Remove Namespace";
+            this.chkRemoveNamespace.UseVisualStyleBackColor = true;
             // 
             // ExporterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1276, 898);
+            this.Controls.Add(this.grp_FlightSim);
             this.Controls.Add(this.saveOptionBtn);
-            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.butMultiExport);
             this.Controls.Add(this.butExportAndRun);
             this.Controls.Add(this.groupBox1);
@@ -858,9 +922,13 @@
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.grpGeometry.ResumeLayout(false);
+            this.grpGeometry.PerformLayout();
+            this.grpAnimations.ResumeLayout(false);
+            this.grpAnimations.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
+            this.grp_FlightSim.ResumeLayout(false);
+            this.grp_FlightSim.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -921,11 +989,15 @@
         private System.Windows.Forms.CheckBox chkFlatten;
         private System.Windows.Forms.CheckBox chkUsePreExportProces;
         private System.Windows.Forms.CheckBox chkMrgContainersAndXref;
+        private System.Windows.Forms.GroupBox grpGeometry;
+        private System.Windows.Forms.GroupBox grpAnimations;
+        private System.Windows.Forms.ComboBox cmbExportAnimationType;
         private System.Windows.Forms.CheckBox chkApplyPreprocessToScene;
         private System.Windows.Forms.Label lblBakeAnimation;
         private System.Windows.Forms.ComboBox cmbBakeAnimationOptions;
-		private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.CheckBox removeNamespaces_checkbox;
-        private System.Windows.Forms.CheckBox removeLodPrefix;
+        private System.Windows.Forms.CheckBox chkASBAnimationRetargeting;
+        private System.Windows.Forms.GroupBox grp_FlightSim;
+        private System.Windows.Forms.CheckBox chkRemoveNamespace;
+        private System.Windows.Forms.CheckBox chk_RemoveLodPrefix;
     }
 }

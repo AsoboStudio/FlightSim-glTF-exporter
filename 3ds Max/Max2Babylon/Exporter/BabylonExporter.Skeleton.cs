@@ -313,34 +313,36 @@ namespace Max2Babylon
                 int parentIndex = (node.NodeParent == null) ? -1 : nodeIndices.IndexOf(node.NodeParent.NodeID);
 
                 string boneId = node.MaxNode.GetGuid().ToString();
+                string animationTargetID = node.MaxNode.GetStringProperty("babylonjs_asb_anim_targetID", "");
                 // create the bone
                 BabylonBone bone = new BabylonBone()
                 {
                     id = (isGltfExported)?boneId:boneId + "-bone",// the suffix "-bone" is added in babylon export format to assure the uniqueness of IDs
+                    AnimationTargetId = animationTargetID,
                     parentNodeId = (parentIndex!=-1)?node.NodeParent.MaxNode.GetGuid().ToString():null,
                     name = node.Name,
                     index = nodeIndices.IndexOf(node.NodeID),
                     parentBoneIndex = parentIndex,
                     matrix = (parentIndex==-1)?node.GetWorldTM(0).ToArray():node.GetLocalTM(0).ToArray()
                 };
-
+                
                 // export its animation
                 var babylonAnimation = ExportMatrixAnimation("_matrix", key =>
-                {
-                    var objectTM = node.GetObjectTM(key);
-                    var parentNode = node.NodeParent;
-                    IGMatrix mat;
-                    if (parentNode == null || bone.parentBoneIndex == -1)
                     {
-                        mat = objectTM;
-                    }
-                    else
-                    {
-                        mat = node.GetLocalTM(key);
-                    }
-                    return mat.ToArray();
-                },
-                false); // Do not remove linear animation keys for bones
+                        var objectTM = node.GetObjectTM(key);
+                        var parentNode = node.NodeParent;
+                        IGMatrix mat;
+                        if (parentNode == null || bone.parentBoneIndex == -1)
+                        {
+                            mat = objectTM;
+                        }
+                        else
+                        {
+                            mat = node.GetLocalTM(key);
+                        }
+                        return mat.ToArray();
+                    },
+                    false); // Do not remove linear animation keys for bones
 
                 if (babylonAnimation != null)
                 {

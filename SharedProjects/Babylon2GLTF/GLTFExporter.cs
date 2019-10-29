@@ -97,7 +97,6 @@ namespace Babylon2GLTF
                 logger.CheckCancelled();
             });
 
-
             // Meshes
             logger.RaiseMessage("GLTFExporter | Exporting meshes");
             progression = 10.0f;
@@ -145,15 +144,21 @@ namespace Babylon2GLTF
             var materialsExportTime = watch.ElapsedMilliseconds / 1000.0 -nodesExportTime;
             logger.RaiseMessage(string.Format("GLTFMaterials exported in {0:0.00}s", materialsExportTime), Color.Blue);
 #endif
-            // Animations
-            progression = 90.0f;
-            logger.ReportProgressChanged((int)progression);
-            logger.RaiseMessage("GLTFExporter | Exporting Animations");
-            ExportAnimationGroups(gltf, babylonScene);
+
+            if (exportParameters.animationExportType != AnimationExportType.NotExport)
+            {
+                // Animations
+                progression = 90.0f;
+                logger.ReportProgressChanged((int) progression);
+                logger.RaiseMessage("GLTFExporter | Exporting Animations");
+                ExportAnimationGroups(gltf, babylonScene);
 #if DEBUG
-            var animationGroupsExportTime = watch.ElapsedMilliseconds / 1000.0 -materialsExportTime;
-            logger.RaiseMessage(string.Format("GLTFAnimations exported in {0:0.00}s", animationGroupsExportTime), Color.Blue);
+                var animationGroupsExportTime = watch.ElapsedMilliseconds / 1000.0 - materialsExportTime;
+                logger.RaiseMessage(string.Format("GLTFAnimations exported in {0:0.00}s", animationGroupsExportTime),
+                    Color.Blue);
 #endif
+            }
+
             // Prepare buffers
             gltf.BuffersList.ForEach(buffer =>
             {
@@ -401,6 +406,12 @@ namespace Babylon2GLTF
                     gltfNode.extras["tags"] = babylonNode.tags;
                 }
 
+                //export extensions
+                if (exportParameters.enableASBAnimationRetargeting)
+                {
+                    ASOBOAnimationRetargetingNodeExtension(ref gltf,ref gltfNode,babylonNode);
+                }
+
                 // ...export its children
                 List<BabylonNode> babylonDescendants = getDescendants(babylonNode);
                 babylonDescendants.ForEach(descendant => exportNodeRec(descendant, gltf, babylonScene, gltfNode));
@@ -497,7 +508,11 @@ namespace Babylon2GLTF
             // Use the bounded writer in case some values are infinity ()
             using (var jsonWriter = new JsonTextWriterBounded(sw))
             {
+#if DEBUG
+                jsonWriter.Formatting = Formatting.Indented;
+#else
                 jsonWriter.Formatting = Formatting.None;
+#endif
                 jsonSerializer.Serialize(jsonWriter, gltf);
             }
             return sb.ToString();

@@ -312,10 +312,6 @@ namespace Max2Babylon
 
             this.scaleFactor = Tools.GetScaleFactorToMeters();
 
-            var scaleFactorFloat = 1.0f;
-            // Check input text is valid
-            float scaleFactor = exportParameters.scaleFactor;
-
             long quality = exportParameters.txtQuality;
             try
             {
@@ -446,6 +442,7 @@ namespace Max2Babylon
                 babylonScene.skyboxBlurLevel = rawScene.GetFloatProperty("babylonjs_skyboxBlurLevel");
             }
 
+            
             // Instantiate custom material exporters
             materialExporters = new Dictionary<ClassIDWrapper, IMaxMaterialExporter>();
             foreach (Type type in Tools.GetAllLoadableTypes())
@@ -515,10 +512,17 @@ namespace Max2Babylon
             BabylonMorphTargetManager.Reset();
             foreach (var maxRootNode in maxRootNodes)
             {
+                if (isGltfExported && exportParameters.animationExportType == AnimationExportType.ExportOnly)
+                {
+                    calculateSkeletonList(maxRootNode);
+                }
+                else
+                {
                 BabylonNode node = exportNodeRec(maxRootNode, babylonScene, gameScene);
                 // if we're exporting from a specific node, reset the pivot to {0,0,0}
                 if (node != null && exportNode != null && !exportNode.IsRootNode)
                     SetNodePosition(ref node, ref babylonScene, new float[] { 0, 0, 0 });
+                }
 
                 progression += progressionStep;
                 ReportProgressChanged((int)progression);
@@ -588,14 +592,14 @@ namespace Max2Babylon
                 RaiseMessage(string.Format("Total lights: {0}", babylonScene.LightsList.Count), Color.Gray, 1);
             }
 
-            if (scaleFactorFloat != 1.0f)
+            if (exportParameters.scaleFactor != 1.0f)
             {
                 RaiseMessage("A root node is added for scaling", 1);
 
                 // Create root node for scaling
                 BabylonMesh rootNode = new BabylonMesh { name = "root", id = Guid.NewGuid().ToString() };
                 rootNode.isDummy = true;
-                float rootNodeScale = scaleFactorFloat;
+                float rootNodeScale = exportParameters.scaleFactor;
                 rootNode.scaling = new float[3] { rootNodeScale, rootNodeScale, rootNodeScale };
 
                 if (ExportQuaternionsInsteadOfEulers)
@@ -628,18 +632,21 @@ namespace Max2Babylon
             if (exportParameters.exportMaterials)
             {
                 RaiseMessage("Exporting materials");
-                var matsToExport = referencedMaterials.ToArray(); // Snapshot because multimaterials can export new materials
+                var matsToExport =
+                    referencedMaterials.ToArray(); // Snapshot because multimaterials can export new materials
                 foreach (var mat in matsToExport)
                 {
                     ExportMaterial(mat, babylonScene);
                     CheckCancelled();
                 }
-                RaiseMessage(string.Format("Total: {0}", babylonScene.MaterialsList.Count + babylonScene.MultiMaterialsList.Count), Color.Gray, 1);
+
+                RaiseMessage(string.Format("Total: {0}",babylonScene.MaterialsList.Count + babylonScene.MultiMaterialsList.Count), Color.Gray, 1);
             }
             else
             {
                 RaiseMessage("Skipping material export.");
             }
+
 
             // Fog
             for (var index = 0; index < Loader.Core.NumAtmospheric; index++)
@@ -674,7 +681,6 @@ namespace Max2Babylon
                     ExportSkin(skin, babylonScene);
                 }
             }
-
 #if DEBUG
             var nodesExportTime = watch.ElapsedMilliseconds / 1000.0 - flattenTime;
             RaiseMessage(string.Format("Noded exported in {0:0.00}s", nodesExportTime), Color.Blue);
@@ -683,6 +689,7 @@ namespace Max2Babylon
             // ----------------------------
             // ----- Animation groups -----
             // ----------------------------
+            
             RaiseMessage("Export animation groups");
             // add animation groups to the scene
             babylonScene.animationGroups = ExportAnimationGroups(babylonScene);
@@ -691,10 +698,11 @@ namespace Max2Babylon
             RaiseMessage(string.Format("Animation groups exported in {0:0.00}s", animationGroupExportTime), Color.Blue);
 #endif
 
+
             if (isBabylonExported)
             {
                 // if we are exporting to .Babylon then remove then remove animations from nodes if there are animation groups.
-                if (babylonScene.animationGroups.Count > 0)
+                if (babylonScene.animationGroups?.Count > 0)
                 {
                     foreach (BabylonNode node in babylonScene.MeshesList)
                     {
@@ -964,6 +972,8 @@ namespace Max2Babylon
                     babylonNode.tags = tag;
                 }
 
+                babylonNode.AnimationTargetId= maxGameNode.MaxNode.GetStringProperty("babylonjs_asb_anim_targetID", "");
+
                 // Export its children
                 for (int i = 0; i < maxGameNode.ChildCount; i++)
                 {
@@ -974,6 +984,37 @@ namespace Max2Babylon
             }
 
             return babylonNode;
+        }
+
+        private void calculateSkeletonList(IIGameNode maxGameNode )
+        {
+            if (maxGameNode.IGameObject.IGameType is Autodesk.Max.IGameObject.ObjectTypes.Mesh)
+            {
+                var gameMesh = maxGameNode.IGameObject.AsGameMesh();
+                // Skin
+                var isSkinned = gameMesh.IsObjectSkinned;
+                var skin = gameMesh.IGameSkin;
+                IGMatrix skinInitPoseMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
+
+                if (isSkinned && GetSkinnedBones(skin).Count > 0)  // if the mesh has a skin with at least one bone
+                {
+                    var skinAlreadyStored = skins.Find(_skin => IsSkinEqualTo(_skin, skin));
+                    if (skinAlreadyStored == null)
+                    {
+                        skins.Add(skin);
+                    }
+
+                    skin.GetInitSkinTM(skinInitPoseMatrix);
+                }
+            }
+
+            for (int i = 0; i < maxGameNode.ChildCount; i++)
+            {
+                var descendant = maxGameNode.GetNodeChild(i);
+                calculateSkeletonList(descendant);
+            }
+
+            
         }
 
         /// <summary>

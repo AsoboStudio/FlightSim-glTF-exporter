@@ -15,9 +15,6 @@ namespace Max2Babylon
 {
     public partial class ExporterForm : Form
     {
-        private const string ModelFilePathProperty = "modelFilePathProperty";
-        private const string TextureFolderPathProperty = "textureFolderPathProperty";
-
         private readonly BabylonExportActionItem babylonExportAction;
         private BabylonExporter exporter;
         private bool gltfPipelineInstalled = true;  // true if the gltf-pipeline is installed and runnable.
@@ -85,13 +82,15 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkDoNotOptimizeAnimations, Loader.Core.RootNode, "babylonjs_donotoptimizeanimations");
             Tools.PrepareCheckBox(chkKHRMaterialsUnlit, Loader.Core.RootNode, "babylonjs_khr_materials_unlit");
             Tools.PrepareCheckBox(chkExportMaterials, Loader.Core.RootNode, "babylonjs_export_materials", 1);
+            Tools.PrepareComboBox(cmbExportAnimationType, Loader.Core.RootNode, "babylonjs_export_animations_type",AnimationExportType.Export.ToString());
+            Tools.PrepareCheckBox(chkASBAnimationRetargeting, Loader.Core.RootNode, "babylonjs_asb_animation_retargeting");
             Tools.PrepareCheckBox(chkExportMorphTangents, Loader.Core.RootNode, "babylonjs_export_Morph_Tangents", 0);
             Tools.PrepareCheckBox(chkExportMorphNormals, Loader.Core.RootNode, "babylonjs_export_Morph_Normals", 1);
             Tools.PrepareComboBox(cmbBakeAnimationOptions, Loader.Core.RootNode, "babylonjs_bakeAnimationsType", (int)BakeAnimationType.DoNotBakeAnimation);
             Tools.PrepareCheckBox(chkApplyPreprocessToScene, Loader.Core.RootNode, "babylonjs_applyPreprocess", 0);
 
-            Tools.PrepareCheckBox(removeLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix",1);
-            Tools.PrepareCheckBox(removeNamespaces_checkbox, Loader.Core.RootNode, "flightsim_removenamespaces",1);
+            Tools.PrepareCheckBox(chk_RemoveLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix",1);
+            Tools.PrepareCheckBox(chkRemoveNamespace, Loader.Core.RootNode, "flightsim_removenamespaces",1);
 
             if (comboOutputFormat.SelectedText == "babylon" || comboOutputFormat.SelectedText == "binary babylon" || !gltfPipelineInstalled)
             {
@@ -268,6 +267,8 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkKHRLightsPunctual, Loader.Core.RootNode, "babylonjs_khrLightsPunctual");
             Tools.UpdateCheckBox(chkKHRMaterialsUnlit, Loader.Core.RootNode, "babylonjs_khr_materials_unlit");
             Tools.UpdateCheckBox(chkExportMaterials, Loader.Core.RootNode, "babylonjs_export_materials");
+            Tools.UpdateComboBox(cmbExportAnimationType, Loader.Core.RootNode, "babylonjs_export_animations_type");
+            Tools.UpdateCheckBox(chkASBAnimationRetargeting, Loader.Core.RootNode, "babylonjs_asb_animation_retargeting");
             Tools.UpdateCheckBox(chkAnimgroupExportNonAnimated, Loader.Core.RootNode, "babylonjs_animgroupexportnonanimated");
             Tools.UpdateCheckBox(chkDoNotOptimizeAnimations, Loader.Core.RootNode, "babylonjs_donotoptimizeanimations");
             Tools.UpdateCheckBox(chkExportMorphTangents, Loader.Core.RootNode, "babylonjs_export_Morph_Tangents");
@@ -275,8 +276,8 @@ namespace Max2Babylon
             Tools.UpdateComboBoxByIndex(cmbBakeAnimationOptions, Loader.Core.RootNode, "babylonjs_bakeAnimationsType");
             Tools.UpdateCheckBox(chkApplyPreprocessToScene,Loader.Core.RootNode, "babylonjs_applyPreprocess");
 
-			Tools.UpdateCheckBox(removeLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix");
-            Tools.UpdateCheckBox(removeNamespaces_checkbox, Loader.Core.RootNode, "flightsim_removenamespaces");            
+			Tools.UpdateCheckBox(chk_RemoveLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix");
+            Tools.UpdateCheckBox(chkRemoveNamespace, Loader.Core.RootNode, "flightsim_removenamespaces");            
 
             Loader.Core.RootNode.SetStringProperty(ExportParameters.ModelFilePathProperty, Tools.RelativePathStore(txtModelName.Text));
             Loader.Core.RootNode.SetStringProperty(ExportParameters.TextureFolderPathProperty, Tools.RelativePathStore(txtTextureName.Text));
@@ -391,8 +392,8 @@ namespace Max2Babylon
                     textureFolder = textureExportPath,
                     outputFormat = comboOutputFormat.SelectedItem.ToString(),
                     scaleFactor = float.Parse(txtScaleFactor.Text),
-                    writeTextures = chkWriteTextures.Checked,
-                    overwriteTextures = chkOverwriteTextures.Checked,
+                    writeTextures = chkWriteTextures.Enabled && chkWriteTextures.Checked,
+                    overwriteTextures = chkOverwriteTextures.Enabled && chkOverwriteTextures.Checked,
                     exportHiddenObjects = chkHidden.Checked,
                     exportOnlySelected = chkOnlySelected.Checked,
                     generateManifest = chkManifest.Checked,
@@ -401,13 +402,15 @@ namespace Max2Babylon
                     exportMorphTangents = chkExportMorphTangents.Checked,
                     exportMorphNormals = chkExportMorphNormals.Checked,
                     txtQuality = long.Parse(txtQuality.Text),
-                    mergeAOwithMR = chkMergeAOwithMR.Checked,
+                    mergeAOwithMR = chkMergeAOwithMR.Enabled && chkMergeAOwithMR.Checked,
                     bakeAnimationType = (BakeAnimationType)cmbBakeAnimationOptions.SelectedIndex,
-                    dracoCompression = chkDracoCompression.Checked,
+                    dracoCompression = chkDracoCompression.Enabled && chkDracoCompression.Checked,
                     enableKHRLightsPunctual = chkKHRLightsPunctual.Checked,
                     enableKHRTextureTransform = chkKHRTextureTransform.Checked,
                     enableKHRMaterialsUnlit = chkKHRMaterialsUnlit.Checked,
-                    exportMaterials = chkExportMaterials.Checked,
+                    exportMaterials = chkExportMaterials.Enabled && chkExportMaterials.Checked,
+                    animationExportType = (AnimationExportType)cmbExportAnimationType.SelectedIndex,
+                    enableASBAnimationRetargeting = chkASBAnimationRetargeting.Checked,
                     optimizeAnimations = !chkDoNotOptimizeAnimations.Checked,
                     animgroupExportNonAnimated = chkAnimgroupExportNonAnimated.Checked,
                     exportNode = exportItem?.Node,
@@ -416,11 +419,11 @@ namespace Max2Babylon
                     pbrFull = chkFullPBR.Checked,
                     pbrEnvironment = txtEnvironmentName.Text,
                     usePreExportProcess = chkUsePreExportProces.Checked,
-                    flattenScene = chkFlatten.Checked,
+                    flattenScene = chkFlatten.Enabled && chkFlatten.Checked,
                     mergeContainersAndXRef = chkMrgContainersAndXref.Checked,
 					useMultiExporter = multiExport,
-					removeLodPrefix = removeLodPrefix.Checked,
-                    removeNamespaces = removeNamespaces_checkbox.Checked
+					removeLodPrefix = chk_RemoveLodPrefix.Checked,
+                    removeNamespaces = chkRemoveNamespace.Checked
                 };
 
                 exporter.callerForm = this;
@@ -596,6 +599,7 @@ namespace Max2Babylon
                     chkKHRMaterialsUnlit.Enabled = false;
                     chkKHRLightsPunctual.Enabled = false;
                     chkKHRTextureTransform.Enabled = false;
+                    chkASBAnimationRetargeting.Enabled = false;
                     break;
                 case "gltf":
                     this.saveFileDialog.DefaultExt = "gltf";
@@ -616,6 +620,7 @@ namespace Max2Babylon
                     chkKHRMaterialsUnlit.Enabled = true;
                     chkKHRLightsPunctual.Enabled = true;
                     chkKHRTextureTransform.Enabled = true;
+                    chkASBAnimationRetargeting.Enabled = true;
                     break;
                 case "glb":
                     this.saveFileDialog.DefaultExt = "glb";
@@ -639,6 +644,7 @@ namespace Max2Babylon
                     chkKHRMaterialsUnlit.Enabled = true;
                     chkKHRLightsPunctual.Enabled = true;
                     chkKHRTextureTransform.Enabled = true;
+                    chkASBAnimationRetargeting.Enabled = true;
                     break;
             }
 
@@ -747,6 +753,54 @@ namespace Max2Babylon
                 cmbBakeAnimationOptions.Enabled = true;
                 lblBakeAnimation.Enabled = true;
                 chkApplyPreprocessToScene.Enabled = true;
+            }
+        }
+
+        private void cmbExportAnimationType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch ((AnimationExportType)cmbExportAnimationType.SelectedIndex)
+            {
+                case AnimationExportType.NotExport:
+                    chkDoNotOptimizeAnimations.Enabled = false;
+                    chkAnimgroupExportNonAnimated.Enabled = false;
+                    chkExportMorphTangents.Enabled = false;
+                    chkExportMorphNormals.Enabled = false;
+                    chkWriteTextures.Enabled = true;
+                    chkOverwriteTextures.Enabled = true;
+                    chkExportMaterials.Enabled = true;
+                    chkMergeAOwithMR.Enabled = true;
+                    chkDracoCompression.Enabled = true;
+                    chkExportTangents.Enabled = true;
+                    chkFlatten.Enabled = true;
+                    break;
+                case AnimationExportType.Export:
+                    chkWriteTextures.Enabled = true;
+                    chkOverwriteTextures.Enabled = true;
+                    chkExportMaterials.Enabled = true;
+                    chkMergeAOwithMR.Enabled = true;
+                    chkDracoCompression.Enabled = true;
+                    chkExportTangents.Enabled = true;
+                    chkDoNotOptimizeAnimations.Enabled = true;
+                    chkAnimgroupExportNonAnimated.Enabled = true;
+                    chkExportMorphTangents.Enabled = true;
+                    chkExportMorphNormals.Enabled = true;
+                    chkFlatten.Enabled = true;
+                    break;
+                case AnimationExportType.ExportOnly:
+                    chkDoNotOptimizeAnimations.Enabled = true;
+                    chkAnimgroupExportNonAnimated.Enabled = true;
+                    chkExportMorphTangents.Enabled = true;
+                    chkExportMorphNormals.Enabled = true;
+                    chkWriteTextures.Enabled = false;
+                    chkOverwriteTextures.Enabled = false;
+                    chkExportMaterials.Enabled = false;
+                    chkMergeAOwithMR.Enabled = false;
+                    chkDracoCompression.Enabled = false;
+                    chkExportTangents.Enabled = false;
+                    chkFlatten.Enabled = false;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
     }
