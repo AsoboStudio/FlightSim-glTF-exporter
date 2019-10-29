@@ -91,8 +91,8 @@
             this.envFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.grp_FlightSim = new System.Windows.Forms.GroupBox();
-            this.chk_RemoveLodPrefix = new System.Windows.Forms.CheckBox();
             this.chkRemoveNamespace = new System.Windows.Forms.CheckBox();
+            this.chk_RemoveLodPrefix = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.grpGeometry.SuspendLayout();
             this.grpAnimations.SuspendLayout();
@@ -867,22 +867,12 @@
             // 
             this.grp_FlightSim.Controls.Add(this.chkRemoveNamespace);
             this.grp_FlightSim.Controls.Add(this.chk_RemoveLodPrefix);
-            this.grp_FlightSim.Location = new System.Drawing.Point(919, 211);
+            this.grp_FlightSim.Location = new System.Drawing.Point(916, 371);
             this.grp_FlightSim.Name = "grp_FlightSim";
             this.grp_FlightSim.Size = new System.Drawing.Size(344, 114);
             this.grp_FlightSim.TabIndex = 111;
             this.grp_FlightSim.TabStop = false;
             this.grp_FlightSim.Text = "FlightSim";
-            // 
-            // chk_RemoveLodPrefix
-            // 
-            this.chk_RemoveLodPrefix.AutoSize = true;
-            this.chk_RemoveLodPrefix.Location = new System.Drawing.Point(16, 29);
-            this.chk_RemoveLodPrefix.Name = "chk_RemoveLodPrefix";
-            this.chk_RemoveLodPrefix.Size = new System.Drawing.Size(119, 17);
-            this.chk_RemoveLodPrefix.TabIndex = 0;
-            this.chk_RemoveLodPrefix.Text = "Remove LOD prefix";
-            this.chk_RemoveLodPrefix.UseVisualStyleBackColor = true;
             // 
             // chkRemoveNamespace
             // 
@@ -893,6 +883,16 @@
             this.chkRemoveNamespace.TabIndex = 1;
             this.chkRemoveNamespace.Text = "Remove Namespace";
             this.chkRemoveNamespace.UseVisualStyleBackColor = true;
+            // 
+            // chk_RemoveLodPrefix
+            // 
+            this.chk_RemoveLodPrefix.AutoSize = true;
+            this.chk_RemoveLodPrefix.Location = new System.Drawing.Point(16, 29);
+            this.chk_RemoveLodPrefix.Name = "chk_RemoveLodPrefix";
+            this.chk_RemoveLodPrefix.Size = new System.Drawing.Size(119, 17);
+            this.chk_RemoveLodPrefix.TabIndex = 0;
+            this.chk_RemoveLodPrefix.Text = "Remove LOD prefix";
+            this.chk_RemoveLodPrefix.UseVisualStyleBackColor = true;
             // 
             // ExporterForm
             // 
