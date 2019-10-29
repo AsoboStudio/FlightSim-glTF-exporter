@@ -21,23 +21,19 @@ namespace Max2Babylon.FlightSim
         public static float[] GetTranslation(IINode node,IINode renderedNode)
         {
             float[] res = new float[3];
-            string mxs = $"((maxOps.getNodeByHandle {node.Handle}).center * inverse (maxOps.getNodeByHandle {renderedNode.Handle}).transform) as string";
-            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-            if (!string.IsNullOrEmpty(mxsRetVal.S))
-            {
-                float[] r = PointStringToVector3(mxsRetVal.S);
+            //IPoint3 translation =  node.GetNodeTM(0, Tools.Forever).Trans; //position relative to parent, translation
 
-                //var o = new BabylonVector3(r[0],r[1],r[2]);
-                //float f = (float)-Math.Sqrt(2) / 2;
-                //var q = new BabylonQuaternion(0,f,f,0);
+            IObject obj = node.ObjectRef;
+            IBox3 bbox = obj.GetWorldBoundBox(0, node, Loader.Core.ActiveViewExp);
+            IPoint3 bboxCenter = bbox.Center;
+            IMatrix3 inverted = renderedNode.GetNodeTM(0, Tools.Forever);
+            inverted.Invert();
+            IPoint3 bboxCenterInRenderNodeSpace = inverted.PointTransform(bboxCenter);
+            
 
-                //var m = q.Rotate(o);
-
-                res[0] = r[0];
-                res[1] = r[2];
-                res[2] = -r[1];
-            }
+            res[0] = bboxCenterInRenderNodeSpace.X;
+            res[1] = bboxCenterInRenderNodeSpace.Z;
+            res[2] = -bboxCenterInRenderNodeSpace.Y;
             
             return res;
         }
@@ -45,66 +41,24 @@ namespace Max2Babylon.FlightSim
         public static float[] GetRotation(IINode node,IINode renderedNode)
         {
             float[] res = new float[4];
-            string mxs = $"((maxOps.getNodeByHandle {node.Handle}).rotation * inverse (maxOps.getNodeByHandle {renderedNode.Handle}).transform) as string";
-            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
+            IMatrix3 nodeTm =  node.GetNodeTM(0, Tools.Forever);
+            IPoint3 p = Loader.Global.Point3.Create(0, 0, 0);
+            IQuat q = Loader.Global.IdentQuat;
+            IPoint3 s = Loader.Global.Point3.Create(0, 0, 0);
+            Loader.Global.DecomposeMatrix(nodeTm,p,q,s);
 
-            if (!string.IsNullOrEmpty(mxsRetVal.S))
-            {
-                float[] r = QuaternionStringToVector4(mxsRetVal.S);
-
-                //var v = new BabylonVector3(0,0,1);
-                //var o = new BabylonQuaternion(r[0],r[1],r[2],r[3]);
-                //float f = (float)-Math.Sqrt(2) / 2;
-                //var q = new BabylonQuaternion(0,f,f,0);
-
-                //var m = q.MultiplyWith(o);
-                //var p = m.Rotate(v);
-
-                //babylon to GLTF
-                res[0] = r[0];
-                res[1] = r[2];
-                res[2] = -r[1];
-                res[3] = -r[3];
-            }
+            res[0] = q[0];
+            res[1] = q[2];
+            res[2] = -q[1];
+            res[3] = -q[3];
 
             return res;
         }
 
         public static bool IsDefaultRotation(float[] rotation)
         {
-            if (rotation[0] == 0 && rotation[1] == 0 && rotation[2] == 0 && rotation[3] == 1) return true;
+            if (rotation[0] == 0 && rotation[1] == 0 && rotation[2] == 0 && (rotation[3] == 1.0f || rotation[3]==-1.0f )) return true;
             return false;
-        }
-
-        public static float[] PointStringToVector3(string pointString)
-        {
-            string[] mxsRes = pointString.Substring(1, pointString.Length - 2).Split(',');
-            float[] result = new float[mxsRes.Length];
-            for (int i = 0; i < mxsRes.Length; i++)
-            {
-                float r = 0;
-                float.TryParse(mxsRes[i], out r);
-                result[i] = r;
-            }
-
-            return result;
-        }
-
-        public static float[] QuaternionStringToVector4(string quaternionString)
-        {
-            quaternionString = quaternionString.Replace("quat ", "");
-            quaternionString = quaternionString.Substring(1, quaternionString.Length - 2);
-            string[] mxsRes = quaternionString.Split(' ');
-            float[] result = new float[mxsRes.Length];
-            for (int i = 0; i < mxsRes.Length; i++)
-            {
-                float r = 0;
-                float.TryParse(mxsRes[i], out r);
-                result[i] = r;
-            }
-
-            return result;
         }
     }
 }
