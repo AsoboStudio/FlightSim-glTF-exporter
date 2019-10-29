@@ -53,6 +53,9 @@
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.chkMorphExportTangent = new System.Windows.Forms.CheckBox();
             this.ckkMorphExportNormals = new System.Windows.Forms.CheckBox();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.numFlightSimFadeScale = new System.Windows.Forms.NumericUpDown();
+            this.lblFlightSimFadeScale = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -61,6 +64,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.nupSkyboxBlurLevel)).BeginInit();
             this.groupBoxDefaultLight.SuspendLayout();
             this.groupBox5.SuspendLayout();
+            this.groupBox6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numFlightSimFadeScale)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -99,7 +104,7 @@
             this.butCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(174, 569);
+            this.butCancel.Location = new System.Drawing.Point(174, 640);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(75, 23);
             this.butCancel.TabIndex = 101;
@@ -111,7 +116,7 @@
             this.butOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.butOK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butOK.Location = new System.Drawing.Point(93, 569);
+            this.butOK.Location = new System.Drawing.Point(93, 640);
             this.butOK.Name = "butOK";
             this.butOK.Size = new System.Drawing.Size(75, 23);
             this.butOK.TabIndex = 100;
@@ -364,13 +369,58 @@
             this.ckkMorphExportNormals.Text = "Export normals";
             this.ckkMorphExportNormals.UseVisualStyleBackColor = true;
             // 
+            // groupBox6
+            // 
+            this.groupBox6.Controls.Add(this.numFlightSimFadeScale);
+            this.groupBox6.Controls.Add(this.lblFlightSimFadeScale);
+            this.groupBox6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.groupBox6.Location = new System.Drawing.Point(12, 566);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(319, 61);
+            this.groupBox6.TabIndex = 8;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "FlightSim options";
+            // 
+            // numFlightSimFadeScale
+            // 
+            this.numFlightSimFadeScale.DecimalPlaces = 2;
+            this.numFlightSimFadeScale.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.numFlightSimFadeScale.Location = new System.Drawing.Point(150, 26);
+            this.numFlightSimFadeScale.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numFlightSimFadeScale.Name = "numFlightSimFadeScale";
+            this.numFlightSimFadeScale.Size = new System.Drawing.Size(120, 20);
+            this.numFlightSimFadeScale.TabIndex = 8;
+            this.numFlightSimFadeScale.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // lblFlightSimFadeScale
+            // 
+            this.lblFlightSimFadeScale.AutoSize = true;
+            this.lblFlightSimFadeScale.Location = new System.Drawing.Point(18, 28);
+            this.lblFlightSimFadeScale.Name = "lblFlightSimFadeScale";
+            this.lblFlightSimFadeScale.Size = new System.Drawing.Size(97, 13);
+            this.lblFlightSimFadeScale.TabIndex = 7;
+            this.lblFlightSimFadeScale.Text = "Fade Global Scale:";
+            // 
             // ScenePropertiesForm
             // 
             this.AcceptButton = this.butOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.butCancel;
-            this.ClientSize = new System.Drawing.Size(343, 604);
+            this.ClientSize = new System.Drawing.Size(343, 675);
+            this.Controls.Add(this.groupBox6);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBoxDefaultLight);
             this.Controls.Add(this.groupBox4);
@@ -398,6 +448,9 @@
             this.groupBoxDefaultLight.PerformLayout();
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numFlightSimFadeScale)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -429,5 +482,8 @@
         private System.Windows.Forms.GroupBox groupBox5;
         private System.Windows.Forms.CheckBox chkMorphExportTangent;
         private System.Windows.Forms.CheckBox ckkMorphExportNormals;
+        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.NumericUpDown numFlightSimFadeScale;
+        private System.Windows.Forms.Label lblFlightSimFadeScale;
     }
 }

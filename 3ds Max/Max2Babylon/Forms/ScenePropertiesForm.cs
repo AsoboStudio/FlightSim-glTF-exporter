@@ -31,6 +31,9 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(ckkMorphExportNormals, Loader.Core.RootNode, "babylonjs_export_Morph_Normals");
 
             Tools.UpdateTextBox(txtSound, new List<IINode> { Loader.Core.RootNode }, "babylonjs_sound_filename");
+
+            //flight sim
+            Tools.UpdateNumericUpDown(numFlightSimFadeScale, new List<IINode> { Loader.Core.RootNode }, "flightsim_fade_globalscale");
         }
 
         private void ScenePropertiesForm_Load(object sender, EventArgs e)
@@ -52,6 +55,9 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(ckkMorphExportNormals, Loader.Core.RootNode, "babylonjs_export_Morph_Normals", 1);
 
             Tools.PrepareTextBox(txtSound, Loader.Core.RootNode, "babylonjs_sound_filename");
+
+            //flightsim
+            Tools.PrepareNumericUpDown(numFlightSimFadeScale, new List<IINode> { Loader.Core.RootNode }, "flightsim_fade_globalscale",1.0f);
         }
 
         private void cmdBrowse_Click(object sender, EventArgs e)
