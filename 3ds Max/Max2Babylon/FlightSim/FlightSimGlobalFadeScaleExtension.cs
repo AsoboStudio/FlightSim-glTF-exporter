@@ -9,7 +9,7 @@ namespace Max2Babylon.FlightSimExtension
     [DataContract]
     class GLTFExtensionGlobalFadeScale : GLTFProperty
     {
-        [DataMember(EmitDefaultValue = false)] public float? radius;
+        [DataMember(EmitDefaultValue = false)] public float? scale;
     }
 
     class FlightSimGlobalFadeScaleExtension : IBabylonExtensionExporter
@@ -18,7 +18,7 @@ namespace Max2Babylon.FlightSimExtension
 
         public string GetGLTFExtensionName()
         {
-            return "ASOBO_fade_global_scale";
+            return "ASOBO_scene_fade_scale";
         }
 
         public Type GetGLTFExtendedType()
@@ -33,9 +33,9 @@ namespace Max2Babylon.FlightSimExtension
             {
                 GLTFExtensionGlobalFadeScale fadeScale = new GLTFExtensionGlobalFadeScale();
                 float fadeGlobalScale = Loader.Core.RootNode.GetFloatProperty("flightsim_fade_globalscale", 1);
-                fadeScale.radius = fadeGlobalScale;
+                fadeScale.scale = fadeGlobalScale;
 
-                if(fadeScale.radius!=1.0f)
+                if(fadeScale.scale!=1.0f)
                 {
                     return fadeScale;
                 }

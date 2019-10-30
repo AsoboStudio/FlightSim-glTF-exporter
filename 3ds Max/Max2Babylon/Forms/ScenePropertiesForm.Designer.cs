@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.gravityControl = new Max2Babylon.Vector3Control();
             this.label3 = new System.Windows.Forms.Label();
             this.butCancel = new System.Windows.Forms.Button();
             this.butOK = new System.Windows.Forms.Button();
@@ -70,7 +69,6 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.gravityControl);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
@@ -79,16 +77,6 @@
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Collisions";
-            // 
-            // gravityControl
-            // 
-            this.gravityControl.Location = new System.Drawing.Point(21, 44);
-            this.gravityControl.Name = "gravityControl";
-            this.gravityControl.Size = new System.Drawing.Size(294, 28);
-            this.gravityControl.TabIndex = 2;
-            this.gravityControl.X = 0F;
-            this.gravityControl.Y = 0F;
-            this.gravityControl.Z = 0F;
             // 
             // label3
             // 
@@ -390,11 +378,11 @@
             0,
             65536});
             this.numFlightSimFadeScale.Location = new System.Drawing.Point(150, 26);
-            this.numFlightSimFadeScale.Maximum = new decimal(new int[] {
-            10,
+            this.numFlightSimFadeScale.Minimum = new decimal(new int[] {
+            1,
             0,
             0,
-            0});
+            131072});
             this.numFlightSimFadeScale.Name = "numFlightSimFadeScale";
             this.numFlightSimFadeScale.Size = new System.Drawing.Size(120, 20);
             this.numFlightSimFadeScale.TabIndex = 8;

@@ -205,6 +205,7 @@ namespace Max2Babylon
 
         public async void butExport_Click(object sender, EventArgs e)
         {
+            bool saveCheck = Loader.Core.CheckForSave;
             try
             {
                 if (chkUsePreExportProces.Checked)
@@ -541,6 +542,7 @@ namespace Max2Babylon
 
         private async void butExportAndRun_Click(object sender, EventArgs e)
         {
+            bool saveCheck = Loader.Core.CheckForSave;
             try
             {
                 if (chkUsePreExportProces.Checked)
@@ -699,6 +701,7 @@ namespace Max2Babylon
 
         private async void butMultiExport_Click(object sender, EventArgs e)
         {
+            bool saveCheck = Loader.Core.CheckForSave;
             string outputFileExt;
             outputFileExt = comboOutputFormat.SelectedItem.ToString();
             if (outputFileExt.Contains("binary babylon"))
