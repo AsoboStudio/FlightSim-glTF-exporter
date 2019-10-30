@@ -42,6 +42,10 @@ namespace Max2Babylon.FlightSim
         {
             float[] res = new float[4];
             IMatrix3 nodeTm =  node.GetNodeTM(0, Tools.Forever);
+            IMatrix3 inverted = renderedNode.GetNodeTM(0, Tools.Forever);
+            inverted.Invert();
+            nodeTm = nodeTm.Multiply(inverted);
+
             IPoint3 p = Loader.Global.Point3.Create(0, 0, 0);
             IQuat q = Loader.Global.IdentQuat;
             IPoint3 s = Loader.Global.Point3.Create(0, 0, 0);
