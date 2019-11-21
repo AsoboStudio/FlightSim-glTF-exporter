@@ -117,6 +117,8 @@ namespace Max2Babylon
             exportParameters.animationExportType =(AnimationExportType) Loader.Core.RootNode.GetFloatProperty("babylonjs_export_animations_type", 0);
 			exportParameters.removeLodPrefix = Loader.Core.RootNode.GetBoolProperty("flightsim_removelodprefix");
             exportParameters.removeNamespaces = Loader.Core.RootNode.GetBoolProperty("flightsim_removenamespaces");
+            exportParameters.enableASBAnimationRetargeting =Loader.Core.RootNode.GetBoolProperty("babylonjs_asb_animation_retargeting");
+
             return exportParameters;
         }
 
