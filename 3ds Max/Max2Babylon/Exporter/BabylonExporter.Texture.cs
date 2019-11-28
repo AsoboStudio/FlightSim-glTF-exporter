@@ -16,6 +16,17 @@ namespace Max2Babylon
         private static List<string> invalidFormats = new List<string>(new string[] { "dds", "tif", "tiff" });
         private Dictionary<string, BabylonTexture> textureMap = new Dictionary<string, BabylonTexture>();
 
+
+        public ITexmap GetSubTexmap(IStdMat2 stdMat, int index)
+        {
+            if (!stdMat.MapEnabled(index))
+            {
+                return null;
+            }
+
+            return stdMat.GetSubTexmap(index);
+        }
+
         // -------------------------------
         // --- "public" export methods ---
         // -------------------------------
@@ -283,7 +294,7 @@ namespace Max2Babylon
         }
 
         /// <returns></returns>
-        private BabylonTexture ExportBaseColorAlphaTexture(ITexmap baseColorTexMap, ITexmap alphaTexMap, float[] baseColor, float alpha, BabylonScene babylonScene, string materialName)
+        private BabylonTexture ExportBaseColorAlphaTexture(ITexmap baseColorTexMap, ITexmap alphaTexMap, float[] baseColor, float alpha, BabylonScene babylonScene, string materialName, bool isOpacity = false)
         {
             // --- Babylon texture ---
 
@@ -301,23 +312,23 @@ namespace Max2Babylon
             if (alphaTexture == null && baseColorTexture != null && alpha == 1)
             {
                 if (baseColorTexture.AlphaSource == 0 &&
-                    (baseColorTextureMapExtension == ".tif" || baseColorTextureMapExtension == ".tiff"))
-                {
-                    RaiseWarning($"Diffuse texture named {baseColorTexture.Map.FullFilePath} is a .tif file and its Alpha Source is 'Image Alpha' by default.", 3);
-                    RaiseWarning($"If you don't want material to be in BLEND mode, set diffuse texture Alpha Source to 'None (Opaque)'", 3);
-                }
+                        (baseColorTextureMapExtension == ".tif" || baseColorTextureMapExtension == ".tiff"))
+                    {
+                        RaiseWarning($"Diffuse texture named {baseColorTexture.Map.FullFilePath} is a .tif file and its Alpha Source is 'Image Alpha' by default.", 3);
+                        RaiseWarning($"If you don't want material to be in BLEND mode, set diffuse texture Alpha Source to 'None (Opaque)'", 3);
+                    }
 
-                
+
                 if (baseColorTexture.AlphaSource == 3 && // 'None (Opaque)'
                     baseColorTextureMapExtension == ".jpg" || baseColorTextureMapExtension == ".jpeg" || baseColorTextureMapExtension == ".bmp" || baseColorTextureMapExtension == ".png" )
-                {
-                    // Copy base color image
-                    return ExportTexture(baseColorTexture, babylonScene);
+                    {
+                        // Copy base color image
+                        return ExportTexture(baseColorTexture, babylonScene);
+                    }
                 }
-            }
 
             // Use one as a reference for UVs parameters
-            
+
 
             RaiseMessage("Export baseColor+Alpha texture", 2);
 
@@ -416,8 +427,13 @@ namespace Max2Babylon
                             if (alphaBitmap != null)
                             {
                                 // Retreive alpha from alpha texture
-                                var alphaColor = alphaBitmap.GetPixel(x, y);
-                                var alphaAtPixel = 255 - (getAlphaFromRGB ? alphaColor.R : alphaColor.A);
+                                Color alphaColor = alphaBitmap.GetPixel(x, y);
+                                int alphaAtPixel = getAlphaFromRGB ? alphaColor.R : alphaColor.A;
+                                if (isOpacity == false)
+                                {
+                                    // Convert transparency to opacity
+                                    alphaAtPixel = 255 - alphaAtPixel;
+                                }
                                 baseColorAlpha = Color.FromArgb(alphaAtPixel, baseColorAtPixel);
                             }
                             else if (baseColorTexture != null && baseColorTexture.AlphaSource == 0) // Alpha source is 'Image Alpha'
@@ -1033,6 +1049,18 @@ namespace Max2Babylon
                 //}
             }
             return texMap;
+        }
+
+        private ITexmap _getTexMap(IIGameMaterial materialNode, string name)
+        {
+            for (int i = 0; i < materialNode.MaxMaterial.NumSubTexmaps; i++)
+            {
+                if (materialNode.MaxMaterial.GetSubTexmapSlotName(i) == name)
+                {
+                    return _getTexMap(materialNode, i);
+                }
+            }
+            return null;
         }
 
         private bool isTextureOk(ITexmap texMap)

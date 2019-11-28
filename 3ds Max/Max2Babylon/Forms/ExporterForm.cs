@@ -24,9 +24,37 @@ namespace Max2Babylon
 
         private ExportItem singleExportItem;
 
+
+        private  bool filePostOpenCallback = false;
+        private GlobalDelegates.Delegate5 m_FilePostOpenDelegate;
+
+        private void RegisterFilePreOpen()
+        {
+            if (!filePostOpenCallback)
+            {
+                m_FilePostOpenDelegate = new GlobalDelegates.Delegate5(OnFilePostOpen);
+                GlobalInterface.Instance.RegisterNotification(this.m_FilePostOpenDelegate, null, SystemNotificationCode.FilePostOpen );
+
+                filePostOpenCallback = true;
+            }
+        }
+
+        private void OnFilePostOpen(IntPtr param0, IntPtr param1)
+        {
+            LoadOptions();
+        }
+
+        private void OnFilePostOpen(IntPtr param0, INotifyInfo param1)
+        {
+            LoadOptions();
+        }
+
         public ExporterForm(BabylonExportActionItem babylonExportAction)
         {
             InitializeComponent();
+            RegisterFilePreOpen();
+
+
             this.Text = $"Babylon.js - Export scene to babylon or glTF format v{BabylonExporter.exporterVersion}";
 
             this.babylonExportAction = babylonExportAction;
@@ -52,30 +80,30 @@ namespace Max2Babylon
             groupBox1.MouseMove += groupBox1_MouseMove;
         }
 
-        private void ExporterForm_Load(object sender, EventArgs e)
+        private void LoadOptions()
         {
             string storedModelPath = Loader.Core.RootNode.GetStringProperty(ExportParameters.ModelFilePathProperty, string.Empty);
             string absoluteModelPath = Tools.ResolveRelativePath(storedModelPath);
-            txtModelName.MaxPath(absoluteModelPath);
+            txtModelPath.MaxPath(absoluteModelPath);
 
             string storedFolderPath = Loader.Core.RootNode.GetStringProperty(ExportParameters.TextureFolderPathProperty, string.Empty);
             string absoluteTexturesFolderPath = Tools.ResolveRelativePath(storedFolderPath);
-            txtTextureName.MaxPath(absoluteTexturesFolderPath);
+            txtTexturesPath.MaxPath(absoluteTexturesFolderPath);
 
             singleExportItem = new ExportItem(absoluteModelPath);
 
             Tools.PrepareCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
-            Tools.PrepareCheckBox(chkWriteTextures, Loader.Core.RootNode, "babylonjs_writetextures");
-            Tools.PrepareCheckBox(chkOverwriteTextures, Loader.Core.RootNode, "babylonjs_overwritetextures");
+            Tools.PrepareCheckBox(chkWriteTextures, Loader.Core.RootNode, "babylonjs_writetextures", 1);
+            Tools.PrepareCheckBox(chkOverwriteTextures, Loader.Core.RootNode, "babylonjs_overwritetextures", 1);
             Tools.PrepareCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
-            Tools.PrepareCheckBox(chkAutoSave, Loader.Core.RootNode, "babylonjs_autosave");
+            Tools.PrepareCheckBox(chkAutoSave, Loader.Core.RootNode, "babylonjs_autosave", 1);
             Tools.PrepareCheckBox(chkOnlySelected, Loader.Core.RootNode, "babylonjs_onlySelected");
             Tools.PrepareCheckBox(chkExportTangents, Loader.Core.RootNode, "babylonjs_exporttangents");
-            Tools.PrepareComboBox(comboOutputFormat, Loader.Core.RootNode, "babylonjs_outputFormat", "gltf");
+            Tools.PrepareComboBox(comboOutputFormat, Loader.Core.RootNode, "babylonjs_outputFormat", "babylon");
             Tools.PrepareTextBox(txtScaleFactor, Loader.Core.RootNode, "babylonjs_txtScaleFactor", "1");
             Tools.PrepareTextBox(txtQuality, Loader.Core.RootNode, "babylonjs_txtCompression", "100");
-            Tools.PrepareCheckBox(chkMergeAOwithMR, Loader.Core.RootNode, "babylonjs_mergeAOwithMR");
-            Tools.PrepareCheckBox(chkDracoCompression, Loader.Core.RootNode, "babylonjs_dracoCompression");
+            Tools.PrepareCheckBox(chkMergeAOwithMR, Loader.Core.RootNode, "babylonjs_mergeAOwithMR", 1);
+            Tools.PrepareCheckBox(chkDracoCompression, Loader.Core.RootNode, "babylonjs_dracoCompression", 0);
             Tools.PrepareCheckBox(chkKHRLightsPunctual, Loader.Core.RootNode, "babylonjs_khrLightsPunctual");
             Tools.PrepareCheckBox(chkKHRTextureTransform, Loader.Core.RootNode, "babylonjs_khrTextureTransform");
             Tools.PrepareCheckBox(chkAnimgroupExportNonAnimated, Loader.Core.RootNode, "babylonjs_animgroupexportnonanimated");
@@ -107,6 +135,11 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkUsePreExportProces, Loader.Core.RootNode, "babylonjs_preproces", 0);
             Tools.PrepareCheckBox(chkFlatten, Loader.Core.RootNode, "babylonjs_flattenScene", 0);
             Tools.PrepareCheckBox(chkMrgContainersAndXref, Loader.Core.RootNode, "babylonjs_mergecontainersandxref", 0);
+        }
+
+        private void ExporterForm_Load(object sender, EventArgs e)
+        {
+            LoadOptions();
 
             var maxVersion = Tools.GetMaxVersion();
             if (maxVersion.Major == 22 && maxVersion.Minor < 2)
@@ -121,9 +154,9 @@ namespace Max2Babylon
 
         private void butModelBrowse_Click(object sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty(txtModelName.Text))
+            if (!string.IsNullOrEmpty(txtModelPath.Text))
             {
-                string intialDirectory = Path.GetDirectoryName(txtModelName.Text);
+                string intialDirectory = Path.GetDirectoryName(txtModelPath.Text);
 
                 if (!Directory.Exists(intialDirectory))
                 {
@@ -140,13 +173,23 @@ namespace Max2Babylon
 
             if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
             {
-                txtModelName.MaxPath(saveFileDialog.FileName);
+                txtModelPath.MaxPath(saveFileDialog.FileName);
+                if (string.IsNullOrWhiteSpace(txtTexturesPath.Text))
+                {
+                    string defaultTexturesDir = Path.GetDirectoryName(txtModelPath.Text);
+                    txtTexturesPath.MaxPath(defaultTexturesDir);
+            }
+
+                if (!PathUtilities.IsBelowPath(txtTexturesPath.Text, txtModelPath.Text))
+                {
+                    CreateWarningMessage("WARNING: textures path should be below model file path, not all client renderers support this feature", 0);
+        }
             }
         }
 
         private void btnTextureBrowse_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtModelName.Text))
+            if (string.IsNullOrWhiteSpace(txtModelPath.Text))
             {
                 MessageBox.Show("Select model file path first");
                 return;
@@ -154,11 +197,11 @@ namespace Max2Babylon
 
             CommonOpenFileDialog dialog = new CommonOpenFileDialog();
 
-            string intialDirectory = txtTextureName.Text;
+            string intialDirectory = txtTexturesPath.Text;
 
             if (!Directory.Exists(intialDirectory))
             {
-                intialDirectory = Path.GetDirectoryName(txtModelName.Text);
+                intialDirectory = Path.GetDirectoryName(txtModelPath.Text);
             }
 
             if (!Directory.Exists(intialDirectory))
@@ -177,14 +220,14 @@ namespace Max2Babylon
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 string selectedFolderPath = dialog.FileName;
-                string absoluteModelPath = txtModelName.Text;
+                string absoluteModelPath = txtModelPath.Text;
 
                 if (!PathUtilities.IsBelowPath(selectedFolderPath, absoluteModelPath))
                 {
-                    MessageBox.Show("WARNING: folderPath should be below model file path");
+                    CreateWarningMessage("WARNING: textures path should be below model file path, not all client renderers support this feature",0);
                 }
 
-                txtTextureName.MaxPath(selectedFolderPath);
+                txtTexturesPath.MaxPath(selectedFolderPath);
             }
         }
 
@@ -215,7 +258,6 @@ namespace Max2Babylon
 
         public async void butExport_Click(object sender, EventArgs e)
         {
-            bool saveCheck = Loader.Core.CheckForSave;
             try
             {
                 if (chkUsePreExportProces.Checked)
@@ -289,9 +331,8 @@ namespace Max2Babylon
 
 			Tools.UpdateCheckBox(chk_RemoveLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix");
             Tools.UpdateCheckBox(chkRemoveNamespace, Loader.Core.RootNode, "flightsim_removenamespaces");            
-
-            Loader.Core.RootNode.SetStringProperty(ExportParameters.ModelFilePathProperty, Tools.RelativePathStore(txtModelName.Text));
-            Loader.Core.RootNode.SetStringProperty(ExportParameters.TextureFolderPathProperty, Tools.RelativePathStore(txtTextureName.Text));
+            Loader.Core.RootNode.SetStringProperty(ExportParameters.ModelFilePathProperty, Tools.RelativePathStore(txtModelPath.Text));
+            Loader.Core.RootNode.SetStringProperty(ExportParameters.TextureFolderPathProperty, Tools.RelativePathStore(txtTexturesPath.Text));
 
             Tools.UpdateCheckBox(chkFullPBR, Loader.Core.RootNode, ExportParameters.PBRFullPropertyName);
             Tools.UpdateCheckBox(chkNoAutoLight, Loader.Core.RootNode, ExportParameters.PBRNoLightPropertyName);
@@ -335,7 +376,7 @@ namespace Max2Babylon
             if (clearLogs)
                 treeView.Nodes.Clear();
 
-            exporter.OnImportProgressChanged += progress =>
+            exporter.OnExportProgressChanged += progress =>
             {
                 progressBar.Value = progress;
                 Application.DoEvents();
@@ -347,6 +388,24 @@ namespace Max2Babylon
 
             exporter.OnMessage += (message, color, rank, emphasis) => CreateMessage(message, color, rank, emphasis);
 
+            exporter.OnVerbose += (message, color, rank, emphasis) =>
+            {
+                try
+                {
+                    currentNode = CreateTreeNode(rank, message, color);
+
+                    if (emphasis)
+                    {
+                        currentNode.EnsureVisible();
+                    }
+                }
+                catch
+                {
+                    //do nothing
+                }
+                Application.DoEvents();
+            };
+
             butExport.Enabled = false;
             butExportAndRun.Enabled = false;
             butMultiExport.Enabled = false;
@@ -355,14 +414,34 @@ namespace Max2Babylon
             bool success = true;
             try
             {
-                string modelAbsolutePath = multiExport ? exportItem.ExportFilePathAbsolute : txtModelName.Text;
-                string textureExportPath = multiExport ? exportItem.ExportTexturesesFolderPath : txtTextureName.Text;
+                string modelAbsolutePath = multiExport ? exportItem.ExportFilePathAbsolute : txtModelPath.Text;
+                string textureExportPath = multiExport ? exportItem.ExportTexturesesFolderPath : txtTexturesPath.Text;
+
+                var scaleFactorParsed = 1.0f;
+                var textureQualityParsed = 100L;
+                try
+            {
+                    scaleFactorParsed = float.Parse(txtScaleFactor.Text);
+                }
+                catch (Exception e)
+                {
+                    throw new InvalidDataException(String.Format("Invalid Scale Factor value: {0}", txtScaleFactor.Text));
+                }
+                try
+                {
+                    textureQualityParsed = long.Parse(txtQuality.Text);
+                }
+                catch (Exception e)
+                {
+                    throw new InvalidDataException(String.Format("Invalid Texture Quality value: {0}", txtScaleFactor.Text));
+                }
+
                 MaxExportParameters exportParameters = new MaxExportParameters
                 {
                     outputPath = modelAbsolutePath,
                     textureFolder = textureExportPath,
                     outputFormat = comboOutputFormat.SelectedItem.ToString(),
-                    scaleFactor = float.Parse(txtScaleFactor.Text),
+                    scaleFactor = scaleFactorParsed,
                     writeTextures = chkWriteTextures.Enabled && chkWriteTextures.Checked,
                     overwriteTextures = chkOverwriteTextures.Enabled && chkOverwriteTextures.Checked,
                     exportHiddenObjects = chkHidden.Checked,
@@ -372,7 +451,7 @@ namespace Max2Babylon
                     exportTangents = chkExportTangents.Checked,
                     exportMorphTangents = chkExportMorphTangents.Checked,
                     exportMorphNormals = chkExportMorphNormals.Checked,
-                    txtQuality = long.Parse(txtQuality.Text),
+                    txtQuality = textureQualityParsed,
                     mergeAOwithMR = chkMergeAOwithMR.Enabled && chkMergeAOwithMR.Checked,
                     bakeAnimationType = (BakeAnimationType)cmbBakeAnimationOptions.SelectedIndex,
                     dracoCompression = chkDracoCompression.Enabled && chkDracoCompression.Checked,
@@ -392,9 +471,7 @@ namespace Max2Babylon
                     usePreExportProcess = chkUsePreExportProces.Checked,
                     flattenScene = chkFlatten.Enabled && chkFlatten.Checked,
                     mergeContainersAndXRef = chkMrgContainersAndXref.Checked,
-					useMultiExporter = multiExport,
-					removeLodPrefix = chk_RemoveLodPrefix.Checked,
-                    removeNamespaces = chkRemoveNamespace.Checked
+                    useMultiExporter = multiExport
                 };
 
                 exporter.callerForm = this;
@@ -537,12 +614,12 @@ namespace Max2Babylon
             {
                 exporter.IsCancelled = true;                
             }
-            babylonExportAction?.Close();
+            babylonExportAction.Close();
         }
 
         private void txtFilename_TextChanged(object sender, EventArgs e)
         {
-            butExport.Enabled = !string.IsNullOrEmpty(txtModelName.Text.Trim());
+            butExport.Enabled = !string.IsNullOrEmpty(txtModelPath.Text.Trim());
             butExportAndRun.Enabled = butExport.Enabled && WebServer.IsSupported;
         }
 
@@ -563,7 +640,6 @@ namespace Max2Babylon
 
         private async void butExportAndRun_Click(object sender, EventArgs e)
         {
-            bool saveCheck = Loader.Core.CheckForSave;
             try
             {
                 if (chkUsePreExportProces.Checked)
@@ -573,8 +649,8 @@ namespace Max2Babylon
 
             if (await DoExport(singleExportItem))
             {
-                WebServer.SceneFilename = Path.GetFileName(txtModelName.Text);
-                WebServer.SceneFolder = Path.GetDirectoryName(txtModelName.Text);
+                WebServer.SceneFilename = Path.GetFileName(txtModelPath.Text);
+                WebServer.SceneFolder = Path.GetDirectoryName(txtModelPath.Text);
 
                 Process.Start(WebServer.url + WebServer.SceneFilename);
 
@@ -611,8 +687,8 @@ namespace Max2Babylon
                     chkDracoCompression.Enabled = false;
                     chkWriteTextures.Enabled = true;
                     chkOverwriteTextures.Enabled = true;
-                    txtTextureName.Text = string.Empty;
-                    txtTextureName.Enabled = false;
+                    txtTexturesPath.Text = string.Empty;
+                    txtTexturesPath.Enabled = false;
                     textureLabel.Enabled = false;
                     btnTxtBrowse.Enabled = false;
                     chkNoAutoLight.Enabled = true;
@@ -630,7 +706,7 @@ namespace Max2Babylon
                     chkDracoCompression.Enabled = gltfPipelineInstalled;
                     chkWriteTextures.Enabled = true;
                     chkOverwriteTextures.Enabled = true;
-                    txtTextureName.Enabled = true;
+                    txtTexturesPath.Enabled = true;
                     textureLabel.Enabled = true;
                     btnTxtBrowse.Enabled = true;
                     chkNoAutoLight.Enabled = false;
@@ -653,8 +729,8 @@ namespace Max2Babylon
                     chkWriteTextures.Enabled = false;
                     chkOverwriteTextures.Checked = true;
                     chkOverwriteTextures.Enabled = false;
-                    txtTextureName.Text = string.Empty;
-                    txtTextureName.Enabled = false;
+                    txtTexturesPath.Text = string.Empty;
+                    txtTexturesPath.Enabled = false;
                     textureLabel.Enabled = false;
                     btnTxtBrowse.Enabled = false;
                     chkNoAutoLight.Enabled = false;
@@ -671,11 +747,8 @@ namespace Max2Babylon
                     break;
             }
 
-            if (!string.IsNullOrEmpty(txtModelName.Text) && !string.IsNullOrEmpty(this.saveFileDialog.DefaultExt))
-            {
-            string newModelPath = Path.ChangeExtension(txtModelName.Text, this.saveFileDialog.DefaultExt);
-            this.txtModelName.MaxPath(newModelPath);
-        }
+            string newModelPath = Path.ChangeExtension(txtModelPath.Text, this.saveFileDialog.DefaultExt);
+            this.txtModelPath.MaxPath(newModelPath);
         }
 
         /// <summary>
@@ -740,7 +813,6 @@ namespace Max2Babylon
             }
             else if (numLoadedItems > 0)
             {
-                bool saveCheck = Loader.Core.CheckForSave;
                 try
                 {
                     if (chkUsePreExportProces.Checked)
