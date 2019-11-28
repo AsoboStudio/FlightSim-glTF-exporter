@@ -119,7 +119,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(11, 51);
+            this.label1.Location = new System.Drawing.Point(11, 78);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(63, 13);
@@ -130,7 +130,7 @@
             // 
             this.txtModelPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtModelPath.Location = new System.Drawing.Point(91, 48);
+            this.txtModelPath.Location = new System.Drawing.Point(91, 75);
             this.txtModelPath.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtModelPath.Multiline = false;
             this.txtModelPath.Name = "txtModelPath";
@@ -144,7 +144,7 @@
             // 
             this.butModelBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.butModelBrowse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butModelBrowse.Location = new System.Drawing.Point(805, 46);
+            this.butModelBrowse.Location = new System.Drawing.Point(805, 73);
             this.butModelBrowse.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.butModelBrowse.Name = "butModelBrowse";
             this.butModelBrowse.Size = new System.Drawing.Size(28, 23);
@@ -201,7 +201,7 @@
             // 
             this.chkManifest.AutoSize = true;
             this.chkManifest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkManifest.Location = new System.Drawing.Point(11, 194);
+            this.chkManifest.Location = new System.Drawing.Point(16, 239);
             this.chkManifest.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkManifest.Name = "chkManifest";
             this.chkManifest.Size = new System.Drawing.Size(112, 17);
@@ -213,7 +213,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 106);
+            this.label2.Location = new System.Drawing.Point(11, 151);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(46, 13);
@@ -249,8 +249,12 @@
             this.groupBox1.Controls.Add(this.chkUsePreExportProces);
             this.groupBox1.Controls.Add(this.label5);
             this.groupBox1.Controls.Add(this.label7);
+            this.groupBox1.Controls.Add(this.txtQuality);
             this.groupBox1.Controls.Add(this.txtEnvironmentName);
+            this.groupBox1.Controls.Add(this.txtScaleFactor);
             this.groupBox1.Controls.Add(this.label6);
+            this.groupBox1.Controls.Add(this.label4);
+            this.groupBox1.Controls.Add(this.labelQuality);
             this.groupBox1.Controls.Add(this.chkFullPBR);
             this.groupBox1.Controls.Add(this.btnEnvBrowse);
             this.groupBox1.Controls.Add(this.chkNoAutoLight);
@@ -260,10 +264,6 @@
             this.groupBox1.Controls.Add(this.chkKHRMaterialsUnlit);
             this.groupBox1.Controls.Add(this.chkKHRTextureTransform);
             this.groupBox1.Controls.Add(this.chkKHRLightsPunctual);
-            this.groupBox1.Controls.Add(this.txtQuality);
-            this.groupBox1.Controls.Add(this.labelQuality);
-            this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.Controls.Add(this.txtScaleFactor);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.comboOutputFormat);
             this.groupBox1.Controls.Add(this.chkOnlySelected);
@@ -282,6 +282,18 @@
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             // 
+            // chkASBAnimationRetargeting
+            // 
+            this.chkASBAnimationRetargeting.AutoSize = true;
+            this.chkASBAnimationRetargeting.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkASBAnimationRetargeting.Location = new System.Drawing.Point(461, 455);
+            this.chkASBAnimationRetargeting.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkASBAnimationRetargeting.Name = "chkASBAnimationRetargeting";
+            this.chkASBAnimationRetargeting.Size = new System.Drawing.Size(167, 17);
+            this.chkASBAnimationRetargeting.TabIndex = 42;
+            this.chkASBAnimationRetargeting.Text = "ASOBO_animation_retargeting";
+            this.chkASBAnimationRetargeting.UseVisualStyleBackColor = true;
+            // 
             // grpGeometry
             // 
             this.grpGeometry.Controls.Add(this.chkWriteTextures);
@@ -291,7 +303,7 @@
             this.grpGeometry.Controls.Add(this.chkDracoCompression);
             this.grpGeometry.Controls.Add(this.chkExportTangents);
             this.grpGeometry.Controls.Add(this.chkFlatten);
-            this.grpGeometry.Location = new System.Drawing.Point(180, 128);
+            this.grpGeometry.Location = new System.Drawing.Point(185, 173);
             this.grpGeometry.Name = "grpGeometry";
             this.grpGeometry.Size = new System.Drawing.Size(290, 134);
             this.grpGeometry.TabIndex = 41;
@@ -389,7 +401,7 @@
             this.grpAnimations.Controls.Add(this.label8);
             this.grpAnimations.Controls.Add(this.chkExportMorphTangents);
             this.grpAnimations.Controls.Add(this.chkExportMorphNormals);
-            this.grpAnimations.Location = new System.Drawing.Point(494, 128);
+            this.grpAnimations.Location = new System.Drawing.Point(499, 173);
             this.grpAnimations.Name = "grpAnimations";
             this.grpAnimations.Size = new System.Drawing.Size(300, 134);
             this.grpAnimations.TabIndex = 40;
@@ -473,7 +485,7 @@
             // 
             this.lblBakeAnimation.AutoSize = true;
             this.lblBakeAnimation.Enabled = false;
-            this.lblBakeAnimation.Location = new System.Drawing.Point(184, 284);
+            this.lblBakeAnimation.Location = new System.Drawing.Point(189, 329);
             this.lblBakeAnimation.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblBakeAnimation.Name = "lblBakeAnimation";
             this.lblBakeAnimation.Size = new System.Drawing.Size(125, 13);
@@ -488,7 +500,7 @@
             "Do not bake animations",
             "Bake all animations",
             "Selective bake"});
-            this.cmbBakeAnimationOptions.Location = new System.Drawing.Point(317, 281);
+            this.cmbBakeAnimationOptions.Location = new System.Drawing.Point(322, 326);
             this.cmbBakeAnimationOptions.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.cmbBakeAnimationOptions.Name = "cmbBakeAnimationOptions";
             this.cmbBakeAnimationOptions.Size = new System.Drawing.Size(178, 21);
@@ -499,7 +511,7 @@
             this.chkApplyPreprocessToScene.AutoSize = true;
             this.chkApplyPreprocessToScene.Enabled = false;
             this.chkApplyPreprocessToScene.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkApplyPreprocessToScene.Location = new System.Drawing.Point(18, 302);
+            this.chkApplyPreprocessToScene.Location = new System.Drawing.Point(23, 347);
             this.chkApplyPreprocessToScene.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkApplyPreprocessToScene.Name = "chkApplyPreprocessToScene";
             this.chkApplyPreprocessToScene.Size = new System.Drawing.Size(155, 17);
@@ -512,7 +524,7 @@
             this.chkMrgContainersAndXref.AutoSize = true;
             this.chkMrgContainersAndXref.Enabled = false;
             this.chkMrgContainersAndXref.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkMrgContainersAndXref.Location = new System.Drawing.Point(18, 282);
+            this.chkMrgContainersAndXref.Location = new System.Drawing.Point(23, 327);
             this.chkMrgContainersAndXref.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkMrgContainersAndXref.Name = "chkMrgContainersAndXref";
             this.chkMrgContainersAndXref.Size = new System.Drawing.Size(155, 17);
@@ -523,7 +535,7 @@
             // chkUsePreExportProces
             // 
             this.chkUsePreExportProces.AutoSize = true;
-            this.chkUsePreExportProces.Location = new System.Drawing.Point(9, 265);
+            this.chkUsePreExportProces.Location = new System.Drawing.Point(14, 310);
             this.chkUsePreExportProces.Name = "chkUsePreExportProces";
             this.chkUsePreExportProces.Size = new System.Drawing.Size(138, 17);
             this.chkUsePreExportProces.TabIndex = 36;
@@ -613,7 +625,7 @@
             // textureLabel
             // 
             this.textureLabel.AutoSize = true;
-            this.textureLabel.Location = new System.Drawing.Point(11, 83);
+            this.textureLabel.Location = new System.Drawing.Point(11, 110);
             this.textureLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.textureLabel.Name = "textureLabel";
             this.textureLabel.Size = new System.Drawing.Size(76, 13);
@@ -624,7 +636,7 @@
             // 
             this.txtTexturesPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtTexturesPath.Location = new System.Drawing.Point(91, 80);
+            this.txtTexturesPath.Location = new System.Drawing.Point(91, 107);
             this.txtTexturesPath.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtTexturesPath.Multiline = false;
             this.txtTexturesPath.Name = "txtTexturesPath";
@@ -636,7 +648,7 @@
             // 
             this.btnTxtBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnTxtBrowse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnTxtBrowse.Location = new System.Drawing.Point(805, 78);
+            this.btnTxtBrowse.Location = new System.Drawing.Point(805, 105);
             this.btnTxtBrowse.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.btnTxtBrowse.Name = "btnTxtBrowse";
             this.btnTxtBrowse.Size = new System.Drawing.Size(28, 23);
@@ -683,7 +695,7 @@
             // 
             // txtQuality
             // 
-            this.txtQuality.Location = new System.Drawing.Point(786, 151);
+            this.txtQuality.Location = new System.Drawing.Point(794, 40);
             this.txtQuality.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtQuality.Name = "txtQuality";
             this.txtQuality.Size = new System.Drawing.Size(43, 20);
@@ -695,7 +707,7 @@
             // labelQuality
             // 
             this.labelQuality.AutoSize = true;
-            this.labelQuality.Location = new System.Drawing.Point(702, 153);
+            this.labelQuality.Location = new System.Drawing.Point(710, 42);
             this.labelQuality.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelQuality.Name = "labelQuality";
             this.labelQuality.Size = new System.Drawing.Size(79, 13);
@@ -705,7 +717,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(714, 129);
+            this.label4.Location = new System.Drawing.Point(722, 18);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(67, 13);
@@ -714,7 +726,7 @@
             // 
             // txtScaleFactor
             // 
-            this.txtScaleFactor.Location = new System.Drawing.Point(786, 127);
+            this.txtScaleFactor.Location = new System.Drawing.Point(794, 16);
             this.txtScaleFactor.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.txtScaleFactor.Name = "txtScaleFactor";
             this.txtScaleFactor.Size = new System.Drawing.Size(42, 20);
@@ -753,7 +765,7 @@
             // 
             this.chkOnlySelected.AutoSize = true;
             this.chkOnlySelected.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkOnlySelected.Location = new System.Drawing.Point(11, 171);
+            this.chkOnlySelected.Location = new System.Drawing.Point(16, 216);
             this.chkOnlySelected.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkOnlySelected.Name = "chkOnlySelected";
             this.chkOnlySelected.Size = new System.Drawing.Size(118, 17);
@@ -766,7 +778,7 @@
             // 
             this.chkAutoSave.AutoSize = true;
             this.chkAutoSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkAutoSave.Location = new System.Drawing.Point(11, 125);
+            this.chkAutoSave.Location = new System.Drawing.Point(16, 170);
             this.chkAutoSave.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkAutoSave.Name = "chkAutoSave";
             this.chkAutoSave.Size = new System.Drawing.Size(130, 17);
@@ -779,7 +791,7 @@
             // 
             this.chkHidden.AutoSize = true;
             this.chkHidden.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkHidden.Location = new System.Drawing.Point(11, 148);
+            this.chkHidden.Location = new System.Drawing.Point(16, 193);
             this.chkHidden.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkHidden.Name = "chkHidden";
             this.chkHidden.Size = new System.Drawing.Size(125, 17);
@@ -895,17 +907,6 @@
             this.chk_RemoveLodPrefix.TabIndex = 0;
             this.chk_RemoveLodPrefix.Text = "Remove LOD prefix";
             this.chk_RemoveLodPrefix.UseVisualStyleBackColor = true;
-            // chkASBAnimationRetargeting
-            // 
-            this.chkASBAnimationRetargeting.AutoSize = true;
-            this.chkASBAnimationRetargeting.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkASBAnimationRetargeting.Location = new System.Drawing.Point(461, 455);
-            this.chkASBAnimationRetargeting.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.chkASBAnimationRetargeting.Name = "chkASBAnimationRetargeting";
-            this.chkASBAnimationRetargeting.Size = new System.Drawing.Size(151, 17);
-            this.chkASBAnimationRetargeting.TabIndex = 42;
-            this.chkASBAnimationRetargeting.Text = "ASOBO_animation_retargeting";
-            this.chkASBAnimationRetargeting.UseVisualStyleBackColor = true;
             // 
             // ExporterForm
             // 
