@@ -458,6 +458,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Refs\Autodesk.Max.dll" />
+    <Content Include="Resources\FlightSimExporter.png" />
     <None Include="Resources\MaxExporter.png" />
   </ItemGroup>
   <ItemGroup />

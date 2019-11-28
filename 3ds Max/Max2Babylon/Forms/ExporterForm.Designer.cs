@@ -63,8 +63,12 @@
             this.chkUsePreExportProces = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
+            this.txtQuality = new System.Windows.Forms.TextBox();
             this.txtEnvironmentName = new System.Windows.Forms.RichTextBox();
+            this.txtScaleFactor = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.labelQuality = new System.Windows.Forms.Label();
             this.chkFullPBR = new System.Windows.Forms.CheckBox();
             this.btnEnvBrowse = new System.Windows.Forms.Button();
             this.chkNoAutoLight = new System.Windows.Forms.CheckBox();
@@ -74,10 +78,6 @@
             this.chkKHRMaterialsUnlit = new System.Windows.Forms.CheckBox();
             this.chkKHRTextureTransform = new System.Windows.Forms.CheckBox();
             this.chkKHRLightsPunctual = new System.Windows.Forms.CheckBox();
-            this.txtQuality = new System.Windows.Forms.TextBox();
-            this.labelQuality = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.txtScaleFactor = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.comboOutputFormat = new System.Windows.Forms.ComboBox();
             this.chkOnlySelected = new System.Windows.Forms.CheckBox();
@@ -93,12 +93,13 @@
             this.grp_FlightSim = new System.Windows.Forms.GroupBox();
             this.chkRemoveNamespace = new System.Windows.Forms.CheckBox();
             this.chk_RemoveLodPrefix = new System.Windows.Forms.CheckBox();
-            this.chkASBAnimationRetargeting = new System.Windows.Forms.CheckBox();
+            this.pictureBox_flightsim = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
             this.grpGeometry.SuspendLayout();
             this.grpAnimations.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.grp_FlightSim.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox_flightsim)).BeginInit();
             this.SuspendLayout();
             // 
             // butExport
@@ -563,6 +564,17 @@
             this.label7.TabIndex = 33;
             this.label7.Text = "Babylon PBR Options:";
             // 
+            // txtQuality
+            // 
+            this.txtQuality.Location = new System.Drawing.Point(794, 40);
+            this.txtQuality.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.txtQuality.Name = "txtQuality";
+            this.txtQuality.Size = new System.Drawing.Size(43, 20);
+            this.txtQuality.TabIndex = 9;
+            this.txtQuality.Text = "100";
+            this.txtQuality.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtQuality.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
+            // 
             // txtEnvironmentName
             // 
             this.txtEnvironmentName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -575,6 +587,17 @@
             this.txtEnvironmentName.TabIndex = 30;
             this.txtEnvironmentName.Text = "";
             // 
+            // txtScaleFactor
+            // 
+            this.txtScaleFactor.Location = new System.Drawing.Point(794, 16);
+            this.txtScaleFactor.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.txtScaleFactor.Name = "txtScaleFactor";
+            this.txtScaleFactor.Size = new System.Drawing.Size(42, 20);
+            this.txtScaleFactor.TabIndex = 7;
+            this.txtScaleFactor.Text = "1";
+            this.txtScaleFactor.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtScaleFactor.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
+            // 
             // label6
             // 
             this.label6.AutoSize = true;
@@ -584,6 +607,26 @@
             this.label6.Size = new System.Drawing.Size(76, 13);
             this.label6.TabIndex = 29;
             this.label6.Text = "GLTF Options:";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(722, 18);
+            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(67, 13);
+            this.label4.TabIndex = 6;
+            this.label4.Text = "Scale factor:";
+            // 
+            // labelQuality
+            // 
+            this.labelQuality.AutoSize = true;
+            this.labelQuality.Location = new System.Drawing.Point(710, 42);
+            this.labelQuality.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.labelQuality.Name = "labelQuality";
+            this.labelQuality.Size = new System.Drawing.Size(79, 13);
+            this.labelQuality.TabIndex = 8;
+            this.labelQuality.Text = "Texture quality:";
             // 
             // chkFullPBR
             // 
@@ -692,48 +735,6 @@
             this.chkKHRLightsPunctual.TabIndex = 20;
             this.chkKHRLightsPunctual.Text = "KHR_lights_punctual";
             this.chkKHRLightsPunctual.UseVisualStyleBackColor = true;
-            // 
-            // txtQuality
-            // 
-            this.txtQuality.Location = new System.Drawing.Point(794, 40);
-            this.txtQuality.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.txtQuality.Name = "txtQuality";
-            this.txtQuality.Size = new System.Drawing.Size(43, 20);
-            this.txtQuality.TabIndex = 9;
-            this.txtQuality.Text = "100";
-            this.txtQuality.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtQuality.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
-            // 
-            // labelQuality
-            // 
-            this.labelQuality.AutoSize = true;
-            this.labelQuality.Location = new System.Drawing.Point(710, 42);
-            this.labelQuality.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelQuality.Name = "labelQuality";
-            this.labelQuality.Size = new System.Drawing.Size(79, 13);
-            this.labelQuality.TabIndex = 8;
-            this.labelQuality.Text = "Texture quality:";
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(722, 18);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(67, 13);
-            this.label4.TabIndex = 6;
-            this.label4.Text = "Scale factor:";
-            // 
-            // txtScaleFactor
-            // 
-            this.txtScaleFactor.Location = new System.Drawing.Point(794, 16);
-            this.txtScaleFactor.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.txtScaleFactor.Name = "txtScaleFactor";
-            this.txtScaleFactor.Size = new System.Drawing.Size(42, 20);
-            this.txtScaleFactor.TabIndex = 7;
-            this.txtScaleFactor.Text = "1";
-            this.txtScaleFactor.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtScaleFactor.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
             // 
             // label3
             // 
@@ -881,9 +882,9 @@
             // 
             this.grp_FlightSim.Controls.Add(this.chkRemoveNamespace);
             this.grp_FlightSim.Controls.Add(this.chk_RemoveLodPrefix);
-            this.grp_FlightSim.Location = new System.Drawing.Point(916, 371);
+            this.grp_FlightSim.Location = new System.Drawing.Point(916, 389);
             this.grp_FlightSim.Name = "grp_FlightSim";
-            this.grp_FlightSim.Size = new System.Drawing.Size(344, 114);
+            this.grp_FlightSim.Size = new System.Drawing.Size(344, 96);
             this.grp_FlightSim.TabIndex = 111;
             this.grp_FlightSim.TabStop = false;
             this.grp_FlightSim.Text = "FlightSim";
@@ -908,11 +909,24 @@
             this.chk_RemoveLodPrefix.Text = "Remove LOD prefix";
             this.chk_RemoveLodPrefix.UseVisualStyleBackColor = true;
             // 
+            // pictureBox_flightsim
+            // 
+            this.pictureBox_flightsim.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.pictureBox_flightsim.Image = global::Max2Babylon.Properties.Resources.FlightSimExporter;
+            this.pictureBox_flightsim.Location = new System.Drawing.Point(916, 198);
+            this.pictureBox_flightsim.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.pictureBox_flightsim.Name = "pictureBox_flightsim";
+            this.pictureBox_flightsim.Size = new System.Drawing.Size(348, 183);
+            this.pictureBox_flightsim.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox_flightsim.TabIndex = 112;
+            this.pictureBox_flightsim.TabStop = false;
+            // 
             // ExporterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1276, 898);
+            this.Controls.Add(this.pictureBox_flightsim);
             this.Controls.Add(this.grp_FlightSim);
             this.Controls.Add(this.saveOptionBtn);
             this.Controls.Add(this.butMultiExport);
@@ -943,6 +957,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.grp_FlightSim.ResumeLayout(false);
             this.grp_FlightSim.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox_flightsim)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1013,5 +1028,6 @@
         private System.Windows.Forms.GroupBox grp_FlightSim;
         private System.Windows.Forms.CheckBox chkRemoveNamespace;
         private System.Windows.Forms.CheckBox chk_RemoveLodPrefix;
+        private System.Windows.Forms.PictureBox pictureBox_flightsim;
     }
 }

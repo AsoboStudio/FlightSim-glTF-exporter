@@ -63,6 +63,16 @@ namespace Max2Babylon.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap FlightSimExporter {
+            get {
+                object obj = ResourceManager.GetObject("FlightSimExporter", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap MaxExporter {
             get {
                 object obj = ResourceManager.GetObject("MaxExporter", resourceCulture);

@@ -360,6 +360,7 @@
   <ItemGroup>
     <Content Include="Refs\Autodesk.Max.dll" />
     <Content Include="Refs\ManagedServices.dll" />
+    <None Include="Resources\FlightSimExporter.png" />
     <None Include="Resources\MaxExporter.png" />
   </ItemGroup>
   <ItemGroup>
