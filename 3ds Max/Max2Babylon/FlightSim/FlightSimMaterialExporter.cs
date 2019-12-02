@@ -100,6 +100,17 @@ namespace Max2Babylon
     }
 
     [DataContract]
+    class GLTFExtensionAsoboMaterialResponsiveAAOptions : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_antialiasing_options";
+        [DataMember(EmitDefaultValue = false)] public bool? responsiveAA { get; set; }
+        public static class Defaults
+        {
+            public static readonly bool responsiveAA = false;
+        }
+    }
+
+    [DataContract]
     class GLTFExtensionAsoboCollisionObject : GLTFProperty
     {
         public const string SerializedName = "ASOBO_collision_object";
@@ -1134,6 +1145,41 @@ namespace Max2Babylon
             }
             #endregion
 
+            #region ResponsiveAA Options
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "RESPONSIVEAA":
+                            {
+                                if (!property.GetPropertyValue(ref int_out, param_t))
+                                {
+                                    RaiseError("Could not retrieve RESPONSIVEAA property.");
+                                    continue;
+                                }
+                                bool responsiveAA = (int_out != 0);
+                                if (responsiveAA)
+                                {
+                                    GLTFExtensionAsoboMaterialResponsiveAAOptions responsiveAaOptionMaterialExtensionObject= new GLTFExtensionAsoboMaterialResponsiveAAOptions();
+                                    responsiveAaOptionMaterialExtensionObject.responsiveAA = responsiveAA;
+                                    materialExtensions.Add(GLTFExtensionAsoboMaterialResponsiveAAOptions.SerializedName, responsiveAaOptionMaterialExtensionObject);
+                                }
+                                break;
+                            }
+                    }
+                }
+            }
+            #endregion
+
             #region Shadow Options
             {
                 for (int i = 0; i < numProps; ++i)
@@ -1149,21 +1195,21 @@ namespace Max2Babylon
                     switch (propertyName)
                     {
                         case "NOCASTSHADOW":
+                        {
+                            if (!property.GetPropertyValue(ref int_out, param_t))
                             {
-                                if (!property.GetPropertyValue(ref int_out, param_t))
-                                {
-                                    RaiseError("Could not retrieve NOCASTSHADOW property.");
-                                    continue;
-                                }
-                                bool noCastShadow = (int_out != 0);
-                                if (noCastShadow)
-                                {
-                                    GLTFExtensionAsoboMaterialShadowOptions shadowOptionMaterialExtensionObject = new GLTFExtensionAsoboMaterialShadowOptions();
-                                    shadowOptionMaterialExtensionObject.noCastShadow = noCastShadow;
-                                    materialExtensions.Add(GLTFExtensionAsoboMaterialShadowOptions.SerializedName, shadowOptionMaterialExtensionObject);
-                                }
-                                break;
+                                RaiseError("Could not retrieve NOCASTSHADOW property.");
+                                continue;
                             }
+                            bool noCastShadow = (int_out != 0);
+                            if (noCastShadow)
+                            {
+                                GLTFExtensionAsoboMaterialShadowOptions shadowOptionMaterialExtensionObject = new GLTFExtensionAsoboMaterialShadowOptions();
+                                shadowOptionMaterialExtensionObject.noCastShadow = noCastShadow;
+                                materialExtensions.Add(GLTFExtensionAsoboMaterialShadowOptions.SerializedName, shadowOptionMaterialExtensionObject);
+                            }
+                            break;
+                        }
                     }
                 }
             }
@@ -2225,6 +2271,7 @@ namespace Max2Babylon
         {
             gltfMaterial.doubleSided = doubleSided;
         }
+
         #endregion
 
         #region Decal Extension helper functions
