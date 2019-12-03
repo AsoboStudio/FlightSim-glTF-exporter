@@ -10,6 +10,7 @@ using Color = System.Drawing.Color;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Collections.Generic;
 using System.Linq;
+using FlightSimExtension;
 
 namespace Max2Babylon
 {
@@ -119,6 +120,7 @@ namespace Max2Babylon
 
             Tools.PrepareCheckBox(chk_RemoveLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix",1);
             Tools.PrepareCheckBox(chkRemoveNamespace, Loader.Core.RootNode, "flightsim_removenamespaces",1);
+            Tools.PrepareComboBox(cmbNormalMapConvention, Loader.Core.RootNode, "flightsim_tangent_space_convention",TangentSpaceConvention.DirectX.ToString());
 
             if (comboOutputFormat.SelectedText == "babylon" || comboOutputFormat.SelectedText == "binary babylon" || !gltfPipelineInstalled)
             {
@@ -341,6 +343,7 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkUsePreExportProces, Loader.Core.RootNode, "babylonjs_preproces");
             Tools.UpdateCheckBox(chkFlatten, Loader.Core.RootNode, "babylonjs_flattenScene");
             Tools.UpdateCheckBox(chkMrgContainersAndXref, Loader.Core.RootNode, "babylonjs_mergecontainersandxref");
+            Tools.UpdateComboBoxByIndex(cmbNormalMapConvention, Loader.Core.RootNode, "flightsim_tangent_space_convention");
         }
 
         private async Task<bool> DoExport(ExportItem exportItem, bool multiExport = false, bool clearLogs = true)
@@ -471,7 +474,8 @@ namespace Max2Babylon
                     usePreExportProcess = chkUsePreExportProces.Checked,
                     flattenScene = chkFlatten.Enabled && chkFlatten.Checked,
                     mergeContainersAndXRef = chkMrgContainersAndXref.Checked,
-                    useMultiExporter = multiExport
+                    useMultiExporter = multiExport,
+                    tangentSpaceConvention = (TangentSpaceConvention)cmbNormalMapConvention.SelectedIndex
                 };
 
                 exporter.callerForm = this;

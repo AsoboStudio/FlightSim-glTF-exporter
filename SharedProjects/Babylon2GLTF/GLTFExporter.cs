@@ -61,6 +61,8 @@ namespace Babylon2GLTF
                 // no minVersion
             };
 
+            FlightSimExtension.FlightSimNormalMapConvention.AddNormalMapConvention(ref gltf,exportParameters);
+            
             var softwarePackageName = babylonScene.producer != null ? babylonScene.producer.name : "";
             var softwareVersion = babylonScene.producer != null ? babylonScene.producer.version : "";
             var exporterVersion = babylonScene.producer != null ? babylonScene.producer.exporter_version : "";
@@ -689,7 +691,7 @@ namespace Babylon2GLTF
                     }
                 }
             }
-
+            
             
         }
     }

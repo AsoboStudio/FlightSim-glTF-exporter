@@ -94,6 +94,8 @@
             this.chkRemoveNamespace = new System.Windows.Forms.CheckBox();
             this.chk_RemoveLodPrefix = new System.Windows.Forms.CheckBox();
             this.pictureBox_flightsim = new System.Windows.Forms.PictureBox();
+            this.cmbNormalMapConvention = new System.Windows.Forms.ComboBox();
+            this.normalMapConventionLbl = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.grpGeometry.SuspendLayout();
             this.grpAnimations.SuspendLayout();
@@ -880,6 +882,8 @@
             // 
             // grp_FlightSim
             // 
+            this.grp_FlightSim.Controls.Add(this.normalMapConventionLbl);
+            this.grp_FlightSim.Controls.Add(this.cmbNormalMapConvention);
             this.grp_FlightSim.Controls.Add(this.chkRemoveNamespace);
             this.grp_FlightSim.Controls.Add(this.chk_RemoveLodPrefix);
             this.grp_FlightSim.Location = new System.Drawing.Point(916, 389);
@@ -892,7 +896,7 @@
             // chkRemoveNamespace
             // 
             this.chkRemoveNamespace.AutoSize = true;
-            this.chkRemoveNamespace.Location = new System.Drawing.Point(16, 60);
+            this.chkRemoveNamespace.Location = new System.Drawing.Point(11, 43);
             this.chkRemoveNamespace.Name = "chkRemoveNamespace";
             this.chkRemoveNamespace.Size = new System.Drawing.Size(126, 17);
             this.chkRemoveNamespace.TabIndex = 1;
@@ -902,7 +906,7 @@
             // chk_RemoveLodPrefix
             // 
             this.chk_RemoveLodPrefix.AutoSize = true;
-            this.chk_RemoveLodPrefix.Location = new System.Drawing.Point(16, 29);
+            this.chk_RemoveLodPrefix.Location = new System.Drawing.Point(11, 19);
             this.chk_RemoveLodPrefix.Name = "chk_RemoveLodPrefix";
             this.chk_RemoveLodPrefix.Size = new System.Drawing.Size(119, 17);
             this.chk_RemoveLodPrefix.TabIndex = 0;
@@ -920,6 +924,27 @@
             this.pictureBox_flightsim.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox_flightsim.TabIndex = 112;
             this.pictureBox_flightsim.TabStop = false;
+            // 
+            // cmbNormalMapConvention
+            // 
+            this.cmbNormalMapConvention.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbNormalMapConvention.FormattingEnabled = true;
+            this.cmbNormalMapConvention.Items.AddRange(new object[] {
+            "DirectX",
+            "OpenGL"});
+            this.cmbNormalMapConvention.Location = new System.Drawing.Point(136, 64);
+            this.cmbNormalMapConvention.Name = "cmbNormalMapConvention";
+            this.cmbNormalMapConvention.Size = new System.Drawing.Size(99, 21);
+            this.cmbNormalMapConvention.TabIndex = 35;
+            // 
+            // normalMapConventionLbl
+            // 
+            this.normalMapConventionLbl.AutoSize = true;
+            this.normalMapConventionLbl.Location = new System.Drawing.Point(9, 67);
+            this.normalMapConventionLbl.Name = "normalMapConventionLbl";
+            this.normalMapConventionLbl.Size = new System.Drawing.Size(121, 13);
+            this.normalMapConventionLbl.TabIndex = 36;
+            this.normalMapConventionLbl.Text = "Normal Map Convention";
             // 
             // ExporterForm
             // 
@@ -1029,5 +1054,7 @@
         private System.Windows.Forms.CheckBox chkRemoveNamespace;
         private System.Windows.Forms.CheckBox chk_RemoveLodPrefix;
         private System.Windows.Forms.PictureBox pictureBox_flightsim;
+        private System.Windows.Forms.Label normalMapConventionLbl;
+        private System.Windows.Forms.ComboBox cmbNormalMapConvention;
     }
 }

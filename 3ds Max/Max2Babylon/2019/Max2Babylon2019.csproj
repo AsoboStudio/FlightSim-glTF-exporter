@@ -228,6 +228,9 @@
     <Compile Include="..\FlightSim\FlightSimMaterialExporter.cs">
       <Link>FlightSim\FlightSimMaterialExporter.cs</Link>
     </Compile>
+    <Compile Include="..\FlightSim\FlightSimNormalMapConvention.cs">
+      <Link>FlightSim\FlightSimNormalMapConvention.cs</Link>
+    </Compile>
     <Compile Include="..\FlightSim\FlightSimUtilities.cs">
       <Link>FlightSim\FlightSimUtilities.cs</Link>
     </Compile>

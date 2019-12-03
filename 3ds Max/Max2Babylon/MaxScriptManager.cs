@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using BabylonExport.Entities;
 using Utilities;
 using Autodesk.Max;
+using FlightSimExtension;
 
 namespace Max2Babylon
 {
@@ -115,9 +116,11 @@ namespace Max2Babylon
             exportParameters.exportNode = null;
 
             exportParameters.animationExportType =(AnimationExportType) Loader.Core.RootNode.GetFloatProperty("babylonjs_export_animations_type", 0);
-			exportParameters.removeLodPrefix = Loader.Core.RootNode.GetBoolProperty("flightsim_removelodprefix");
-            exportParameters.removeNamespaces = Loader.Core.RootNode.GetBoolProperty("flightsim_removenamespaces");
             exportParameters.enableASBAnimationRetargeting =Loader.Core.RootNode.GetBoolProperty("babylonjs_asb_animation_retargeting");
+
+            exportParameters.removeLodPrefix = Loader.Core.RootNode.GetBoolProperty("flightsim_removelodprefix");
+            exportParameters.removeNamespaces = Loader.Core.RootNode.GetBoolProperty("flightsim_removenamespaces");
+            exportParameters.tangentSpaceConvention =(TangentSpaceConvention)Loader.Core.RootNode.GetFloatProperty("flightsim_tangent_space_convention", 0);
 
             return exportParameters;
         }

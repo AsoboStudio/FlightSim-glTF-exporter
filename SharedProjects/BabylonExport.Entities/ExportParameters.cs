@@ -1,4 +1,5 @@
-﻿using Utilities;
+﻿using FlightSimExtension;
+using Utilities;
 using GLTFExport.Entities;
 
 namespace BabylonExport.Entities
@@ -53,6 +54,7 @@ namespace BabylonExport.Entities
 
 		public bool removeLodPrefix = true;
         public bool removeNamespaces = true;
+        public TangentSpaceConvention tangentSpaceConvention = TangentSpaceConvention.DirectX;
 
         public const string ModelFilePathProperty = "modelFilePathProperty";
         public const string TextureFolderPathProperty = "textureFolderPathProperty";
