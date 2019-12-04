@@ -213,11 +213,17 @@
     <Compile Include="..\FlightSim\FlightSimColliderExtension.cs">
       <Link>FlightSim\FlightSimColliderExtension.cs</Link>
     </Compile>
+    <Compile Include="..\FlightSim\FlightSimExtensionUtility.cs">
+      <Link>FlightSim\FlightSimExtensionUtility.cs</Link>
+    </Compile>
     <Compile Include="..\FlightSim\FlightSimFadeExtension.cs">
       <Link>FlightSim\FlightSimFadeExtension.cs</Link>
     </Compile>
     <Compile Include="..\FlightSim\FlightSimMaterialExporter.cs">
       <Link>FlightSim\FlightSimMaterialExporter.cs</Link>
+    </Compile>
+    <Compile Include="..\FlightSim\FlightSimNormalMapConvention.cs">
+      <Link>FlightSim\FlightSimNormalMapConvention.cs</Link>
     </Compile>
     <Compile Include="..\FlightSim\FlightSimUtilities.cs">
       <Link>FlightSim\FlightSimUtilities.cs</Link>
@@ -225,6 +231,10 @@
     <Compile Include="..\FlightSim\SelectNameForm.cs">
       <Link>FlightSim\SelectNameForm.cs</Link>
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\FlightSim\SelectNameForm.designer.cs">
+      <Link>FlightSim\SelectNameForm.designer.cs</Link>
+      <DependentUpon>SelectNameForm.cs</DependentUpon>
     </Compile>
     <Compile Include="..\Forms\AnimationForm.cs">
       <Link>Forms\AnimationForm.cs</Link>
@@ -361,6 +371,10 @@
     <None Include="Resources\MaxExporter.png" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\FlightSim\SelectNameForm.resx">
+      <Link>FlightSim\SelectNameForm.resx</Link>
+      <DependentUpon>SelectNameForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\Forms\AnimationForm.resx">
       <Link>Forms\AnimationForm.resx</Link>
       <DependentUpon>AnimationForm.cs</DependentUpon>

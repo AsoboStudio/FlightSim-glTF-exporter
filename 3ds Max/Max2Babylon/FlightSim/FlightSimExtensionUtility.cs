@@ -13,7 +13,11 @@ namespace Max2Babylon.FlightSim
         {
             string mxs = $"(maxOps.getNodeByHandle {node.Handle}).{gizmoClass}.{paramName}";
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
+#if MAX2015 || MAX2017 || MAX2018
+            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
+#else
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
+#endif
             var r=  mxsRetVal.F;
             return r;
         }
