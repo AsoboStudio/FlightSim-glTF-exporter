@@ -586,6 +586,11 @@ namespace Max2Babylon
                 babylonScene.MeshesList.Add(rootNode);
             }
 
+#if DEBUG
+            var nodesExportTime = watch.ElapsedMilliseconds / 1000.0 - flattenTime;
+            RaiseMessage($"Nodes exported in {nodesExportTime:0.00}s", Color.Blue);
+#endif
+
             // Materials
             if (exportParameters.exportMaterials)
             {
@@ -604,6 +609,10 @@ namespace Max2Babylon
             {
                 RaiseMessage("Skipping material export.");
             }
+#if DEBUG
+            var materialsExportTime = watch.ElapsedMilliseconds / 1000.0 - nodesExportTime;
+            RaiseMessage($"Materials exported in {materialsExportTime:0.00}s", Color.Blue);
+#endif
 
 
             // Fog
@@ -640,9 +649,10 @@ namespace Max2Babylon
                 }
             }
 #if DEBUG
-            var nodesExportTime = watch.ElapsedMilliseconds / 1000.0 - flattenTime;
-            RaiseMessage(string.Format("Noded exported in {0:0.00}s", nodesExportTime), Color.Blue);
+            var skeletonsExportTime = watch.ElapsedMilliseconds / 1000.0 - materialsExportTime;
+            RaiseMessage($"Skeletons exported in {skeletonsExportTime:0.00}s", Color.Blue);
 #endif
+
 
             // ----------------------------
             // ----- Animation groups -----
