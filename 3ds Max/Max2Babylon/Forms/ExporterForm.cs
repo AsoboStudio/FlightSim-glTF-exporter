@@ -406,7 +406,7 @@ namespace Max2Babylon
                 {
                     //do nothing
                 }
-                Application.DoEvents();
+                //Application.DoEvents();
             };
 
             butExport.Enabled = false;

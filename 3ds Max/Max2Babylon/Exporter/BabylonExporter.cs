@@ -41,7 +41,7 @@ namespace Max2Babylon
 
         public void CheckCancelled()
         {
-            Application.DoEvents();
+            //Application.DoEvents();
             if (IsCancelled)
             {
                 throw new OperationCanceledException();
