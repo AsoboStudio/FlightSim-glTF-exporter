@@ -13,30 +13,19 @@ namespace Max2Babylon
 {
     public class MaxScriptManager
     {
-        public static void ExportFromUI()
-        {
-            ExporterForm exporterForm = new ExporterForm(null);
-            exporterForm.TopMost = true;
-            exporterForm.Show();
-            exporterForm.BringToFront();
-            exporterForm.WindowState = FormWindowState.Normal;
-            exporterForm.butExport_Click(null,EventArgs.Empty);
-        }
-
-
-        public static void Export()
+        public static void Export( bool logInListener)
         {
             string storedModelPath = Loader.Core.RootNode.GetStringProperty(MaxExportParameters.ModelFilePathProperty, string.Empty);
             string userRelativePath = Tools.ResolveRelativePath(storedModelPath);
-            Export(InitParameters(userRelativePath));
+            Export(InitParameters(userRelativePath),logInListener);
         }
 
-        public static void Export(string outputPath)
+        public static void Export(string outputPath, bool logInListener)
         {
-            Export(InitParameters(outputPath));
+            Export(InitParameters(outputPath),logInListener);
         }
 
-        public static void Export(MaxExportParameters exportParameters)
+        public static void Export(MaxExportParameters exportParameters, bool logInListener )
         {
             if (Loader.Class_ID == null)
             {
@@ -52,6 +41,8 @@ namespace Max2Babylon
 
             BabylonExporter exporter = new BabylonExporter();
 
+            if (logInListener)
+            {
             // Init log system
             exporter.OnWarning += (warning, rank) =>
             {
@@ -69,6 +60,7 @@ namespace Max2Babylon
             {
                 Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(message + "\n");
             };
+            }
 
             // Start export
             exporter.Export(exportParameters);
