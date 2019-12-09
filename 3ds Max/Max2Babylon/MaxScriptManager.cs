@@ -43,23 +43,23 @@ namespace Max2Babylon
 
             if (logInListener)
             {
-            // Init log system
-            exporter.OnWarning += (warning, rank) =>
-            {
-                Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(warning+"\n");
-            };
-            exporter.OnError += (error, rank) =>
-            {
-                Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(error + "\n");
-            };
-            exporter.OnMessage += (message, color, rank, emphasis) =>
-            {
-                Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(message + "\n");
-            };
-            exporter.OnVerbose += (message, color, rank, emphasis) =>
-            {
-                Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(message + "\n");
-            };
+                // Init log system
+                exporter.OnWarning += (warning, rank) =>
+                {
+                    Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(warning+"\n");
+                };
+                exporter.OnError += (error, rank) =>
+                {
+                    Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(error + "\n");
+                };
+                exporter.OnMessage += (message, color, rank, emphasis) =>
+                {
+                    Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(message + "\n");
+                };
+                exporter.OnVerbose += (message, color, rank, emphasis) =>
+                {
+                    Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(message + "\n");
+                };
             }
 
             // Start export
