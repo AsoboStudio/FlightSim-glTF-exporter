@@ -54,6 +54,8 @@ namespace BabylonExport.Entities
 
 		public bool removeLodPrefix = true;
         public bool removeNamespaces = true;
+        public string srcTextureExtension;
+        public string dstTextureExtension;
         public TangentSpaceConvention tangentSpaceConvention = TangentSpaceConvention.DirectX;
 
         public const string ModelFilePathProperty = "modelFilePathProperty";

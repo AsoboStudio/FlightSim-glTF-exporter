@@ -120,6 +120,8 @@ namespace Max2Babylon
 
             Tools.PrepareCheckBox(chk_RemoveLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix",1);
             Tools.PrepareCheckBox(chkRemoveNamespace, Loader.Core.RootNode, "flightsim_removenamespaces",1);
+            Tools.PrepareTextBox(txtSrcTextureExt, Loader.Core.RootNode, "flightsim_texture_destination_extension",string.Empty);
+            Tools.PrepareTextBox(txtDstTextureExt, Loader.Core.RootNode, "flightsim_texture_destination_extension",string.Empty);
             Tools.PrepareComboBox(cmbNormalMapConvention, Loader.Core.RootNode, "flightsim_tangent_space_convention",TangentSpaceConvention.DirectX.ToString());
 
             if (comboOutputFormat.SelectedText == "babylon" || comboOutputFormat.SelectedText == "binary babylon" || !gltfPipelineInstalled)
@@ -332,7 +334,10 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkApplyPreprocessToScene,Loader.Core.RootNode, "babylonjs_applyPreprocess");
 
 			Tools.UpdateCheckBox(chk_RemoveLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix");
-            Tools.UpdateCheckBox(chkRemoveNamespace, Loader.Core.RootNode, "flightsim_removenamespaces");            
+            Tools.UpdateCheckBox(chkRemoveNamespace, Loader.Core.RootNode, "flightsim_removenamespaces");
+            Tools.UpdateTextBox(txtSrcTextureExt, Loader.Core.RootNode, "flightsim_texture_destination_extension");
+            Tools.UpdateTextBox(txtDstTextureExt, Loader.Core.RootNode, "flightsim_texture_destination_extension");
+
             Loader.Core.RootNode.SetStringProperty(ExportParameters.ModelFilePathProperty, Tools.RelativePathStore(txtModelPath.Text));
             Loader.Core.RootNode.SetStringProperty(ExportParameters.TextureFolderPathProperty, Tools.RelativePathStore(txtTexturesPath.Text));
 
@@ -475,7 +480,11 @@ namespace Max2Babylon
                     flattenScene = chkFlatten.Enabled && chkFlatten.Checked,
                     mergeContainersAndXRef = chkMrgContainersAndXref.Checked,
                     useMultiExporter = multiExport,
-                    tangentSpaceConvention = (TangentSpaceConvention)cmbNormalMapConvention.SelectedIndex
+                    tangentSpaceConvention = (TangentSpaceConvention)cmbNormalMapConvention.SelectedIndex,
+                    removeLodPrefix = chk_RemoveLodPrefix.Checked,
+                    removeNamespaces = chkRemoveNamespace.Checked,
+                    srcTextureExtension = txtSrcTextureExt.Text,
+                    dstTextureExtension = txtDstTextureExt.Text
                 };
 
                 exporter.callerForm = this;

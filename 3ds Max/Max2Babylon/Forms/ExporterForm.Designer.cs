@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExporterForm));
             this.butExport = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.txtModelPath = new System.Windows.Forms.RichTextBox();
@@ -91,11 +92,16 @@
             this.envFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.grp_FlightSim = new System.Windows.Forms.GroupBox();
+            this.txtDstTextureExt = new System.Windows.Forms.TextBox();
+            this.lblCE_to = new System.Windows.Forms.Label();
+            this.lblCE_from = new System.Windows.Forms.Label();
+            this.txtSrcTextureExt = new System.Windows.Forms.TextBox();
+            this.lblConvertExtension = new System.Windows.Forms.Label();
+            this.normalMapConventionLbl = new System.Windows.Forms.Label();
+            this.cmbNormalMapConvention = new System.Windows.Forms.ComboBox();
             this.chkRemoveNamespace = new System.Windows.Forms.CheckBox();
             this.chk_RemoveLodPrefix = new System.Windows.Forms.CheckBox();
             this.pictureBox_flightsim = new System.Windows.Forms.PictureBox();
-            this.cmbNormalMapConvention = new System.Windows.Forms.ComboBox();
-            this.normalMapConventionLbl = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.grpGeometry.SuspendLayout();
             this.grpAnimations.SuspendLayout();
@@ -871,27 +877,95 @@
             // pictureBox2
             // 
             this.pictureBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox2.Image = global::Max2Babylon.Properties.Resources.MaxExporter;
+            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
+            this.pictureBox2.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBox2.InitialImage")));
             this.pictureBox2.Location = new System.Drawing.Point(916, 11);
             this.pictureBox2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(348, 183);
+            this.pictureBox2.Size = new System.Drawing.Size(348, 159);
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox2.TabIndex = 9;
             this.pictureBox2.TabStop = false;
             // 
             // grp_FlightSim
             // 
+            this.grp_FlightSim.Controls.Add(this.txtDstTextureExt);
+            this.grp_FlightSim.Controls.Add(this.lblCE_to);
+            this.grp_FlightSim.Controls.Add(this.lblCE_from);
+            this.grp_FlightSim.Controls.Add(this.txtSrcTextureExt);
+            this.grp_FlightSim.Controls.Add(this.lblConvertExtension);
             this.grp_FlightSim.Controls.Add(this.normalMapConventionLbl);
             this.grp_FlightSim.Controls.Add(this.cmbNormalMapConvention);
             this.grp_FlightSim.Controls.Add(this.chkRemoveNamespace);
             this.grp_FlightSim.Controls.Add(this.chk_RemoveLodPrefix);
-            this.grp_FlightSim.Location = new System.Drawing.Point(916, 389);
+            this.grp_FlightSim.Location = new System.Drawing.Point(916, 341);
             this.grp_FlightSim.Name = "grp_FlightSim";
-            this.grp_FlightSim.Size = new System.Drawing.Size(344, 96);
+            this.grp_FlightSim.Size = new System.Drawing.Size(344, 144);
             this.grp_FlightSim.TabIndex = 111;
             this.grp_FlightSim.TabStop = false;
             this.grp_FlightSim.Text = "FlightSim";
+            // 
+            // txtDstTextureExt
+            // 
+            this.txtDstTextureExt.Location = new System.Drawing.Point(162, 111);
+            this.txtDstTextureExt.Name = "txtDstTextureExt";
+            this.txtDstTextureExt.Size = new System.Drawing.Size(100, 20);
+            this.txtDstTextureExt.TabIndex = 41;
+            // 
+            // lblCE_to
+            // 
+            this.lblCE_to.AutoSize = true;
+            this.lblCE_to.Location = new System.Drawing.Point(136, 114);
+            this.lblCE_to.Name = "lblCE_to";
+            this.lblCE_to.Size = new System.Drawing.Size(20, 13);
+            this.lblCE_to.TabIndex = 40;
+            this.lblCE_to.Text = "To";
+            // 
+            // lblCE_from
+            // 
+            this.lblCE_from.AutoSize = true;
+            this.lblCE_from.Location = new System.Drawing.Point(9, 114);
+            this.lblCE_from.Name = "lblCE_from";
+            this.lblCE_from.Size = new System.Drawing.Size(30, 13);
+            this.lblCE_from.TabIndex = 39;
+            this.lblCE_from.Text = "From";
+            // 
+            // txtSrcTextureExt
+            // 
+            this.txtSrcTextureExt.Location = new System.Drawing.Point(45, 111);
+            this.txtSrcTextureExt.Name = "txtSrcTextureExt";
+            this.txtSrcTextureExt.Size = new System.Drawing.Size(85, 20);
+            this.txtSrcTextureExt.TabIndex = 38;
+            // 
+            // lblConvertExtension
+            // 
+            this.lblConvertExtension.AutoSize = true;
+            this.lblConvertExtension.Location = new System.Drawing.Point(9, 91);
+            this.lblConvertExtension.Name = "lblConvertExtension";
+            this.lblConvertExtension.Size = new System.Drawing.Size(130, 13);
+            this.lblConvertExtension.TabIndex = 37;
+            this.lblConvertExtension.Text = "Convert texture extension:";
+            // 
+            // normalMapConventionLbl
+            // 
+            this.normalMapConventionLbl.AutoSize = true;
+            this.normalMapConventionLbl.Location = new System.Drawing.Point(9, 67);
+            this.normalMapConventionLbl.Name = "normalMapConventionLbl";
+            this.normalMapConventionLbl.Size = new System.Drawing.Size(121, 13);
+            this.normalMapConventionLbl.TabIndex = 36;
+            this.normalMapConventionLbl.Text = "Normal Map Convention";
+            // 
+            // cmbNormalMapConvention
+            // 
+            this.cmbNormalMapConvention.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbNormalMapConvention.FormattingEnabled = true;
+            this.cmbNormalMapConvention.Items.AddRange(new object[] {
+            "DirectX",
+            "OpenGL"});
+            this.cmbNormalMapConvention.Location = new System.Drawing.Point(136, 64);
+            this.cmbNormalMapConvention.Name = "cmbNormalMapConvention";
+            this.cmbNormalMapConvention.Size = new System.Drawing.Size(99, 21);
+            this.cmbNormalMapConvention.TabIndex = 35;
             // 
             // chkRemoveNamespace
             // 
@@ -916,35 +990,15 @@
             // pictureBox_flightsim
             // 
             this.pictureBox_flightsim.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.pictureBox_flightsim.Image = global::Max2Babylon.Properties.Resources.FlightSimExporter;
-            this.pictureBox_flightsim.Location = new System.Drawing.Point(916, 198);
+            this.pictureBox_flightsim.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox_flightsim.Image")));
+            this.pictureBox_flightsim.InitialImage = global::Max2Babylon.Properties.Resources.FlightSimExporter;
+            this.pictureBox_flightsim.Location = new System.Drawing.Point(915, 176);
             this.pictureBox_flightsim.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.pictureBox_flightsim.Name = "pictureBox_flightsim";
-            this.pictureBox_flightsim.Size = new System.Drawing.Size(348, 183);
+            this.pictureBox_flightsim.Size = new System.Drawing.Size(348, 157);
             this.pictureBox_flightsim.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox_flightsim.TabIndex = 112;
             this.pictureBox_flightsim.TabStop = false;
-            // 
-            // cmbNormalMapConvention
-            // 
-            this.cmbNormalMapConvention.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbNormalMapConvention.FormattingEnabled = true;
-            this.cmbNormalMapConvention.Items.AddRange(new object[] {
-            "DirectX",
-            "OpenGL"});
-            this.cmbNormalMapConvention.Location = new System.Drawing.Point(136, 64);
-            this.cmbNormalMapConvention.Name = "cmbNormalMapConvention";
-            this.cmbNormalMapConvention.Size = new System.Drawing.Size(99, 21);
-            this.cmbNormalMapConvention.TabIndex = 35;
-            // 
-            // normalMapConventionLbl
-            // 
-            this.normalMapConventionLbl.AutoSize = true;
-            this.normalMapConventionLbl.Location = new System.Drawing.Point(9, 67);
-            this.normalMapConventionLbl.Name = "normalMapConventionLbl";
-            this.normalMapConventionLbl.Size = new System.Drawing.Size(121, 13);
-            this.normalMapConventionLbl.TabIndex = 36;
-            this.normalMapConventionLbl.Text = "Normal Map Convention";
             // 
             // ExporterForm
             // 
@@ -1056,5 +1110,10 @@
         private System.Windows.Forms.PictureBox pictureBox_flightsim;
         private System.Windows.Forms.Label normalMapConventionLbl;
         private System.Windows.Forms.ComboBox cmbNormalMapConvention;
+        private System.Windows.Forms.TextBox txtDstTextureExt;
+        private System.Windows.Forms.Label lblCE_to;
+        private System.Windows.Forms.Label lblCE_from;
+        private System.Windows.Forms.TextBox txtSrcTextureExt;
+        private System.Windows.Forms.Label lblConvertExtension;
     }
 }

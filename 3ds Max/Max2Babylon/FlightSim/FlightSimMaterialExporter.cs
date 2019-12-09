@@ -1974,30 +1974,40 @@ namespace Max2Babylon
             {
                 string previousExtension = ext; // substring removes '.'
 
-                string validExtension;
-                if (exporterParameters.writeTextures)
+                
+                if (ext == exporterParameters.srcTextureExtension && !string.IsNullOrWhiteSpace(exporterParameters.dstTextureExtension))
                 {
-                    validExtension = tryWriteImageFunc(sourceTexturePath, textureName);
+                    ext = exporterParameters.dstTextureExtension;
+                    
                 }
                 else
                 {
-                    validExtension = Path.GetExtension(sourceTexturePath);
+                    string validExtension;
+                    if (exporterParameters.writeTextures)
+                    {
+                        validExtension = tryWriteImageFunc(sourceTexturePath, textureName);
+                    }
+                    else
+                    {
+                        validExtension = Path.GetExtension(sourceTexturePath);
+                    }
+
+                    if (validExtension == null)
+                    {
+                        RaiseWarning("Texture has an invalid extension: " + sourceTexturePath);
+                        return null;
+                    }
+
+                    if (previousExtension.ToUpperInvariant() != validExtension.ToUpperInvariant())
+                    {
+                        string message = string.Format("Exported texture {0} was changed from '{1}' to '{2}'", sourceTexturePath, previousExtension, validExtension);
+                        RaiseMessage(message);
+                    }
+
+                    ext = validExtension;
                 }
 
-                if (validExtension == null)
-                {
-                    RaiseWarning("Texture has an invalid extension: " + sourceTexturePath);
-                    return null;
-                }
-
-                if (previousExtension.ToUpperInvariant() != validExtension.ToUpperInvariant())
-                {
-                    string message = string.Format("Exported texture {0} was changed from '{1}' to '{2}'", sourceTexturePath, previousExtension, validExtension);
-                    RaiseMessage(message);
-                }
-
-                textureName = Path.ChangeExtension(textureName, validExtension);
-                ext = validExtension;
+                textureName = Path.ChangeExtension(textureName, ext);
             }
 
             if (dstTextureExportCache.TryGetValue(textureName, out string otherTexturePath))
@@ -2048,7 +2058,9 @@ namespace Max2Babylon
             {
                 texture = gltf.AddTexture(image, sampler);
             }
-            texture.name = image.uri;
+
+            int extensionIndex = image.uri.IndexOf(".");
+            texture.name = image.uri.Substring(0,extensionIndex);
             return CreateTextureInfo<T>(texture);
         }
         T CreateTextureInfo<T>(int textureIndex) where T : GLTFTextureInfo, new()
