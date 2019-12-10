@@ -30,6 +30,7 @@ namespace Max2Babylon
     class GLTFExtensionAsoboMaterialGeometryDecal : GLTFProperty // use GLTFChildRootProperty if you want to add a name
     {
         public const string SerializedName = "ASOBO_material_blend_gbuffer";
+        [DataMember(EmitDefaultValue = true)] public bool enabled = true;
         [DataMember(EmitDefaultValue = false)] public float? baseColorBlendFactor;
         [DataMember(EmitDefaultValue = false)] public float? metallicBlendFactor;
         [DataMember(EmitDefaultValue = false)] public float? roughnessBlendFactor;
@@ -62,6 +63,7 @@ namespace Max2Babylon
     class GLTFExtensionAsoboAlphaModeDither : GLTFProperty
     {
         public const string SerializedName = "ASOBO_material_alphamode_dither";
+        [DataMember(EmitDefaultValue = true)] public bool enabled = true;
         //[DataMember(EmitDefaultValue = false)] public string alphaMode;
     }
 
@@ -69,6 +71,7 @@ namespace Max2Babylon
     class GLTFExtensionAsoboMaterialInvisible : GLTFProperty
     {
         public const string SerializedName = "ASOBO_material_invisible";
+        [DataMember(EmitDefaultValue = true)] public bool enabled = true;
     }
 
     [DataContract]
@@ -114,12 +117,14 @@ namespace Max2Babylon
     class GLTFExtensionAsoboCollisionObject : GLTFProperty
     {
         public const string SerializedName = "ASOBO_collision_object";
+        [DataMember(EmitDefaultValue = true)] public bool enabled = true;
     }
 
     [DataContract]
     class GLTFExtensionAsoboMaterialFakeTerrain : GLTFProperty
     {
         public const string SerializedName = "ASOBO_material_fake_terrain";
+        [DataMember(EmitDefaultValue = true)] public bool enabled = true;
     }
 
     [DataContract]
