@@ -1024,44 +1024,35 @@ namespace Max2Babylon
             return containersChildren;
         }
 
-        private static IIContainerObject GetConflictingContainer(this IIContainerObject container)
+        private static int GetNextAvailableContainerID(this IIContainerObject container)
         {
+            int id = 1;
             string guidStr = container.ContainerNode.GetStringProperty("babylonjs_GUID",Guid.NewGuid().ToString());
             List<IIContainerObject> containers = GetAllContainers();
             foreach (IIContainerObject iContainerObject in containers)
             {
                 if (container.ContainerNode.Handle == iContainerObject.ContainerNode.Handle) continue;
-                string compareGuid = iContainerObject.ContainerNode.GetStringProperty("babylonjs_GUID",Guid.NewGuid().ToString());
-                if (compareGuid == guidStr && iContainerObject.ContainerNode.Name == container.ContainerNode.Name)
+                //string compareGuid = iContainerObject.ContainerNode.GetStringProperty("babylonjs_GUID",Guid.NewGuid().ToString());
+                string defaultName = Regex.Replace(iContainerObject.ContainerNode.Name, @"_ID_\d+","");
+                if (defaultName == container.ContainerNode.Name)
                 {
-                    return iContainerObject;
+                    int containerID = 1;
+                    iContainerObject.ContainerNode.GetUserPropInt("babylonjs_ContainerID",ref containerID);
+                    id = Math.Max(id, containerID+1);
                 }
             }
-            return null;
+            return id;
         }   
 
 
         public static void ResolveContainer(this IIContainerObject container)
         {
             guids = new Dictionary<Guid, IAnimatable>();
-            int id = 2;
-            while (container.GetConflictingContainer()!=null) //container with same guid  && same name exist)
-            {
-                bool hasID = Regex.IsMatch(container.ContainerNode.Name, @"_ID_\d+");
-                if (hasID)
-                {
-                    int index = container.ContainerNode.Name.LastIndexOf("_");
-                    string containerName = container.ContainerNode.Name.Remove(index + 1);
-                    containerName = containerName + id;
-                    container.ContainerNode.Name = containerName;
-                }
-                else
-                {
-                    container.ContainerNode.Name = container.ContainerNode.Name + "_ID_" + id;
-                }
-                container.ContainerNode.SetUserPropInt("babylonjs_ContainerID",id);
-                id++;
-            }
+            int id = container.GetNextAvailableContainerID();
+            string defaultName = Regex.Replace(container.ContainerNode.Name, @"_ID_\d+","");
+            container.ContainerNode.Name = defaultName + "_ID_" + id;
+            container.ContainerNode.SetUserPropInt("babylonjs_ContainerID",id);
+           
         }
 
         public static IINode BabylonAnimationHelper()
