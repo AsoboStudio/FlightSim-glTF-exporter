@@ -346,6 +346,7 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.TextBox nameTextBox;
         private System.Windows.Forms.Button removeNodeButton;
+        private System.Windows.Forms.Button preDefName_Button;
         private System.Windows.Forms.Button calculateTimeRangeBtn;
     }
 }

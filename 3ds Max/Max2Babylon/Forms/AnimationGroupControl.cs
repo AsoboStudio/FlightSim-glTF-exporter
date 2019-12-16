@@ -73,11 +73,11 @@ namespace Max2Babylon
                 startTextBox.Text = "";
                 endTextBox.Text = "";
 
-                MaxNodeTree?.BeginUpdate();
-                MaxNodeTree?.QueueSetNodes(null, false);
+                MaxNodeTree.BeginUpdate();
+                MaxNodeTree.QueueSetNodes(null, false);
                 List<uint> handles;
-                MaxNodeTree?.ApplyQueuedChanges(out handles, false);
-                MaxNodeTree?.EndUpdate();
+                MaxNodeTree.ApplyQueuedChanges(out handles, false);
+                MaxNodeTree.EndUpdate();
             }
         }
         
@@ -263,5 +263,6 @@ namespace Max2Babylon
 
             endTextBox.Text = Tools.CalculateEndFrameFromAnimationGroupNodes(currentInfo).ToString();
         }
+
     }
 }
