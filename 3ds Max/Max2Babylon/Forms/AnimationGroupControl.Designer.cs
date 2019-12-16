@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.Panel nameFieldPanel;
             System.Windows.Forms.Panel optionsButtonsPanel;
             System.Windows.Forms.Panel nodeButtonsPanel;
@@ -47,6 +48,7 @@
             this.startLabel = new System.Windows.Forms.Label();
             this.optionsGroupBox = new System.Windows.Forms.GroupBox();
             this.nodesGroupBox = new System.Windows.Forms.GroupBox();
+            this.MaxNodeTree = new Max2Babylon.MaxNodeTreeView();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             nameFieldPanel = new System.Windows.Forms.Panel();
             optionsButtonsPanel = new System.Windows.Forms.Panel();
@@ -60,6 +62,7 @@
             startEndPanel.SuspendLayout();
             warningLabelPanel.SuspendLayout();
             this.optionsGroupBox.SuspendLayout();
+            this.nodesGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -83,7 +86,7 @@
             this.nameTextBox.Location = new System.Drawing.Point(39, 3);
             this.nameTextBox.MinimumSize = new System.Drawing.Size(20, 20);
             this.nameTextBox.Name = "nameTextBox";
-            this.nameTextBox.Size = new System.Drawing.Size(142, 20);
+            this.nameTextBox.Size = new System.Drawing.Size(105, 20);
             this.nameTextBox.TabIndex = 0;
             this.nameTextBox.WordWrap = false;
             this.nameTextBox.TextChanged += new System.EventHandler(this.nameTextBox_TextChanged);
@@ -274,6 +277,7 @@
             // 
             this.nodesGroupBox.AutoSize = true;
             this.nodesGroupBox.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.nodesGroupBox.Controls.Add(this.MaxNodeTree);
             this.nodesGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.nodesGroupBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.nodesGroupBox.Location = new System.Drawing.Point(0, 0);
@@ -282,6 +286,31 @@
             this.nodesGroupBox.TabIndex = 0;
             this.nodesGroupBox.TabStop = false;
             this.nodesGroupBox.Text = "Animation Nodes";
+            // 
+            // MaxNodeTree
+            // 
+            this.MaxNodeTree.AllowDrop = true;
+            this.MaxNodeTree.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MaxNodeTree.DummyAddedBackColor = System.Drawing.Color.PaleGreen;
+            this.MaxNodeTree.DummyAddedForeColor = System.Drawing.SystemColors.GrayText;
+            this.MaxNodeTree.DummyDefaultBackColor = System.Drawing.SystemColors.Control;
+            this.MaxNodeTree.DummyDefaultForeColor = System.Drawing.SystemColors.GrayText;
+            this.MaxNodeTree.DummyRemovedBackColor = System.Drawing.Color.IndianRed;
+            this.MaxNodeTree.DummyRemovedForeColor = System.Drawing.SystemColors.ControlText;
+            this.MaxNodeTree.DummyUpgradedBackColor = System.Drawing.Color.PaleGreen;
+            this.MaxNodeTree.DummyUpgradedForeColor = System.Drawing.SystemColors.ControlText;
+            this.MaxNodeTree.Location = new System.Drawing.Point(3, 16);
+            this.MaxNodeTree.Name = "MaxNodeTree";
+            this.MaxNodeTree.NodeAddedBackColor = System.Drawing.Color.PaleGreen;
+            this.MaxNodeTree.NodeAddedForeColor = System.Drawing.SystemColors.ControlText;
+            this.MaxNodeTree.NodeDefaultBackColor = System.Drawing.SystemColors.Window;
+            this.MaxNodeTree.NodeDefaultForeColor = System.Drawing.SystemColors.ControlText;
+            this.MaxNodeTree.NodeDowngradedBackColor = System.Drawing.Color.PaleGreen;
+            this.MaxNodeTree.NodeDowngradedForeColor = System.Drawing.SystemColors.GrayText;
+            this.MaxNodeTree.NodeRemovedBackColor = System.Drawing.Color.IndianRed;
+            this.MaxNodeTree.NodeRemovedForeColor = System.Drawing.SystemColors.ControlText;
+            this.MaxNodeTree.Size = new System.Drawing.Size(475, 463);
+            this.MaxNodeTree.TabIndex = 7;
             // 
             // splitContainer1
             // 
@@ -320,6 +349,7 @@
             warningLabelPanel.ResumeLayout(false);
             this.optionsGroupBox.ResumeLayout(false);
             this.optionsGroupBox.PerformLayout();
+            this.nodesGroupBox.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);
@@ -346,7 +376,6 @@
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.TextBox nameTextBox;
         private System.Windows.Forms.Button removeNodeButton;
-        private System.Windows.Forms.Button preDefName_Button;
         private System.Windows.Forms.Button calculateTimeRangeBtn;
     }
 }
