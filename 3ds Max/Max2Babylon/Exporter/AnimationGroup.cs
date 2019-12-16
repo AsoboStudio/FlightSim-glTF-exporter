@@ -599,15 +599,14 @@ namespace Max2Babylon
             int containerID = 1;
             container.ContainerNode.GetUserPropInt("babylonjs_ContainerID", ref containerID);
 
-            //the first istance of the multiples containers, the one without _ID_*
-            //mContainer ->referenceBrotherContainer
-            //mContainer_ID_2
             int idIndex = container.ContainerNode.Name.IndexOf("_ID_");
-            if(idIndex<0) return;
-            string refBrotherName = container.ContainerNode.Name.Substring(0,idIndex);
-            IINode refBrotherContainerObject = Loader.Core.GetINodeByName(refBrotherName);
-            //if there is no brother, there is nothing to resolve
-            if(refBrotherContainerObject==null) return;
+            string firstContainer = container.ContainerNode.Name.Substring(0,idIndex);
+            IINode firstContainerObject = Loader.Core.GetINodeByName(firstContainer+ "_ID_1");
+            if (firstContainerObject == null)
+            {
+                MessageBox.Show("ERROR resolve ID with FlightSim/BabylonUtilities/UpdateContainerID");
+                return;
+            }
 
 
             //manage multiple containers inherithed from the same source
@@ -622,12 +621,16 @@ namespace Max2Babylon
                 Guid newGuid = n.GetGuid();
                 helperPropBuffer = helperPropBuffer.Replace(oldGuid, newGuid.ToString());
 
-                if (containerID > 1 && !n.Name.EndsWith("_ID_" +containerID))
+                if (!n.Name.EndsWith("_ID_" +containerID))
                 {
                     string originalName = n.Name;
                     n.Name = $"{n.Name}_ID_{containerID}";
-                    IINode source = refBrotherContainerObject.FindChildNode(originalName);
-                    IMtl mat = source.Mtl;
+                    IINode source = firstContainerObject.FindChildNode(originalName);
+                    if (source == null)
+                    {
+                        source = firstContainerObject.FindChildNode(originalName + "_ID_1");
+                    }
+                    IMtl mat = source?.Mtl;
                     if (mat != null)
                     {
                         n.Mtl = mat;
@@ -653,24 +656,21 @@ namespace Max2Babylon
                 container.BabylonContainerHelper().GetUserPropString(s_AnimationListPropertyName, ref animationListStr);
                 string[] newAnimationGroupGuid = animationListStr.Split(AnimationGroup.s_PropertySeparator);
                 
-                if (containerID > 1)
+                foreach (string guidStr in newAnimationGroupGuid)
                 {
-                    foreach (string guidStr in newAnimationGroupGuid)
+                    string propertiesString = string.Empty;
+                    if (!container.BabylonContainerHelper().GetUserPropString(guidStr, ref propertiesString))
+                        return;
+
+                    string[] properties = propertiesString.Split(AnimationGroup.s_PropertySeparator);
+                    if (properties.Length < 4)
+                        throw new Exception("Invalid number of properties, can't deserialize.");
+
+                    string name = properties[0];
+                    if (!string.IsNullOrEmpty(name) && !name.EndsWith("_ID_" + containerID))
                     {
-                        string propertiesString = string.Empty;
-                        if (!container.BabylonContainerHelper().GetUserPropString(guidStr, ref propertiesString))
-                            return;
-
-                        string[] properties = propertiesString.Split(AnimationGroup.s_PropertySeparator);
-                        if (properties.Length < 4)
-                            throw new Exception("Invalid number of properties, can't deserialize.");
-
-                        string name = properties[0];
-                        if (!string.IsNullOrEmpty(name) && !name.EndsWith("_ID_" + containerID))
-                        {
-                            propertiesString = propertiesString.Replace(name, name + "_ID_" + containerID);
-                            container.BabylonContainerHelper().SetUserPropString(guidStr, propertiesString);
-                        }
+                        propertiesString = propertiesString.Replace(name, name + "_ID_" + containerID);
+                        container.BabylonContainerHelper().SetUserPropString(guidStr, propertiesString);
                     }
                 }
             }
