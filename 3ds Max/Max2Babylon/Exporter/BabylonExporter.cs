@@ -225,6 +225,7 @@ namespace Max2Babylon
 
         public void Export(ExportParameters exportParameters)
         {
+            ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Unavailable""");
             var watch = new Stopwatch();
             watch.Start();
 
@@ -282,6 +283,7 @@ namespace Max2Babylon
             {
                 RaiseError("Quality is not a valid number. It should be an integer between 0 and 100.");
                 RaiseError("This parameter sets the quality of jpg compression.");
+                ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Available""");
                 return;
             }
 
@@ -317,6 +319,7 @@ namespace Max2Babylon
             {
                 RaiseError("Exportation stopped: Output folder does not exist");
                 ReportProgressChanged(100);
+                ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Available""");
                 return;
             }
             Directory.CreateDirectory(tempOutputDirectory);
@@ -859,6 +862,7 @@ namespace Max2Babylon
                     Tools.RemoveFlattenModification();
                 }
             }
+            ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Available""");
         }
 
         private void moveFileToOutputDirectory(string sourceFilePath, string targetFilePath, ExportParameters exportParameters)

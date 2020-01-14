@@ -495,6 +495,7 @@ namespace Max2Babylon
             {
                 progressBar.Value = 0;
                 success = false;
+                ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Available""");
             }
             catch (Exception ex)
             {
@@ -507,6 +508,7 @@ namespace Max2Babylon
 
                 progressBar.Value = 0;
                 success = false;
+                ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = Available");
             }
 
             butCancel.Enabled = false;
