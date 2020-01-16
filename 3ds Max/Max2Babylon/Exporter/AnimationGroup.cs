@@ -593,15 +593,15 @@ namespace Max2Babylon
             string helperPropBuffer = string.Empty;
             container.BabylonContainerHelper().GetUserPropBuffer(ref helperPropBuffer);
 
-            List<IINode> containerHierarchy = new List<IINode>() { container.ContainerNode };
+            List<IINode> containerHierarchy = new List<IINode>() {};
             containerHierarchy.AddRange(container.ContainerNode.ContainerNodeTree(false));
 
             int containerID = 1;
             container.ContainerNode.GetUserPropInt("babylonjs_ContainerID", ref containerID);
 
-            int idIndex = container.ContainerNode.Name.IndexOf("_ID_");
+            int idIndex = container.ContainerNode.Name.LastIndexOf("_");
             string firstContainer = container.ContainerNode.Name.Substring(0,idIndex);
-            IINode firstContainerObject = Loader.Core.GetINodeByName(firstContainer+ "_ID_1");
+            IINode firstContainerObject = Loader.Core.GetINodeByName(firstContainer+ "_1");
             if (firstContainerObject == null)
             {
                 MessageBox.Show("ERROR resolve ID with FlightSim/BabylonUtilities/UpdateContainerID");
@@ -613,7 +613,6 @@ namespace Max2Babylon
             foreach (IINode n in containerHierarchy)
             {
                 if (n.IsBabylonContainerHelper()) continue;
-
                 //change the guid of the node
                 //replace the guid in the babylon helper
                 string oldGuid = n.GetStringProperty("babylonjs_GUID",Guid.NewGuid().ToString());
@@ -621,21 +620,21 @@ namespace Max2Babylon
                 Guid newGuid = n.GetGuid();
                 helperPropBuffer = helperPropBuffer.Replace(oldGuid, newGuid.ToString());
 
-                if (!n.Name.EndsWith("_ID_" +containerID))
-                {
+                //if (!n.Name.EndsWith("_" +containerID))
+                //{
                     string originalName = n.Name;
-                    n.Name = $"{n.Name}_ID_{containerID}";
+                    n.Name = $"{n.Name}_{containerID}";
                     IINode source = firstContainerObject.FindChildNode(originalName);
                     if (source == null)
                     {
-                        source = firstContainerObject.FindChildNode(originalName + "_ID_1");
+                        source = firstContainerObject.FindChildNode(originalName + "_1");
                     }
                     IMtl mat = source?.Mtl;
                     if (mat != null)
                     {
                         n.Mtl = mat;
                     }
-                }
+                //}
             }
 
             //replace animationList guid to have distinct list of AnimationGroup for each container
@@ -667,9 +666,9 @@ namespace Max2Babylon
                         throw new Exception("Invalid number of properties, can't deserialize.");
 
                     string name = properties[0];
-                    if (!string.IsNullOrEmpty(name) && !name.EndsWith("_ID_" + containerID))
+                    if (!string.IsNullOrEmpty(name) && !name.EndsWith("_" + containerID))
                     {
-                        propertiesString = propertiesString.Replace(name, name + "_ID_" + containerID);
+                        propertiesString = propertiesString.Replace(name, name + "_" + containerID);
                         container.BabylonContainerHelper().SetUserPropString(guidStr, propertiesString);
                     }
                 }

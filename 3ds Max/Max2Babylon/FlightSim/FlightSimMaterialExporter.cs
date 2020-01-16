@@ -75,6 +75,13 @@ namespace Max2Babylon
     }
 
     [DataContract]
+    class GLTFExtensionAsoboMaterialCockpitOccluder : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_cockpit_occluder";
+        [DataMember(EmitDefaultValue = true)] public bool enabled = true;
+    }
+
+    [DataContract]
     class GLTFExtensionAsoboMaterialUVOptions : GLTFProperty
     {
         public const string SerializedName = "ASOBO_material_UV_options";
@@ -287,7 +294,8 @@ namespace Max2Babylon
             SSS,
             Invisible,
             FakeTerrain,
-            FresnelFade
+            FresnelFade,
+            CockpitOccluder
         }
 
         readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x5ac74889, 0x27e705cd);
@@ -530,6 +538,8 @@ namespace Max2Babylon
             GLTFExtensionAsoboMaterialFakeTerrain fakeTerrainExtensionObject = null;
             GLTFExtensionAsoboMaterialInvisible invisibleExtensionObject = null;
             GLTFExtensionAsoboCollisionObject collisionExtensionObject = null;
+            GLTFExtensionAsoboMaterialCockpitOccluder cockpitOccluderExtensionObject = null;
+
             GLTFExtensions materialExtensions = new GLTFExtensions();
             GLTFExtensions materialExtras = new GLTFExtensions();
 
@@ -604,6 +614,10 @@ namespace Max2Babylon
                                     break;
                                 case 14:
                                     materialType = MaterialType.FresnelFade;
+                                    break;
+                                case 15:
+                                    materialType = MaterialType.CockpitOccluder;
+                                    cockpitOccluderExtensionObject = new GLTFExtensionAsoboMaterialCockpitOccluder();
                                     break;
                                 default:
                                     materialType = MaterialType.Standard;
@@ -692,6 +706,30 @@ namespace Max2Babylon
                                 decalExtensionObject.SetOcclusionBlendFactor(float_out);
                                 break;
                             }
+                    }
+                }
+            }
+            #endregion
+
+            #region WindShield
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "WETNESSAOTEX":
+                        {
+                            wetnessAOTexPath = GetImagePath(paramDef, property, param_t, "WETNESSAOTEX");
+                            break;
+                        }
                     }
                 }
             }
@@ -1494,9 +1532,9 @@ namespace Max2Babylon
                 }
             }
 
-            // Anisotropic map extension, only if we have a wetnessAO map (sampler name in engine) assigned and an HAIR or ANISOTROPIC material
+            // Anisotropic map extension, only if we have a wetnessAO map (sampler name in engine) assigned and an HAIR or ANISOTROPIC or WINDSHIELD material
             GLTFExtensionAsoboAnisotropic anisotropicExtensionObject = null;
-            if( !string.IsNullOrWhiteSpace(wetnessAOTexPath) && (materialType == MaterialType.Anisotropic || materialType == MaterialType.Hair))
+            if( !string.IsNullOrWhiteSpace(wetnessAOTexPath) && (materialType == MaterialType.Anisotropic || materialType == MaterialType.Hair || materialType == MaterialType.Windshield))
             {
                 anisotropicExtensionObject = new GLTFExtensionAsoboAnisotropic();
 
@@ -1669,6 +1707,7 @@ namespace Max2Babylon
                 }
             }
 
+
             #endregion
 
             #region Post-processing
@@ -1712,6 +1751,11 @@ namespace Max2Babylon
 
             if(UVOptionsExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialUVOptions.SerializedName, UVOptionsExtensionObject);
+
+            if (cockpitOccluderExtensionObject != null)
+            {
+                materialExtensions.Add(GLTFExtensionAsoboMaterialCockpitOccluder.SerializedName, cockpitOccluderExtensionObject);
+            }
 
             if (materialExtensions.Count > 0)
             {

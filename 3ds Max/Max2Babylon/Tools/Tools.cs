@@ -1033,7 +1033,7 @@ namespace Max2Babylon
             {
                 if (container.ContainerNode.Handle == iContainerObject.ContainerNode.Handle) continue;
                 //string compareGuid = iContainerObject.ContainerNode.GetStringProperty("babylonjs_GUID",Guid.NewGuid().ToString());
-                string defaultName = Regex.Replace(iContainerObject.ContainerNode.Name, @"_ID_\d+","");
+                string defaultName = Regex.Replace(iContainerObject.ContainerNode.Name, @"_\d+","");
                 if (defaultName == container.ContainerNode.Name)
                 {
                     int containerID = 1;
@@ -1049,8 +1049,8 @@ namespace Max2Babylon
         {
             guids = new Dictionary<Guid, IAnimatable>();
             int id = container.GetNextAvailableContainerID();
-            string defaultName = Regex.Replace(container.ContainerNode.Name, @"_ID_\d+","");
-            container.ContainerNode.Name = defaultName + "_ID_" + id;
+            string defaultName = Regex.Replace(container.ContainerNode.Name, @"_\d+","");
+            container.ContainerNode.Name = defaultName + "_" + id;
             container.ContainerNode.SetUserPropInt("babylonjs_ContainerID",id);
            
         }
