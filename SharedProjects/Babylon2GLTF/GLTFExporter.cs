@@ -596,7 +596,8 @@ namespace Babylon2GLTF
             // Node
             gltfNode = new GLTFNode
             {
-                name = GetUniqueNodeName(babylonNode.name),
+                //GetUniqueNodeName(babylonNode.name))
+                name = babylonNode.name,
                 index = gltf.NodesList.Count
             };
 

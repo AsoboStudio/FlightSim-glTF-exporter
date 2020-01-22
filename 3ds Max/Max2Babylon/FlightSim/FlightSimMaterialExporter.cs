@@ -279,6 +279,81 @@ namespace Max2Babylon
 
     public class FlightSimMaterialExporter : IMaxGLTFMaterialExporter
     {
+        public static void ResolveRuntimeMaterials(ref IMtl toResolve, int containerID)
+        {
+            //to do adjust this
+            if (toResolve.IsMultiMtl)
+            {
+                for (int i = 0; i < toResolve.NumSubMtls; i++)
+                {
+                    IMtl childMat = toResolve.GetSubMtl(i);
+                    string originalChildMatName = childMat.Name; 
+                    if (FlightSimMaterialExporter.HasRuntimeAccess(childMat))
+                    {
+                        childMat.Name = $"{originalChildMatName}_{containerID}";
+                    }
+                }
+            }
+            else 
+            {
+                string originalChildMatName = toResolve.Name; 
+                if (FlightSimMaterialExporter.HasRuntimeAccess(toResolve))
+                {
+                    toResolve.Name = $"{originalChildMatName}_{containerID}";
+                }
+            }
+        }
+
+        public static bool HasFlightSimMaterials(IMtl mat)
+        {
+            if (mat.IsMultiMtl)
+            {
+                for (int i = 0; i < mat.NumSubMtls; i++)
+                {
+                    IMtl childMat = mat.GetSubMtl(i);
+                    if (class_ID.Equals(childMat.ClassID))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else if (class_ID.Equals(mat.ClassID))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool HasRuntimeAccess(IMtl mat)
+        {
+            if (mat.IsMultiMtl)
+            {
+                for (int i = 0; i < mat.NumSubMtls; i++)
+                {
+                    IMtl childMat = mat.GetSubMtl(i);
+                    if (class_ID.Equals(childMat.ClassID))
+                    {
+                        int p =Tools.GetMaterialProperty(childMat, "runtimeAccess");
+                        if (Convert.ToBoolean(p))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            else if (class_ID.Equals(mat.ClassID))
+            { 
+                int p =Tools.GetMaterialProperty(mat, "runtimeAccess");
+                if (Convert.ToBoolean(p))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
         enum MaterialType
         {
             Standard,
@@ -298,7 +373,7 @@ namespace Max2Babylon
             CockpitOccluder
         }
 
-        readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x5ac74889, 0x27e705cd);
+        static readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x5ac74889, 0x27e705cd);
 
         ClassIDWrapper IMaxMaterialExporter.MaterialClassID => class_ID;
 
@@ -2375,5 +2450,9 @@ namespace Max2Babylon
         }
 
         #endregion
+
+     
+        
     }
+    
 }

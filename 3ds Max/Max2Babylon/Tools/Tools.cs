@@ -1718,6 +1718,27 @@ namespace Max2Babylon
             }
         }
 
+        public static int GetMaterialProperty(IMtl mat, string propName)
+        {
+            for (int j = 0; j < mat.NumParamBlocks; j++)
+            {
+                IIParamBlock2 pBlock = mat.GetParamBlock(j);
+
+                for (short k = 0; k < pBlock.NumParams; k++)
+                {
+                    IParamDef p =  pBlock.GetParamDefByIndex(Convert.ToUInt16(k));
+                    if (p.IntName == propName)
+                    {
+                        int v = 0;
+                        pBlock.GetValue(k, Loader.Core.Time, ref v, Tools.Forever, 0);
+                        return v;
+                    }
+                }
+            }
+
+            return 0;
+        }
+
 
 #endregion
 
@@ -1742,3 +1763,4 @@ public static IEnumerable<T> ITabToIEnumerable<T>(ITab<T> tab)
         
     }
 }
+

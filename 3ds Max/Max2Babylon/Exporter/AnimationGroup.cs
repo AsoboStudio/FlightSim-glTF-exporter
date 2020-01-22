@@ -587,9 +587,14 @@ namespace Max2Babylon
             }
         }
 
-        
         private static void ResolveMultipleInheritedContainer(IIContainerObject container)
         {
+            int b = 0;
+            if (container.ContainerNode.GetUserPropBool("flightsim_resolved", ref b))
+            {
+                return;
+            }
+
             string helperPropBuffer = string.Empty;
             container.BabylonContainerHelper().GetUserPropBuffer(ref helperPropBuffer);
 
@@ -620,21 +625,28 @@ namespace Max2Babylon
                 Guid newGuid = n.GetGuid();
                 helperPropBuffer = helperPropBuffer.Replace(oldGuid, newGuid.ToString());
 
-                //if (!n.Name.EndsWith("_" +containerID))
-                //{
-                    string originalName = n.Name;
-                    n.Name = $"{n.Name}_{containerID}";
-                    IINode source = firstContainerObject.FindChildNode(originalName);
-                    if (source == null)
-                    {
-                        source = firstContainerObject.FindChildNode(originalName + "_1");
-                    }
+                string originalName = n.Name;
+                n.Name = $"{n.Name}_{containerID}";
+                IINode source = firstContainerObject.FindChildNode(originalName);
+                if (source == null)
+                {
+                    source = firstContainerObject.FindChildNode(originalName + "_1");
                     IMtl mat = source?.Mtl;
-                    if (mat != null)
+                    if (mat != null )
                     {
+                        //if (FlightSimMaterialExporter.HasFlightSimMaterials(n.Mtl) && FlightSimMaterialExporter.HasRuntimeAccess(n.Mtl))
+                        //{
+                        //    IMtl toResolve = n.Mtl;
+                        //    FlightSimMaterialExporter.ResolveRuntimeMaterials(ref toResolve, containerID);
+                        //}
+                        //else
+                        //{
+                           
+                        //}
                         n.Mtl = mat;
                     }
-                //}
+                }
+                
             }
 
             //replace animationList guid to have distinct list of AnimationGroup for each container
@@ -666,13 +678,14 @@ namespace Max2Babylon
                         throw new Exception("Invalid number of properties, can't deserialize.");
 
                     string name = properties[0];
-                    if (!string.IsNullOrEmpty(name) && !name.EndsWith("_" + containerID))
+                    if (!string.IsNullOrEmpty(name))
                     {
                         propertiesString = propertiesString.Replace(name, name + "_" + containerID);
                         container.BabylonContainerHelper().SetUserPropString(guidStr, propertiesString);
                     }
                 }
             }
+            container.ContainerNode.SetUserPropBool("flightsim_resolved", true);
         }
 
 
