@@ -14,7 +14,7 @@ namespace Max2Babylon
 
         private void butOK_Click(object sender, EventArgs e)
         {
-            Tools.UpdateVector3Control(gravityControl, Loader.Core.RootNode, "babylonjs_gravity");
+            //Tools.UpdateVector3Control(gravityControl, Loader.Core.RootNode, "babylonjs_gravity");
             Tools.UpdateCheckBox(chkQuaternions, Loader.Core.RootNode, "babylonjs_exportquaternions");
             Tools.UpdateCheckBox(chkAnimations, Loader.Core.RootNode, "babylonjs_donotoptimizeanimations");
             
@@ -38,7 +38,7 @@ namespace Max2Babylon
 
         private void ScenePropertiesForm_Load(object sender, EventArgs e)
         {
-            Tools.PrepareVector3Control(gravityControl, Loader.Core.RootNode, "babylonjs_gravity", 0, -0.9f);
+            //Tools.PrepareVector3Control(gravityControl, Loader.Core.RootNode, "babylonjs_gravity", 0, -0.9f);
             Tools.PrepareCheckBox(chkQuaternions, Loader.Core.RootNode, "babylonjs_exportquaternions", 1);
             Tools.PrepareCheckBox(chkAnimations, Loader.Core.RootNode, "babylonjs_donotoptimizeanimations", 1);
 
