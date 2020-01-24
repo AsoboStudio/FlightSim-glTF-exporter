@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -8,6 +10,7 @@ using System.Text;
 using System.Windows.Forms;
 using Autodesk.Max;
 using Autodesk.Max.Plugins;
+using ManagedServices;
 using Newtonsoft.Json;
 using Utilities;
 
@@ -625,28 +628,23 @@ namespace Max2Babylon
                 Guid newGuid = n.GetGuid();
                 helperPropBuffer = helperPropBuffer.Replace(oldGuid, newGuid.ToString());
 
-                string originalName = n.Name;
                 n.Name = $"{n.Name}_{containerID}";
-                IINode source = firstContainerObject.FindChildNode(originalName);
-                if (source == null)
+                if (n.Mtl!=null && FlightSimMaterialExporter.HasFlightSimMaterials(n.Mtl) && FlightSimMaterialExporter.HasRuntimeAccess(n.Mtl))
                 {
-                    source = firstContainerObject.FindChildNode(originalName + "_1");
-                    IMtl mat = source?.Mtl;
-                    if (mat != null )
+                    if (n.Mtl.IsMultiMtl)
                     {
-                        //if (FlightSimMaterialExporter.HasFlightSimMaterials(n.Mtl) && FlightSimMaterialExporter.HasRuntimeAccess(n.Mtl))
-                        //{
-                        //    IMtl toResolve = n.Mtl;
-                        //    FlightSimMaterialExporter.ResolveRuntimeMaterials(ref toResolve, containerID);
-                        //}
-                        //else
-                        //{
-                           
-                        //}
-                        n.Mtl = mat;
+                        throw new Exception($@"Material {n.Mtl.Name} has a property ""Unique In Container"" enabled, cannot be child of a multi material");
+                    }
+                    else
+                    {
+                        string cmd = $"mNode = maxOps.getNodeByHandle {n.Handle} \r\n" +
+                                  $"newMat = copy mNode.material \r\n" +
+                                  $"newMat.name = \"{n.Mtl.Name}_{containerID}\" \r\n" +
+                                  $"mNode.material = newMat";
+
+                        MaxscriptSDK.ExecuteMaxscriptCommand(cmd);
                     }
                 }
-                
             }
 
             //replace animationList guid to have distinct list of AnimationGroup for each container

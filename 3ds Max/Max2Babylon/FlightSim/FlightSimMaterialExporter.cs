@@ -279,30 +279,6 @@ namespace Max2Babylon
 
     public class FlightSimMaterialExporter : IMaxGLTFMaterialExporter
     {
-        public static void ResolveRuntimeMaterials(ref IMtl toResolve, int containerID)
-        {
-            //to do adjust this
-            if (toResolve.IsMultiMtl)
-            {
-                for (int i = 0; i < toResolve.NumSubMtls; i++)
-                {
-                    IMtl childMat = toResolve.GetSubMtl(i);
-                    string originalChildMatName = childMat.Name; 
-                    if (FlightSimMaterialExporter.HasRuntimeAccess(childMat))
-                    {
-                        childMat.Name = $"{originalChildMatName}_{containerID}";
-                    }
-                }
-            }
-            else 
-            {
-                string originalChildMatName = toResolve.Name; 
-                if (FlightSimMaterialExporter.HasRuntimeAccess(toResolve))
-                {
-                    toResolve.Name = $"{originalChildMatName}_{containerID}";
-                }
-            }
-        }
 
         public static bool HasFlightSimMaterials(IMtl mat)
         {
