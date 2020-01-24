@@ -310,7 +310,7 @@ namespace Max2Babylon
                     IMtl childMat = mat.GetSubMtl(i);
                     if (class_ID.Equals(childMat.ClassID))
                     {
-                        int p =Tools.GetMaterialProperty(childMat, "runtimeAccess");
+                        int p =Tools.GetMaterialProperty(childMat, "uniqueInContainer");
                         if (Convert.ToBoolean(p))
                         {
                             return true;
@@ -320,7 +320,7 @@ namespace Max2Babylon
             }
             else if (class_ID.Equals(mat.ClassID))
             { 
-                int p =Tools.GetMaterialProperty(mat, "runtimeAccess");
+                int p =Tools.GetMaterialProperty(mat, "uniqueInContainer");
                 if (Convert.ToBoolean(p))
                 {
                     return true;
