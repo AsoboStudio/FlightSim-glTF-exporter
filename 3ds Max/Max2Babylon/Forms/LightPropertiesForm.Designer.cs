@@ -1,4 +1,5 @@
-﻿using Max2Babylon.FlightSimExtension;
+﻿using System.Linq;
+using Max2Babylon.FlightSimExtension;
 
 namespace Max2Babylon
 {
@@ -405,7 +406,7 @@ namespace Max2Babylon
             // 
             this.flightSimLightType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.flightSimLightType.FormattingEnabled = true;
-            this.flightSimLightType.Items.AddRange( FlightSimLightExtension.MacroLightType );
+            this.flightSimLightType.Items.AddRange( FlightSimLightExtension.MacroLight.Keys.ToArray() );
             this.flightSimLightType.Location = new System.Drawing.Point(18, 44);
             this.flightSimLightType.Name = "flightSimLightType";
             this.flightSimLightType.Size = new System.Drawing.Size(289, 21);

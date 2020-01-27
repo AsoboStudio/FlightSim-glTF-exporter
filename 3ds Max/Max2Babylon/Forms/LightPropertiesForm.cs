@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Max;
 using Max2Babylon.FlightSimExtension;
@@ -39,7 +40,7 @@ namespace Max2Babylon
             Tools.PrepareNumericUpDown(nupBlurBoxOffset, lights, "babylonjs_shadows_blurBoxOffset", 1);
             Tools.PrepareComboBox(cbCameraType, lights[0], "babylonjs_shadows_type", "Blurred ESM");
 
-            Tools.PrepareComboBox(flightSimLightType,lights[0],"flightsim_macro_light_type",FlightSimLightExtension.MacroLightType[0]);
+            Tools.PrepareComboBox(flightSimLightType,lights[0],"flightsim_macro_light_type",FlightSimLightExtension.MacroLight.Keys.ElementAt(0));
 
             Tools.PrepareTextBox(tagInput, lights, "babylonjs_tag");
         }

@@ -23,15 +23,17 @@ namespace Max2Babylon.FlightSimExtension
 
     class FlightSimLightExtension : IBabylonExtensionExporter
     {
-        readonly ClassIDWrapper MacroLightClassID = new ClassIDWrapper(0x3eb36fbb, 0x36275949);
+        readonly ClassIDWrapper MacroLightOmniClassID = new ClassIDWrapper(0x3eb36fbb, 0x36275949);
+        readonly ClassIDWrapper MacroLightSpotClassID = new ClassIDWrapper(0x451a77a6, 0x232b0194);
 
-        public static string[] MacroLightType =
+        public static Dictionary<string, string> MacroLight = new Dictionary<string, string>()
         {
-            "Faro 1",
-            "Poisson Sampling",
-            "ESM",
-            "Blurred ESM"
-        }; 
+            {"White light spot (car front)", "white_light_spot"},
+            {"Red light spot (car rear)", "red_light_spot"},
+            {"Orange beacon/flashing lights (security cars)", "orange_beacon"},
+            {"Red beacon / flashing lights (Fire trucks)", "red_beacon"},
+            {"Blue beacon / flashing lights (Fire trucks)", "blue_beacon"}
+        };
         #region Implementation of IBabylonExtensionExporter
 
         public string GetGLTFExtensionName()
@@ -55,9 +57,10 @@ namespace Max2Babylon.FlightSimExtension
                 Guid.TryParse(babylonLight.id, out guid);
                 IINode maxNode = Tools.GetINodeByGuid(guid);
                 IObject obj = maxNode.ObjectRef;
-                if (new ClassIDWrapper(obj.ClassID).Equals(MacroLightClassID))
+                if (new ClassIDWrapper(obj.ClassID).Equals(MacroLightOmniClassID) || new ClassIDWrapper(obj.ClassID).Equals(MacroLightSpotClassID) )
                 {
-                    string macroLightType = maxNode.GetStringProperty("flightsim_macro_light_type", FlightSimLightExtension.MacroLightType[0]);
+                    string macroLightValue = maxNode.GetStringProperty("flightsim_macro_light_type", FlightSimLightExtension.MacroLight.Keys.ElementAt(0));
+                    string macroLightType = FlightSimLightExtension.MacroLight[macroLightValue];
                     macroLightExt.macroLightType = macroLightType;
 
                     return macroLightExt;
