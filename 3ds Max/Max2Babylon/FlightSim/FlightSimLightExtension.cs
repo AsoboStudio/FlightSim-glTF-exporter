@@ -56,14 +56,17 @@ namespace Max2Babylon.FlightSimExtension
                 Guid guid = Guid.Empty;
                 Guid.TryParse(babylonLight.id, out guid);
                 IINode maxNode = Tools.GetINodeByGuid(guid);
-                IObject obj = maxNode.ObjectRef;
-                if (new ClassIDWrapper(obj.ClassID).Equals(MacroLightOmniClassID) || new ClassIDWrapper(obj.ClassID).Equals(MacroLightSpotClassID) )
-                {
-                    string macroLightValue = maxNode.GetStringProperty("flightsim_macro_light_type", FlightSimLightExtension.MacroLight.Keys.ElementAt(0));
-                    string macroLightType = FlightSimLightExtension.MacroLight[macroLightValue];
-                    macroLightExt.macroLightType = macroLightType;
+                if (maxNode != null)
+                {  
+                    IObject obj = maxNode.ObjectRef;
+                    if (new ClassIDWrapper(obj.ClassID).Equals(MacroLightOmniClassID) || new ClassIDWrapper(obj.ClassID).Equals(MacroLightSpotClassID) )
+                    {
+                        string macroLightValue = maxNode.GetStringProperty("flightsim_macro_light_type", FlightSimLightExtension.MacroLight.Keys.ElementAt(0));
+                        string macroLightType = FlightSimLightExtension.MacroLight[macroLightValue];
+                        macroLightExt.macroLightType = macroLightType;
 
-                    return macroLightExt;
+                        return macroLightExt;
+                    }
                 }
             }
             return null;
