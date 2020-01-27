@@ -1,4 +1,6 @@
-﻿namespace Max2Babylon
+﻿using Max2Babylon.FlightSimExtension;
+
+namespace Max2Babylon
 {
     partial class LightPropertiesForm
     {
@@ -39,6 +41,8 @@
             this.label5 = new System.Windows.Forms.Label();
             this.chkAutoAnimate = new System.Windows.Forms.CheckBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.tagInput = new System.Windows.Forms.TextBox();
+            this.tagLabel = new System.Windows.Forms.Label();
             this.chkNoExport = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.ckForceBackFaces = new System.Windows.Forms.CheckBox();
@@ -51,8 +55,9 @@
             this.label6 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.cbCameraType = new System.Windows.Forms.ComboBox();
-            this.tagLabel = new System.Windows.Forms.Label();
-            this.tagInput = new System.Windows.Forms.TextBox();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.flightSimLightType = new System.Windows.Forms.ComboBox();
             this.groupBox3.SuspendLayout();
             this.grpAutoAnimate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nupTo)).BeginInit();
@@ -63,6 +68,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.nupBlurBoxOffset)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupBlurScale)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupBias)).BeginInit();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // butOK
@@ -70,7 +76,7 @@
             this.butOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.butOK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butOK.Location = new System.Drawing.Point(93, 484);
+            this.butOK.Location = new System.Drawing.Point(93, 576);
             this.butOK.Name = "butOK";
             this.butOK.Size = new System.Drawing.Size(75, 23);
             this.butOK.TabIndex = 100;
@@ -83,7 +89,7 @@
             this.butCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(174, 484);
+            this.butCancel.Location = new System.Drawing.Point(174, 576);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(75, 23);
             this.butCancel.TabIndex = 101;
@@ -195,6 +201,22 @@
             this.groupBox4.TabIndex = 0;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Misc.";
+            // 
+            // tagInput
+            // 
+            this.tagInput.Location = new System.Drawing.Point(194, 25);
+            this.tagInput.Name = "tagInput";
+            this.tagInput.Size = new System.Drawing.Size(100, 20);
+            this.tagInput.TabIndex = 3;
+            // 
+            // tagLabel
+            // 
+            this.tagLabel.AutoSize = true;
+            this.tagLabel.Location = new System.Drawing.Point(159, 28);
+            this.tagLabel.Name = "tagLabel";
+            this.tagLabel.Size = new System.Drawing.Size(29, 13);
+            this.tagLabel.TabIndex = 2;
+            this.tagLabel.Text = "Tag:";
             // 
             // chkNoExport
             // 
@@ -358,21 +380,36 @@
             this.cbCameraType.TabIndex = 15;
             this.cbCameraType.SelectedIndexChanged += new System.EventHandler(this.cbCameraType_SelectedIndexChanged);
             // 
-            // tagLabel
+            // groupBox2
             // 
-            this.tagLabel.AutoSize = true;
-            this.tagLabel.Location = new System.Drawing.Point(159, 28);
-            this.tagLabel.Name = "tagLabel";
-            this.tagLabel.Size = new System.Drawing.Size(29, 13);
-            this.tagLabel.TabIndex = 2;
-            this.tagLabel.Text = "Tag:";
+            this.groupBox2.Controls.Add(this.label9);
+            this.groupBox2.Controls.Add(this.flightSimLightType);
+            this.groupBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.groupBox2.Location = new System.Drawing.Point(12, 481);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(319, 82);
+            this.groupBox2.TabIndex = 21;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "FlightSim";
             // 
-            // tagInput
+            // label9
             // 
-            this.tagInput.Location = new System.Drawing.Point(194, 25);
-            this.tagInput.Name = "tagInput";
-            this.tagInput.Size = new System.Drawing.Size(100, 20);
-            this.tagInput.TabIndex = 3;
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(15, 27);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(34, 13);
+            this.label9.TabIndex = 14;
+            this.label9.Text = "Type:";
+            // 
+            // flightSimLightType
+            // 
+            this.flightSimLightType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.flightSimLightType.FormattingEnabled = true;
+            this.flightSimLightType.Items.AddRange( FlightSimLightExtension.MacroLightType );
+            this.flightSimLightType.Location = new System.Drawing.Point(18, 44);
+            this.flightSimLightType.Name = "flightSimLightType";
+            this.flightSimLightType.Size = new System.Drawing.Size(289, 21);
+            this.flightSimLightType.TabIndex = 15;
             // 
             // LightPropertiesForm
             // 
@@ -380,7 +417,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.butCancel;
-            this.ClientSize = new System.Drawing.Size(343, 519);
+            this.ClientSize = new System.Drawing.Size(343, 611);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
@@ -406,6 +444,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.nupBlurBoxOffset)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupBlurScale)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupBias)).EndInit();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -437,5 +477,8 @@
         private System.Windows.Forms.CheckBox ckForceBackFaces;
         private System.Windows.Forms.Label tagLabel;
         private System.Windows.Forms.TextBox tagInput;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.ComboBox flightSimLightType;
     }
 }

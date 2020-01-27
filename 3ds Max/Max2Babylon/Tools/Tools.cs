@@ -1726,7 +1726,13 @@ namespace Max2Babylon
 
                 for (short k = 0; k < pBlock.NumParams; k++)
                 {
+#if MAX2015
+
+                    IParamDef p = pBlock.GetParamDef(k);
+#else
+                    
                     IParamDef p =  pBlock.GetParamDefByIndex(Convert.ToUInt16(k));
+#endif
                     if (p.IntName == propName)
                     {
                         int v = 0;
