@@ -39,14 +39,6 @@ namespace Max2Babylon
         [DataMember(EmitDefaultValue = false)] public float? occlusionBlendFactor;
     }
 
-    [DataContract]
-    class GLTFExtensionAsoboMaterialLayer : GLTFProperty
-    {
-        public const string SerializedName = "ASOBO_material_distance_field_layer";
-        [DataMember(EmitDefaultValue = false)] public float[] layerColor;
-        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo layerColorTexture;
-        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo distanceFieldLayerMaskTexture;
-    }
 
     [DataContract]
     class GLTFExtensionAsoboMaterialDrawOrder : GLTFProperty
@@ -1557,32 +1549,6 @@ namespace Max2Babylon
             
             #region Process Extension Objects
 
-            // custom layer extension, only export if we have a layer mask texture
-            GLTFExtensionAsoboMaterialLayer layerExtensionObject = null;
-            if (!string.IsNullOrWhiteSpace(layerColorMaskPath))
-            {
-                layerExtensionObject = new GLTFExtensionAsoboMaterialLayer();
-
-                layerExtensionObject.layerColor = layerColor;
-
-                image = ExportImage(layerColorMaskPath, true);
-                if (image != null)
-                {
-                    info = CreateTextureInfo(image);
-                    layerExtensionObject.distanceFieldLayerMaskTexture = info;
-                }
-
-                if (!string.IsNullOrWhiteSpace(layerColorTexPath))
-                {
-                    image = ExportImage(layerColorTexPath);
-                    if (image != null)
-                    {
-                        info = CreateTextureInfo(image);
-                        layerExtensionObject.layerColorTexture = info;
-                    }
-                }
-            }
-
             // Anisotropic map extension, only if we have a wetnessAO map (sampler name in engine) assigned and an HAIR or ANISOTROPIC or WINDSHIELD material
             GLTFExtensionAsoboAnisotropic anisotropicExtensionObject = null;
             if( !string.IsNullOrWhiteSpace(wetnessAOTexPath) && (materialType == MaterialType.Anisotropic || materialType == MaterialType.Hair || materialType == MaterialType.Windshield))
@@ -1766,9 +1732,6 @@ namespace Max2Babylon
             // add used extensions to dictionaries
             if (decalExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialGeometryDecal.SerializedName, decalExtensionObject);
-
-            if(layerExtensionObject != null)
-                materialExtensions.Add(GLTFExtensionAsoboMaterialLayer.SerializedName, layerExtensionObject);
 
             if (detailExtensionObject != null && parallaxWindowExtensionObject == null) //we add an detail extension object only if there is no parallaxWindowExtension
                 materialExtensions.Add(GLTFExtensionAsoboMaterialDetail.SerializedName, detailExtensionObject);
