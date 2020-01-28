@@ -54,6 +54,9 @@ namespace Max2Babylon
 
             Tools.UpdateTextBox(tagInput, objects, "babylonjs_tag");
             Tools.UpdateTextBox(txtASBAnimationTargetID, objects,"babylonjs_asb_anim_targetID");
+
+            Tools.UpdateNumericUpDown(lodValueNumeric, objects, "flightsim_lod_value");
+
         }
 
         private void ObjectPropertiesForm_Load(object sender, EventArgs e)
@@ -113,6 +116,7 @@ namespace Max2Babylon
             Tools.PrepareTextBox(tagInput, objects, "babylonjs_tag");
 
             Tools.PrepareTextBox(txtASBAnimationTargetID, objects,"babylonjs_asb_anim_targetID");
+            Tools.PrepareNumericUpDown(lodValueNumeric, objects, "flightsim_lod_value",70.0f);
         }
 
         private void chkAutoAnimate_CheckedChanged(object sender, EventArgs e)
