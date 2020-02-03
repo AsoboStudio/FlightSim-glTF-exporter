@@ -2,6 +2,7 @@ using Autodesk.Max;
 using GLTFExport.Entities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -279,15 +280,11 @@ namespace Max2Babylon
                 for (int i = 0; i < mat.NumSubMtls; i++)
                 {
                     IMtl childMat = mat.GetSubMtl(i);
-                    if (class_ID.Equals(childMat.ClassID))
+                    if (childMat!= null && class_ID.Equals(childMat.ClassID))
                     {
                         return true;
                     }
                 }
-            }
-            else if (class_ID.Equals(mat.ClassID))
-            {
-                return true;
             }
 
             return false;
@@ -300,13 +297,20 @@ namespace Max2Babylon
                 for (int i = 0; i < mat.NumSubMtls; i++)
                 {
                     IMtl childMat = mat.GetSubMtl(i);
-                    if (class_ID.Equals(childMat.ClassID))
+                    if (childMat!= null)
                     {
-                        int p =Tools.GetMaterialProperty(childMat, "uniqueInContainer");
-                        if (Convert.ToBoolean(p))
+                        if (class_ID.Equals(childMat.ClassID))
                         {
-                            return true;
+                            int p =Tools.GetMaterialProperty(childMat, "uniqueInContainer");
+                            if (Convert.ToBoolean(p))
+                            {
+                                return true;
+                            }
                         }
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Error");
                     }
                 }
             }
