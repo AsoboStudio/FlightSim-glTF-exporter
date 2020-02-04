@@ -308,10 +308,6 @@ namespace Max2Babylon
                             }
                         }
                     }
-                    else
-                    {
-                        Debug.WriteLine("Error");
-                    }
                 }
             }
             else if (class_ID.Equals(mat.ClassID))

@@ -55,6 +55,8 @@ namespace Max2Babylon.FlightSim
             IPoint3 s = Loader.Global.Point3.Create(0, 0, 0);
             Loader.Global.DecomposeMatrix(nodeTm,p,q,s);
 
+            q.Normalize();
+
             res[0] = q[0];
             res[1] = q[2];
             res[2] = -q[1];
