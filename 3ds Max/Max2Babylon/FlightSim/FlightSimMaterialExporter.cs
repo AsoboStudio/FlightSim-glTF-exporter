@@ -68,9 +68,9 @@ namespace Max2Babylon
     }
 
     [DataContract]
-    class GLTFExtensionAsoboMaterialCockpitOccluder : GLTFProperty
+    class GLTFExtensionAsoboMaterialEnvironmentOccluder : GLTFProperty
     {
-        public const string SerializedName = "ASOBO_material_cockpit_occluder";
+        public const string SerializedName = "ASOBO_material_environment_occluder";
         [DataMember(EmitDefaultValue = true)] public bool enabled = true;
     }
 
@@ -581,7 +581,7 @@ namespace Max2Babylon
             GLTFExtensionAsoboMaterialFakeTerrain fakeTerrainExtensionObject = null;
             GLTFExtensionAsoboMaterialInvisible invisibleExtensionObject = null;
             GLTFExtensionAsoboCollisionObject collisionExtensionObject = null;
-            GLTFExtensionAsoboMaterialCockpitOccluder cockpitOccluderExtensionObject = null;
+            GLTFExtensionAsoboMaterialEnvironmentOccluder environmentOccluderExtensionObject = null;
 
             GLTFExtensions materialExtensions = new GLTFExtensions();
             GLTFExtensions materialExtras = new GLTFExtensions();
@@ -660,7 +660,7 @@ namespace Max2Babylon
                                     break;
                                 case 15:
                                     materialType = MaterialType.CockpitOccluder;
-                                    cockpitOccluderExtensionObject = new GLTFExtensionAsoboMaterialCockpitOccluder();
+                                    environmentOccluderExtensionObject = new GLTFExtensionAsoboMaterialEnvironmentOccluder();
                                     break;
                                 default:
                                     materialType = MaterialType.Standard;
@@ -1766,9 +1766,9 @@ namespace Max2Babylon
             if(UVOptionsExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialUVOptions.SerializedName, UVOptionsExtensionObject);
 
-            if (cockpitOccluderExtensionObject != null)
+            if (environmentOccluderExtensionObject != null)
             {
-                materialExtensions.Add(GLTFExtensionAsoboMaterialCockpitOccluder.SerializedName, cockpitOccluderExtensionObject);
+                materialExtensions.Add(GLTFExtensionAsoboMaterialEnvironmentOccluder.SerializedName, environmentOccluderExtensionObject);
             }
 
             if (materialExtensions.Count > 0)
