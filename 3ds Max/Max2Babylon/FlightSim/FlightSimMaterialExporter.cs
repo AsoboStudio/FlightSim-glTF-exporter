@@ -286,6 +286,11 @@ namespace Max2Babylon
                     }
                 }
             }
+            else if (mat!= null && class_ID.Equals(mat.ClassID))
+            {
+                return true;
+            }
+            
 
             return false;
         }
