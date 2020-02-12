@@ -343,7 +343,7 @@ namespace Max2Babylon
             Invisible,
             FakeTerrain,
             FresnelFade,
-            CockpitOccluder
+            EnvironmentOccluder
         }
 
         static readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x5ac74889, 0x27e705cd);
@@ -664,7 +664,7 @@ namespace Max2Babylon
                                     materialType = MaterialType.FresnelFade;
                                     break;
                                 case 15:
-                                    materialType = MaterialType.CockpitOccluder;
+                                    materialType = MaterialType.EnvironmentOccluder;
                                     environmentOccluderExtensionObject = new GLTFExtensionAsoboMaterialEnvironmentOccluder();
                                     break;
                                 default:
