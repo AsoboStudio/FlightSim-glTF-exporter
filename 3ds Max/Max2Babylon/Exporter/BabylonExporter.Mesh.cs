@@ -835,7 +835,7 @@ namespace Max2Babylon
                     }
                 }
                 var texCoord = mesh.GetMapVertex(1, indices[facePart]);
-                vertex.UV = Loader.Global.Point2.Create(texCoord.X, -texCoord.Y);
+                vertex.UV = Loader.Global.Point2.Create(texCoord.X, 1-texCoord.Y);
             }
 
             if (hasUV2)
@@ -849,7 +849,7 @@ namespace Max2Babylon
                     }
                 }
                 var texCoord = mesh.GetMapVertex(2, indices[facePart]);
-                vertex.UV2 = Loader.Global.Point2.Create(texCoord.X, -texCoord.Y);
+                vertex.UV2 = Loader.Global.Point2.Create(texCoord.X, 1-texCoord.Y);
             }
 
             if (hasColor)
