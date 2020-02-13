@@ -150,10 +150,18 @@ namespace Max2Babylon
 #else
             var tobake = Loader.Global.NodeTab.Create();
 #endif
-            foreach (IINode iNode in hierachyRoot.NodeTree())
+            if (bakeAnimationType == BakeAnimationType.BakeSelective)
             {
-                tobake.AppendNode(iNode,false,Loader.Core.Time);
+                foreach (IINode iNode in hierachyRoot.NodeTree())
+                {
+                    if (iNode.IsMarkedAsObjectToBakeAnimation())
+                    {
+                        tobake.AppendNode(iNode,false,Loader.Core.Time);
+                    }
+                }
             }
+
+            
             if (!hierachyRoot.IsRootNode) tobake.AppendNode(hierachyRoot,false,Loader.Core.Time);
 
             Loader.Core.SelectNodeTab(tobake,true,false);
@@ -169,7 +177,7 @@ namespace Max2Babylon
             ScriptsUtilities.ExecuteMaxScriptCommand(@"
                 for obj in selection do 
                 (
-                    if obj.isAnimated == false then continue
+                    --if obj.isAnimated == false then continue
                     tag = getUserProp obj ""babylonjs_BakeAnimation""
                     if tag!=true then continue
 
