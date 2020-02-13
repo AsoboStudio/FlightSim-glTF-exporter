@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.Serialization;
 using Babylon2GLTF;
 using BabylonExport.Entities;

@@ -1,4 +1,4 @@
-﻿using FlightSimExtension;
+using FlightSimExtension;
 using Utilities;
 using GLTFExport.Entities;
 

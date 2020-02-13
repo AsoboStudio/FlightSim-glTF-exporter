@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Max2Babylon.FlightSimExtension;
 
 namespace Max2Babylon
