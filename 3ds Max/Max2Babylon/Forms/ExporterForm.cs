@@ -374,6 +374,11 @@ namespace Max2Babylon
                         layerState.Add( l,  l.IsHidden(false));
 #endif
                         l.Hide(false,false);
+                        foreach (IINode layerNode in l.LayerNodes())
+                        {
+                            layerNode.Hide(false);
+                        }
+
                     }
 
                 }
