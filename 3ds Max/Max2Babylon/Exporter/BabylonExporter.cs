@@ -156,13 +156,13 @@ namespace Max2Babylon
                 {
                     if (iNode.IsMarkedAsObjectToBakeAnimation())
                     {
-                        tobake.AppendNode(iNode,false,Loader.Core.Time);
+                        tobake.AppendNode(iNode,false,0);
                     }
                 }
             }
 
             
-            if (!hierachyRoot.IsRootNode) tobake.AppendNode(hierachyRoot,false,Loader.Core.Time);
+            if (!hierachyRoot.IsRootNode) tobake.AppendNode(hierachyRoot,false,0);
 
             Loader.Core.SelectNodeTab(tobake,true,false);
 

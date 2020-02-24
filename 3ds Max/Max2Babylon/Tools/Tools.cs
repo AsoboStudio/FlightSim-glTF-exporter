@@ -904,7 +904,7 @@ namespace Max2Babylon
 
         public static bool IsMarkedAsObjectToBakeAnimation(this IINode node)
         {
-            return node.GetBoolProperty("babylonjs_BakeAnimation");
+            return node.GetBoolProperty("babylonjs_BakeAnimation",0);
         }
 
         public static  IIContainerObject GetContainer(this IList<Guid> guids)
