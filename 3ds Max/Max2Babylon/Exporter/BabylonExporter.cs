@@ -549,7 +549,7 @@ namespace Max2Babylon
             }
 
             // Default light
-            bool addDefaultLight = rawScene.GetBoolProperty("babylonjs_addDefaultLight", 1);
+            bool addDefaultLight = false; //rawScene.GetBoolProperty("babylonjs_addDefaultLight", 0); //on FLIGHTSIM we do not use default light at all
             if (!exportParameters.pbrNoLight && addDefaultLight && babylonScene.LightsList.Count == 0)
             {
                 RaiseWarning("No light defined", 1);
