@@ -351,38 +351,37 @@ namespace Max2Babylon
             Tools.UpdateComboBoxByIndex(cmbNormalMapConvention, Loader.Core.RootNode, "flightsim_tangent_space_convention");
         }
 
+        private void ShowExportItemLayers(IList<IILayer> exportedLayers)
+        {
+            if (exportedLayers == null) return;
+
+            foreach (IILayer layer in LayerUtilities.RootLayers())
+            {
+                layer.Hide(true,true);
+            }
+
+            foreach (IILayer layer in exportedLayers)
+            {
+                List<IILayer> treeLayers = layer.LayerTree().ToList();
+                treeLayers.Add(layer);
+
+                foreach (IILayer l in treeLayers)
+                {
+                    l.Hide(false, false);
+                    foreach (IINode layerNode in l.LayerNodes())
+                    {
+                        layerNode.Hide(false);
+                    }
+                }
+            }
+        }
+
         private async Task<bool> DoExport(ExportItem exportItem, bool multiExport = false, bool clearLogs = true)
         {
             new BabylonAnimationActionItem().Close(); 
             SaveOptions();
 
-            //store layer visibility status and force visibility on
-            
-            Dictionary<IILayer, bool> layerState =  new Dictionary<IILayer, bool>();
-            if (exportItem.Layers != null)
-            {
-                foreach (IILayer layer in exportItem.Layers)
-                {
-                    List<IILayer> treeLayers = layer.LayerTree().ToList();
-                    treeLayers.Add(layer);
-
-                    foreach (IILayer l in treeLayers)
-                    {
-#if MAX2015
-                        layerState.Add( l,  l.IsHidden);
-#else
-                        layerState.Add( l,  l.IsHidden(false));
-#endif
-                        l.Hide(false,false);
-                        foreach (IINode layerNode in l.LayerNodes())
-                        {
-                            layerNode.Hide(false);
-                        }
-
-                    }
-
-                }
-            }
+            if (multiExport)  ShowExportItemLayers(exportItem.Layers);
 
             exporter = new BabylonExporter();
 
@@ -522,25 +521,6 @@ namespace Max2Babylon
             butExportAndRun.Enabled = WebServer.IsSupported;
 
             BringToFront();
-
-            //re-store layer visibility status
-            if (exportItem.Layers != null)
-            {
-                foreach (IILayer layer in exportItem.Layers)
-                {
-                    List<IILayer> treeLayers = layer.LayerTree().ToList();
-                    treeLayers.Add(layer);
-                    foreach (IILayer l in treeLayers)
-                    {
-                        bool exist;
-                        layerState.TryGetValue(l, out exist);
-                        if (exist)
-                        {
-                            l.Hide(layerState[l], false);
-                        }
-                    }
-                }
-            }
 
             return success;
         }
