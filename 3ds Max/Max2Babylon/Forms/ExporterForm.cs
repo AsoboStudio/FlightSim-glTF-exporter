@@ -261,14 +261,15 @@ namespace Max2Babylon
         }
 
         public async void butExport_Click(object sender, EventArgs e)
-        {
+        { 
+            if (chkAutoSave.Checked)
+            {
+                var forceSave = Loader.Core.FileSave;
+                BringToFront();
+            }
+            
             try
             {
-                if (chkUsePreExportProces.Checked)
-                {
-                    Loader.Core.FileHold();
-                }
-
                 await DoExport(singleExportItem);
             }
             catch{}
@@ -277,7 +278,7 @@ namespace Max2Babylon
                 if (chkUsePreExportProces.Checked && !chkApplyPreprocessToScene.Checked)
                 {
                     Loader.Core.SetQuietMode(true);
-                    Loader.Core.FileFetch();
+                    Loader.Core.LoadFromFile( Loader.Core.CurFilePath,true);
                     Loader.Core.SetQuietMode(false);
                 }
             }
@@ -642,28 +643,29 @@ namespace Max2Babylon
         {
             try
             {
-                if (chkUsePreExportProces.Checked)
+                if (chkAutoSave.Checked)
                 {
-                    Loader.Core.FileHold();
+                    var forceSave = Loader.Core.FileSave;
+                    BringToFront();
                 }
 
-            if (await DoExport(singleExportItem))
-            {
-                WebServer.SceneFilename = Path.GetFileName(txtModelPath.Text);
-                WebServer.SceneFolder = Path.GetDirectoryName(txtModelPath.Text);
+                if (await DoExport(singleExportItem))
+                {
+                    WebServer.SceneFilename = Path.GetFileName(txtModelPath.Text);
+                    WebServer.SceneFolder = Path.GetDirectoryName(txtModelPath.Text);
 
-                Process.Start(WebServer.url + WebServer.SceneFilename);
+                    Process.Start(WebServer.url + WebServer.SceneFilename);
 
-                WindowState = FormWindowState.Minimized;
+                    WindowState = FormWindowState.Minimized;
+                }
             }
-        }
             catch{}
             finally
             {
                 if (chkUsePreExportProces.Checked && !chkApplyPreprocessToScene.Checked)
                 {
                     Loader.Core.SetQuietMode(true);
-                    Loader.Core.FileFetch();
+                    Loader.Core.LoadFromFile(Loader.Core.CurFilePath,true);
                     Loader.Core.SetQuietMode(false);
                 }
             }
@@ -815,9 +817,10 @@ namespace Max2Babylon
             {
                 try
                 {
-                    if (chkUsePreExportProces.Checked)
+                    if (chkAutoSave.Checked)
                     {
-                        Loader.Core.FileHold();
+                        var forceSave = Loader.Core.FileSave;
+                        BringToFront();
                     }
                     await DoExport(exportItemList);
                 }
@@ -827,7 +830,7 @@ namespace Max2Babylon
                     if (chkUsePreExportProces.Checked && !chkApplyPreprocessToScene.Checked)
                     {
                         Loader.Core.SetQuietMode(true);
-                        Loader.Core.FileFetch();
+                        Loader.Core.LoadFromFile(Loader.Core.CurFilePath,true);
                         Loader.Core.SetQuietMode(false);
                     }
                 }

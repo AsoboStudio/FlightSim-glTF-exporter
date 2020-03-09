@@ -349,15 +349,6 @@ namespace Max2Babylon
             optimizeAnimations = !Loader.Core.RootNode.GetBoolProperty("babylonjs_donotoptimizeanimations");
             exportNonAnimated = Loader.Core.RootNode.GetBoolProperty("babylonjs_animgroup_exportnonanimated");
 
-            // Save scene
-            if (exportParameters.autoSaveSceneFile)
-            {
-                RaiseMessage("Saving 3ds max file");
-                var forceSave = Loader.Core.FileSave;
-
-                callerForm?.BringToFront();
-            }
-
             // Producer
             babylonScene.producer = new BabylonProducer
             {
