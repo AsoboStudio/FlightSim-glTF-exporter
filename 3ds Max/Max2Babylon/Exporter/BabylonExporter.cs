@@ -187,6 +187,7 @@ namespace Max2Babylon
                        )
 
                     --remove constraint on original object
+                    obj.transform.controller = Link_Constraint ()
                     obj.transform.controller = prs ()
                     obj.transform = tmp.transform
 
