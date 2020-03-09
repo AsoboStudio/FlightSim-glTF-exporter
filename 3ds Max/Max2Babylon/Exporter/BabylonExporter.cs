@@ -177,7 +177,6 @@ namespace Max2Babylon
             ScriptsUtilities.ExecuteMaxScriptCommand(@"
                 for obj in selection do 
                 (
-                    --if obj.isAnimated == false then continue
                     tag = getUserProp obj ""babylonjs_BakeAnimation""
                     if tag!=true then continue
 
@@ -188,9 +187,7 @@ namespace Max2Babylon
                        )
 
                     --remove constraint on original object
-                    obj.pos.controller = Position_XYZ ()
-                    obj.rotation.controller = Euler_XYZ ()
-                    obj.scale.controller = bezier_scale ()
+                    obj.transform.controller = prs ()
                     obj.transform = tmp.transform
 
                     --copy back anim from point
