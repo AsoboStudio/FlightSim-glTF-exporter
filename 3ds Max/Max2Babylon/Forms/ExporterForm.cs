@@ -261,25 +261,25 @@ namespace Max2Babylon
         }
 
         public async void butExport_Click(object sender, EventArgs e)
-        { 
-            if (chkAutoSave.Checked)
-            {
-                var forceSave = Loader.Core.FileSave;
-                BringToFront();
-            }
-            
+        {
+            bool abort = false;
             try
             {
+                abort = AutosaveWarning();
+                if (abort)return;
                 await DoExport(singleExportItem);
             }
             catch{}
             finally
             {
-                if (chkUsePreExportProces.Checked && !chkApplyPreprocessToScene.Checked)
+                if (!abort)
                 {
-                    Loader.Core.SetQuietMode(true);
-                    Loader.Core.LoadFromFile( Loader.Core.CurFilePath,true);
-                    Loader.Core.SetQuietMode(false);
+                    if (chkUsePreExportProces.Checked && !chkApplyPreprocessToScene.Checked)
+                    {
+                        Loader.Core.SetQuietMode(true);
+                        Loader.Core.LoadFromFile( Loader.Core.CurFilePath,true);
+                        Loader.Core.SetQuietMode(false);
+                    }
                 }
             }
         }
@@ -641,13 +641,11 @@ namespace Max2Babylon
 
         private async void butExportAndRun_Click(object sender, EventArgs e)
         {
+            bool abort = false;
             try
             {
-                if (chkAutoSave.Checked)
-                {
-                    var forceSave = Loader.Core.FileSave;
-                    BringToFront();
-                }
+                abort = AutosaveWarning();
+                if(abort)return;
 
                 if (await DoExport(singleExportItem))
                 {
@@ -662,11 +660,14 @@ namespace Max2Babylon
             catch{}
             finally
             {
-                if (chkUsePreExportProces.Checked && !chkApplyPreprocessToScene.Checked)
+                if (!abort)
                 {
-                    Loader.Core.SetQuietMode(true);
-                    Loader.Core.LoadFromFile(Loader.Core.CurFilePath,true);
-                    Loader.Core.SetQuietMode(false);
+                    if (chkUsePreExportProces.Checked && !chkApplyPreprocessToScene.Checked)
+                    {
+                        Loader.Core.SetQuietMode(true);
+                        Loader.Core.LoadFromFile(Loader.Core.CurFilePath,true);
+                        Loader.Core.SetQuietMode(false);
+                    }
                 }
             }
         }
@@ -795,6 +796,27 @@ namespace Max2Babylon
             }
         }
 
+        private bool AutosaveWarning()
+        {
+            //raise a warnign to the user if he is using pre-export processes and he the save is not saved before export
+            if (chkAutoSave.Checked)
+            {
+                if (!Loader.Core.FileSave) return true; //file save locked
+                BringToFront();
+            }
+            else if (!chkAutoSave.Checked && chkUsePreExportProces.Checked)
+            {
+                MessageBoxButtons buttons = MessageBoxButtons.OKCancel;
+                DialogResult result = MessageBox.Show("You are exporting a scene that will be modified during export time,\nsave your scene or use autosave to not loose you work.\nDo you want to continue anyway?","Waring",buttons);
+                if (result == DialogResult.Cancel)
+                {
+                    return true; //in case of abort
+                }
+            }
+
+            return false;
+        }
+
         private async void butMultiExport_Click(object sender, EventArgs e)
         {
             string outputFileExt;
@@ -815,23 +837,24 @@ namespace Max2Babylon
             }
             else if (numLoadedItems > 0)
             {
+                bool abort = false;
                 try
                 {
-                    if (chkAutoSave.Checked)
-                    {
-                        var forceSave = Loader.Core.FileSave;
-                        BringToFront();
-                    }
+                    abort = AutosaveWarning();
+                    if (abort) return;
                     await DoExport(exportItemList);
                 }
                 catch{}
                 finally
                 {
-                    if (chkUsePreExportProces.Checked && !chkApplyPreprocessToScene.Checked)
+                    if (!abort)
                     {
-                        Loader.Core.SetQuietMode(true);
-                        Loader.Core.LoadFromFile(Loader.Core.CurFilePath,true);
-                        Loader.Core.SetQuietMode(false);
+                        if (chkUsePreExportProces.Checked && !chkApplyPreprocessToScene.Checked)
+                        {
+                            Loader.Core.SetQuietMode(true);
+                            Loader.Core.LoadFromFile( Loader.Core.CurFilePath,true);
+                            Loader.Core.SetQuietMode(false);
+                        }
                     }
                 }
             }
