@@ -204,7 +204,8 @@ namespace Max2Babylon
         [DataMember(EmitDefaultValue = false)] public float? roomSizeXScale { get; set; }
         [DataMember(EmitDefaultValue = false)] public float? roomSizeYScale { get; set; }
         [DataMember(EmitDefaultValue = false)] public float? roomNumberXY { get; set; }
-        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo heightMapTexture;
+        [DataMember(EmitDefaultValue = false)] public bool? corridor { get; set; }
+
         [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo behindWindowMapTexture;
         public static class Defaults
         {
@@ -212,6 +213,7 @@ namespace Max2Babylon
             public static readonly float roomSizeXScale = 1;
             public static readonly float roomSizeYScale = 1;
             public static readonly float roomNumberXY = 1;
+            public static readonly bool corridor = false;
         }
     }
 
@@ -560,7 +562,7 @@ namespace Max2Babylon
             float roomSizeXScale = GLTFExtensionAsoboParallaxWindow.Defaults.roomSizeXScale;
             float roomSizeYScale = GLTFExtensionAsoboParallaxWindow.Defaults.roomSizeYScale;
             float roomNumberXY = GLTFExtensionAsoboParallaxWindow.Defaults.roomNumberXY;
-            string heightMapTexPath = null;
+            bool corridor = GLTFExtensionAsoboParallaxWindow.Defaults.corridor;
             string behindWindowMapTexPath = null;
 
             float fresnelFactor = GLTFExtensionAsoboMaterialFresnelFade.Defaults.fresnelFactor;
@@ -967,9 +969,14 @@ namespace Max2Babylon
                                 roomNumberXY = float_out;
                                 break;
                             }
-                        case "HEIGHTMAPTEX":
+                        case "CORRIDOR":
                             {
-                                heightMapTexPath = GetImagePath(paramDef, property, param_t, "HEIGHTMAPTEX");
+                                if (!property.GetPropertyValue(ref int_out, param_t))
+                                {
+                                    RaiseError("Could not retrieve CORRIDOR property.");
+                                    continue;
+                                }
+                                corridor = (int_out != 0);
                                 break;
                             }
                         case "DETAILCOLORTEX": //because we reuse the slot from the detailmap
@@ -1597,16 +1604,7 @@ namespace Max2Babylon
                 parallaxWindowExtensionObject.roomSizeXScale = roomSizeXScale;
                 parallaxWindowExtensionObject.roomSizeYScale = roomSizeYScale;
                 parallaxWindowExtensionObject.roomNumberXY = roomNumberXY;
-
-                if (!string.IsNullOrWhiteSpace(heightMapTexPath))
-                {
-                    image = ExportImage(heightMapTexPath, true);
-                    if (image != null)
-                    {
-                        info = CreateTextureInfo(image);
-                        parallaxWindowExtensionObject.heightMapTexture = info;
-                    }
-                }
+                parallaxWindowExtensionObject.corridor = corridor;
 
                 if (!string.IsNullOrWhiteSpace(behindWindowMapTexPath))
                 {
