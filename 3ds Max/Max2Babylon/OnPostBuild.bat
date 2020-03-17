@@ -78,7 +78,7 @@ ECHO "No Configuaration"
 GOTO Close
 
 :DebugOnMax
-START /d "%max_location%" 3dsmax.exe "C:\Users\lpierabella\Desktop\SANDBOX\matanim.max"
+START /d "%max_location%" 3dsmax.exe "E:\Perforce\Asobo\KittyHawk\ASSETS\KittyHawk_Data\___SANDBOX\matexporter.max"
 GOTO Close
 
 :Close
