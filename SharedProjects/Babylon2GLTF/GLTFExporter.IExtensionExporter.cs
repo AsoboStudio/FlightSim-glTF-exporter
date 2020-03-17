@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BabylonExport.Entities;
 using GLTFExport.Entities;
+using Utilities;
 
 namespace Babylon2GLTF
 {
@@ -12,8 +13,11 @@ namespace Babylon2GLTF
     {
         string GetGLTFExtensionName();
         Type GetGLTFExtendedType();
-        object ExportBabylonExtension<T>(T babylonObject);
+        object ExportGLTFExtension<T>(T babylonObject,ExportParameters parameters,GLTF gltf,ILoggingProvider logger);
+        bool ExportBabylonExtension<T>(T babylonObject,ExportParameters parameters,ref BabylonScene babylonScene,ILoggingProvider logger);
     }
+
+
 
 
 }

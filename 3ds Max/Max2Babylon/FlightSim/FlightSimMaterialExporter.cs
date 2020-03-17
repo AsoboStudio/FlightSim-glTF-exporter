@@ -7,7 +7,9 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
+using Babylon2GLTF;
 using BabylonExport.Entities;
+using Utilities;
 
 namespace Max2Babylon
 {
@@ -272,8 +274,53 @@ namespace Max2Babylon
 
     #endregion
 
-    public class FlightSimMaterialExporter : IMaxGLTFMaterialExporter
+    public class FlightSimMaterialExporter : IBabylonExtensionExporter
     {
+        public string GetGLTFExtensionName()
+        {
+            return "ASOBO_flightsim_material";
+        }
+
+        public Type GetGLTFExtendedType()
+        {
+            return typeof(GLTFMaterial);
+        }
+
+        public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
+        {
+            var materialNode = babylonObject as Autodesk.Max.IIGameMaterial;
+            bool isGLTFExported = parameters.outputFormat == ".gltf";
+            if (isGLTFExported )
+            {
+                var id = materialNode.MaxMaterial.GetGuid().ToString();
+                // add a basic babylon material to the list to forward the max material reference
+                var babylonMaterial = new BabylonMaterial(id)
+                {
+                    maxGameMaterial = materialNode,
+                    name = materialNode.MaterialName
+                };
+                babylonScene.MaterialsList.Add(babylonMaterial);
+                return true;
+            }
+
+            return false;
+        }
+
+        public object ExportGLTFExtension<T>(T babylonObject, ExportParameters parameters, GLTF gltf, ILoggingProvider logger)
+        {
+            var babylonMaterial = babylonObject as BabylonMaterial;
+
+            if (babylonMaterial.maxGameMaterial.MaxMaterial.ClassID.Equals(class_ID))
+            {
+                GLTFMaterial result = ExportGLTFMaterial(parameters,gltf,babylonMaterial.maxGameMaterial,
+                        (string sourcePath, string textureName) => { return TextureUtilities.TryWriteImage(gltf, sourcePath, textureName,logger,exporterParameters); },
+                        (string message, Color color) => { logger.RaiseMessage(message, color, 2); },
+                        (string message) => { logger.RaiseWarning(message, 2); },
+                        (string message) => { logger.RaiseError(message, 2); });
+            }
+
+            return null;
+        }
 
         public static bool HasFlightSimMaterials(IMtl mat)
         {
@@ -350,7 +397,7 @@ namespace Max2Babylon
 
         static readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x5ac74889, 0x27e705cd);
 
-        ClassIDWrapper IMaxMaterialExporter.MaterialClassID => class_ID;
+        //ClassIDWrapper IMaxMaterialExporter.MaterialClassID => class_ID;
 
         public FlightSimMaterialExporter() { }
 
@@ -445,7 +492,7 @@ namespace Max2Babylon
 
         #endregion
 
-        GLTFMaterial IMaxGLTFMaterialExporter.ExportGLTFMaterial(ExportParameters exportParameters, GLTF gltf, IIGameMaterial maxGameMaterial, 
+        GLTFMaterial ExportGLTFMaterial(ExportParameters exportParameters, GLTF gltf, IIGameMaterial maxGameMaterial, 
             Func<string, string, string> tryWriteImageFunc, 
             Action<string, Color> raiseMessageAction, 
             Action<string> raiseWarningAction, 
@@ -2137,6 +2184,8 @@ namespace Max2Babylon
         {
             return new T { index = texture.index };
         }
+
+        
     }
     
     static class FlightSimClassExtensions

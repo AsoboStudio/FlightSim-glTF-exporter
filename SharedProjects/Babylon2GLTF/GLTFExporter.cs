@@ -672,7 +672,7 @@ namespace Babylon2GLTF
                 if (extensionExporter.Value == typeof(T2))
                 {
                     string extensionName = extensionExporter.Key.GetGLTFExtensionName();
-                    object extensionObject = extensionExporter.Key.ExportBabylonExtension(babylonObject);
+                    object extensionObject = extensionExporter.Key.ExportGLTFExtension(babylonObject,exportParameters,gltf,logger);
                     if (extensionObject != null && !string.IsNullOrEmpty(extensionName) && !nodeExtensions.ContainsKey(extensionName))
                     {
                         nodeExtensions.Add(extensionName,extensionObject);

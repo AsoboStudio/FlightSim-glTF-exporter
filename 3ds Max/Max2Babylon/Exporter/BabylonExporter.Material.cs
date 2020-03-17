@@ -101,8 +101,8 @@ namespace Max2Babylon
             }
 
             // check custom exporters first, to allow custom exporters of supported material classes
-            IMaxMaterialExporter materialExporter;
-            materialExporters.TryGetValue(new ClassIDWrapper(materialNode.MaxMaterial.ClassID), out materialExporter);
+            //IMaxMaterialExporter materialExporter;
+            //materialExporters.TryGetValue(new ClassIDWrapper(materialNode.MaxMaterial.ClassID), out materialExporter);
             
             IStdMat2 stdMat = null;
             if (materialNode.MaxMaterial != null && materialNode.MaxMaterial.NumParamBlocks > 0)
@@ -114,28 +114,32 @@ namespace Max2Babylon
                 }
             }
 
-            if (isBabylonExported && materialExporter != null && materialExporter is IMaxBabylonMaterialExporter)
+            if (ExportBabylonExtension(materialNode, typeof(BabylonMaterial), ref babylonScene))
             {
-                IMaxBabylonMaterialExporter babylonMaterialExporter = materialExporter as IMaxBabylonMaterialExporter;
-                BabylonMaterial babylonMaterial = babylonMaterialExporter.ExportBabylonMaterial(materialNode);
-                if (babylonMaterial == null)
-                {
-                    string message = string.Format("Custom Babylon material exporter failed to export | Exporter: '{0}' | Material Name: '{1}' | Material Class: '{2}'",
-                        babylonMaterialExporter.GetType().ToString(), materialNode.MaterialName, materialNode.MaterialClass);
-                    RaiseWarning(message, 2);
-                }
-                else babylonScene.MaterialsList.Add(babylonMaterial);
+                RaiseMessage("Exporting custom material type", 2);
             }
-            else if (isGltfExported && materialExporter != null && materialExporter is IMaxGLTFMaterialExporter)
-            {
-                // add a basic babylon material to the list to forward the max material reference
-                var babylonMaterial = new BabylonMaterial(id)
-                {
-                    maxGameMaterial = materialNode,
-                    name = name
-                };
-                babylonScene.MaterialsList.Add(babylonMaterial);
-            }
+            //if (isBabylonExported && materialExporter != null && materialExporter is IMaxBabylonMaterialExporter)
+            //{
+            //    IMaxBabylonMaterialExporter babylonMaterialExporter = materialExporter as IMaxBabylonMaterialExporter;
+            //    BabylonMaterial babylonMaterial = babylonMaterialExporter.ExportBabylonMaterial(materialNode);
+            //    if (babylonMaterial == null)
+            //    {
+            //        string message = string.Format("Custom Babylon material exporter failed to export | Exporter: '{0}' | Material Name: '{1}' | Material Class: '{2}'",
+            //            babylonMaterialExporter.GetType().ToString(), materialNode.MaterialName, materialNode.MaterialClass);
+            //        RaiseWarning(message, 2);
+            //    }
+            //    else babylonScene.MaterialsList.Add(babylonMaterial);
+            //}
+            //else if (isGltfExported && materialExporter != null && materialExporter is IMaxGLTFMaterialExporter)
+            //{
+            //    // add a basic babylon material to the list to forward the max material reference
+            //    var babylonMaterial = new BabylonMaterial(id)
+            //    {
+            //        maxGameMaterial = materialNode,
+            //        name = name
+            //    };
+            //    babylonScene.MaterialsList.Add(babylonMaterial);
+            //}
             else if (stdMat != null)
             {
                 var babylonMaterial = new BabylonStandardMaterial(id)

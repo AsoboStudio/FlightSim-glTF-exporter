@@ -10,6 +10,7 @@ using Babylon2GLTF;
 using BabylonExport.Entities;
 using GLTFExport.Entities;
 using Max2Babylon.FlightSim;
+using Utilities;
 
 namespace Max2Babylon.FlightSimExtension
 {
@@ -50,7 +51,13 @@ namespace Max2Babylon.FlightSimExtension
             return typeof(GLTFMesh);
         }
 
-        public object ExportBabylonExtension<T>(T babylonObject)
+        public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
+        {
+            // just skip this extension is ment only for GLTF
+            return false;
+        }
+
+        public object ExportGLTFExtension<T>(T babylonObject, ExportParameters parameters, GLTF gltf, ILoggingProvider logger)
         {
             var babylonMesh = babylonObject as BabylonMesh;
             if (babylonMesh != null)

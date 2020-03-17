@@ -419,15 +419,15 @@ namespace Max2Babylon
                     babylonScene.BabylonToGLTFExtensions.Add(exporter,t);
                 }
 
-                if (typeof(IMaxMaterialExporter).IsAssignableFrom(type))
-                {
-                    IMaxMaterialExporter exporter = Activator.CreateInstance(type) as IMaxMaterialExporter;
+                //if (typeof(IMaxMaterialExporter).IsAssignableFrom(type))
+                //{
+                //    IMaxMaterialExporter exporter = Activator.CreateInstance(type) as IMaxMaterialExporter;
 
-                    if (exporter == null)
-                        RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
+                //    if (exporter == null)
+                //        RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
 
-                    materialExporters.Add(exporter.MaterialClassID, exporter);
-                }
+                //    materialExporters.Add(exporter.MaterialClassID, exporter);
+                //}
             }
 
             // Sounds
@@ -860,6 +860,19 @@ namespace Max2Babylon
                 }
             }
             ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Available""");
+        }
+
+        private bool ExportBabylonExtension<T1, T2>(T1 sceneObject, T2 babylonType, ref BabylonScene babylonScene)
+        {
+            foreach (var extensionExporter in babylonScene.BabylonToGLTFExtensions)
+            {
+                if (extensionExporter.Value == typeof(T2))
+                {
+                   if(extensionExporter.Key.ExportBabylonExtension(sceneObject,exportParameters,ref babylonScene,this)) return true;
+                }
+            }
+
+            return false;
         }
 
         private void moveFileToOutputDirectory(string sourceFilePath, string targetFilePath, ExportParameters exportParameters)

@@ -46,7 +46,7 @@ internal class MaxGLTFMaterialExporter : IGLTFMaterialExporter
             && materialExporter is IMaxGLTFMaterialExporter)
         {
             gltfMaterial = ((IMaxGLTFMaterialExporter)materialExporter).ExportGLTFMaterial(this.exportParameters, gltf, gameMtl,
-                (string sourcePath, string textureName) => { return gltfExporter.TryWriteImage(gltf, sourcePath, textureName); },
+                (string sourcePath, string textureName) => { return TextureUtilities.TryWriteImage(gltf, sourcePath, textureName,logger,exportParameters); },
                 (string message, Color color) => { logger.RaiseMessage(message, color, 2); },
                 (string message) => { logger.RaiseWarning(message, 2); },
                 (string message) => { logger.RaiseError(message, 2); });
