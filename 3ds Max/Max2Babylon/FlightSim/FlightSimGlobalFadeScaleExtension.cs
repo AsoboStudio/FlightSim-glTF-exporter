@@ -22,9 +22,9 @@ namespace Max2Babylon.FlightSimExtension
             return "ASOBO_scene_fade_scale";
         }
 
-        public Type GetGLTFExtendedType()
+        public BabylonExtendTypes GetExtendedType()
         {
-            return typeof(GLTFScene);
+            return new BabylonExtendTypes(typeof(GLTFScene));
         }
 
         public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
