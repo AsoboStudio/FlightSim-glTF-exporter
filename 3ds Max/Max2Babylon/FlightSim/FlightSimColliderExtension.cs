@@ -66,9 +66,9 @@ namespace Max2Babylon.FlightSimExtension
             return "ASOBO_collision_object";
         }
 
-        public Type GetGLTFExtendedType()
+        public BabylonExtendTypes GetExtendedType()
         {
-            return typeof(GLTFMesh);
+            return new BabylonExtendTypes(typeof(GLTFMesh));
         }
 
         public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)

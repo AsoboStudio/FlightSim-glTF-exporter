@@ -42,9 +42,9 @@ namespace Max2Babylon.FlightSimExtension
             return "ASOBO_macro_light";
         }
 
-        public Type GetGLTFExtendedType()
+        public BabylonExtendTypes GetExtendedType()
         {
-            return typeof(GLTFNode);
+            return new BabylonExtendTypes(typeof(GLTFNode));
         }
         public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
         {

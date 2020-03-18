@@ -9,12 +9,34 @@ using Utilities;
 
 namespace Babylon2GLTF
 {
+    public class BabylonExtendTypes
+    {
+        public Type babylonType;
+        public Type gltfType;
+
+        public BabylonExtendTypes(Type babylonType, Type gltfType)
+        {
+            this.babylonType = babylonType;
+            this.gltfType = gltfType;
+        }
+
+        public BabylonExtendTypes(Type gltfType)
+        {
+            this.gltfType = gltfType;
+        }
+    }
+
     public interface IBabylonExtensionExporter
     {
         string GetGLTFExtensionName();
-        Type GetGLTFExtendedType();
+        BabylonExtendTypes GetExtendedType();
         object ExportGLTFExtension<T>(T babylonObject,ExportParameters parameters,GLTF gltf,ILoggingProvider logger);
         bool ExportBabylonExtension<T>(T babylonObject,ExportParameters parameters,ref BabylonScene babylonScene,ILoggingProvider logger);
+    }
+
+    public interface IBabylonMaterialExtensionExporter: IBabylonExtensionExporter
+    {
+
     }
 
 

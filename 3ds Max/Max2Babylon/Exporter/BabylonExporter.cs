@@ -402,7 +402,7 @@ namespace Max2Babylon
 
             
             // Instantiate custom material exporters
-            materialExporters = new Dictionary<ClassIDWrapper, IMaxMaterialExporter>();
+            //materialExporters = new Dictionary<ClassIDWrapper, IMaxMaterialExporter>();
             foreach (Type type in Tools.GetAllLoadableTypes())
             {
                 if (type.IsAbstract || type.IsInterface )
@@ -415,7 +415,7 @@ namespace Max2Babylon
                     if (exporter == null)
                         RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
 
-                    Type t = exporter.GetGLTFExtendedType();
+                    BabylonExtendTypes t = exporter.GetExtendedType();
                     babylonScene.BabylonToGLTFExtensions.Add(exporter,t);
                 }
 
@@ -770,7 +770,7 @@ namespace Max2Babylon
                 bool generateBinary = outputFormat == "glb";
 
                 GLTFExporter gltfExporter = new GLTFExporter();
-                exportParameters.customGLTFMaterialExporter = new MaxGLTFMaterialExporter(exportParameters, gltfExporter, this);
+                //exportParameters.customGLTFMaterialExporter = new MaxGLTFMaterialExporter(exportParameters, gltfExporter, this);
                 gltfExporter.ExportGltf(this.exportParameters, babylonScene, tempOutputDirectory, outputFileName, generateBinary, this);
             }
             // Move files to output directory
@@ -862,11 +862,11 @@ namespace Max2Babylon
             ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Available""");
         }
 
-        private bool ExportBabylonExtension<T1, T2>(T1 sceneObject, T2 babylonType, ref BabylonScene babylonScene)
+        private bool ExportBabylonExtension<T1>(T1 sceneObject,Type babylonType, ref BabylonScene babylonScene)
         {
             foreach (var extensionExporter in babylonScene.BabylonToGLTFExtensions)
             {
-                if (extensionExporter.Value == typeof(T2))
+                if (extensionExporter.Value.babylonType == babylonType)
                 {
                    if(extensionExporter.Key.ExportBabylonExtension(sceneObject,exportParameters,ref babylonScene,this)) return true;
                 }

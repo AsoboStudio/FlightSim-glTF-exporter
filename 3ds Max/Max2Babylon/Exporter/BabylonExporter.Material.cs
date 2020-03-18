@@ -6,6 +6,8 @@ using Utilities;
 using BabylonExport.Entities;
 using Max2Babylon.Extensions;
 using System.Drawing;
+using Babylon2GLTF;
+using GLTFExport.Entities;
 
 namespace BabylonExport.Entities
 {
@@ -20,7 +22,6 @@ namespace Max2Babylon
     partial class BabylonExporter
     {
         readonly List<IIGameMaterial> referencedMaterials = new List<IIGameMaterial>();
-        Dictionary<ClassIDWrapper, IMaxMaterialExporter> materialExporters;
 
         private static int STANDARD_MATERIAL_TEXTURE_ID_DIFFUSE = 1;
         private static int STANDARD_MATERIAL_TEXTURE_ID_OPACITY = 6;
@@ -103,7 +104,12 @@ namespace Max2Babylon
             // check custom exporters first, to allow custom exporters of supported material classes
             //IMaxMaterialExporter materialExporter;
             //materialExporters.TryGetValue(new ClassIDWrapper(materialNode.MaxMaterial.ClassID), out materialExporter);
-            
+            //IEnumerable<IMaxMaterialExporter> materialExporters = babylonScene.BabylonToGLTFExtensions
+            //    .Where(x => x.Key is IMaxMaterialExporter)
+            //    .Select(x => x.Key as IMaxMaterialExporter);
+            //IMaxMaterialExporter materialExporter = materialExporters.First(x =>
+            //    x.MaterialClassID.Equals(new ClassIDWrapper(materialNode.MaxMaterial.ClassID)));
+
             IStdMat2 stdMat = null;
             if (materialNode.MaxMaterial != null && materialNode.MaxMaterial.NumParamBlocks > 0)
             {
@@ -114,7 +120,7 @@ namespace Max2Babylon
                 }
             }
 
-            if (ExportBabylonExtension(materialNode, typeof(BabylonMaterial), ref babylonScene))
+            if (ExportBabylonExtension(materialNode,typeof(BabylonMaterial), ref babylonScene))
             {
                 RaiseMessage("Exporting custom material type", 2);
             }
@@ -853,7 +859,7 @@ namespace Max2Babylon
         /// </summary>
         /// <param name="materialNode"></param>
         /// <returns></returns>
-        public IIGameMaterial isMaterialSupported(IIGameMaterial materialNode)
+        public IIGameMaterial isMaterialSupported(IIGameMaterial materialNode,BabylonScene babylonScene)
         {
             // Shell material
             if (isShellMaterial(materialNode))
@@ -863,7 +869,7 @@ namespace Max2Babylon
                 {
                     return materialNode;
                 }
-                return isMaterialSupported(bakedMaterial);
+                return isMaterialSupported(bakedMaterial, babylonScene);
             }
 
             if (materialNode.SubMaterialCount > 0)
@@ -872,7 +878,7 @@ namespace Max2Babylon
                 for (int indexSubMaterial = 0; indexSubMaterial < materialNode.SubMaterialCount; indexSubMaterial++)
                 {
                     IIGameMaterial subMaterialNode = materialNode.GetSubMaterial(indexSubMaterial);
-                    IIGameMaterial unsupportedSubMaterial = isMaterialSupported(subMaterialNode);
+                    IIGameMaterial unsupportedSubMaterial = isMaterialSupported(subMaterialNode, babylonScene);
                     if (unsupportedSubMaterial != null)
                     {
                         return unsupportedSubMaterial;
@@ -915,13 +921,13 @@ namespace Max2Babylon
                     return null;
                 }
 
-                // Custom material exporters
-                IMaxMaterialExporter materialExporter;
-                if (materialExporters.TryGetValue(new ClassIDWrapper(materialNode.MaxMaterial.ClassID), out materialExporter))
+                //Custom material exporters
+                IEnumerable<IMaxMaterialExporter> materialExporters = babylonScene.BabylonToGLTFExtensions
+                    .Where(x => x.Key is IMaxMaterialExporter)
+                    .Select(x => x.Key as IMaxMaterialExporter);
+                foreach (IMaxMaterialExporter maxMaterialExporter in materialExporters)
                 {
-                    if (isGltfExported && materialExporter is IMaxGLTFMaterialExporter)
-                        return null;
-                    else if (isBabylonExported && materialExporter is IMaxBabylonMaterialExporter)
+                    if (maxMaterialExporter.MaterialClassID.Equals(new ClassIDWrapper(materialNode.MaxMaterial.ClassID)))
                         return null;
                 }
 
@@ -934,7 +940,7 @@ namespace Max2Babylon
                 // DirectX Shader
                 if (isDirectXShaderMaterial(materialNode))
                 {
-                    return isMaterialSupported(GetRenderMaterialFromDirectXShader(materialNode));
+                    return isMaterialSupported(GetRenderMaterialFromDirectXShader(materialNode), babylonScene);
                 }
             }
             return materialNode;

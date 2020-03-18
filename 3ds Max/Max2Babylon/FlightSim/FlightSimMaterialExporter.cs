@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using Babylon2GLTF;
 using BabylonExport.Entities;
+using Max2Babylon.FlightSimExtension;
 using Utilities;
 
 namespace Max2Babylon
@@ -274,22 +275,34 @@ namespace Max2Babylon
 
     #endregion
 
-    public class FlightSimMaterialExporter : IBabylonExtensionExporter
+    public class FlightSimMaterialExporter : IMaxMaterialExporter
     {
+        [DataContract]
+        class GLTFExtensionAsoboCollider : GLTFProperty
+        {
+            [DataMember(Name = "collision_objects")]
+            public List<GLTFExtensionCollider> colliders { get; set; }
+        }
+
+        public ClassIDWrapper MaterialClassID
+        {
+            get { return class_ID; }
+        }
         public string GetGLTFExtensionName()
         {
             return "ASOBO_flightsim_material";
         }
 
-        public Type GetGLTFExtendedType()
+        public BabylonExtendTypes GetExtendedType()
         {
-            return typeof(GLTFMaterial);
+            BabylonExtendTypes extendType = new BabylonExtendTypes(typeof(BabylonMaterial),typeof(GLTFMaterial));
+            return extendType;
         }
 
         public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
         {
             var materialNode = babylonObject as Autodesk.Max.IIGameMaterial;
-            bool isGLTFExported = parameters.outputFormat == ".gltf";
+            bool isGLTFExported = parameters.outputFormat == "gltf";
             if (isGLTFExported )
             {
                 var id = materialNode.MaxMaterial.GetGuid().ToString();
@@ -306,17 +319,18 @@ namespace Max2Babylon
             return false;
         }
 
-        public object ExportGLTFExtension<T>(T babylonObject, ExportParameters parameters, GLTF gltf, ILoggingProvider logger)
+        public object ExportGLTFExtension<T1>(T1 babylonObject, ExportParameters parameters, GLTF gltf, ILoggingProvider logger)
         {
             var babylonMaterial = babylonObject as BabylonMaterial;
 
-            if (babylonMaterial.maxGameMaterial.MaxMaterial.ClassID.Equals(class_ID))
+            if (class_ID.Equals(new ClassIDWrapper(babylonMaterial.maxGameMaterial.MaxMaterial.ClassID)))
             {
-                GLTFMaterial result = ExportGLTFMaterial(parameters,gltf,babylonMaterial.maxGameMaterial,
+                GLTFMaterial gltfObject = ExportGLTFMaterial(parameters,gltf,babylonMaterial.maxGameMaterial,
                         (string sourcePath, string textureName) => { return TextureUtilities.TryWriteImage(gltf, sourcePath, textureName,logger,exporterParameters); },
                         (string message, Color color) => { logger.RaiseMessage(message, color, 2); },
                         (string message) => { logger.RaiseWarning(message, 2); },
                         (string message) => { logger.RaiseError(message, 2); });
+                gltf.MaterialsList.Add(gltfObject);
             }
 
             return null;
@@ -2185,7 +2199,8 @@ namespace Max2Babylon
             return new T { index = texture.index };
         }
 
-        
+
+       
     }
     
     static class FlightSimClassExtensions

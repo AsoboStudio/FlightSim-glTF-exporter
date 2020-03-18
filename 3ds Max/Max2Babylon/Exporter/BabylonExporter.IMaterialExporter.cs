@@ -9,36 +9,36 @@ using Utilities;
 
 namespace Max2Babylon
 {
-    public interface IMaxMaterialExporter
+    public interface IMaxMaterialExporter: IBabylonExtensionExporter
     {
         ClassIDWrapper MaterialClassID { get; }
     }
 
-    public interface IMaxBabylonMaterialExporter : IMaxMaterialExporter
-    {
-        BabylonMaterial ExportBabylonMaterial(IIGameMaterial material);
-    }
+    //public interface IMaxBabylonMaterialExporter : IMaxMaterialExporter
+    //{
+    //    BabylonMaterial ExportBabylonMaterial(IIGameMaterial material);
+    //}
 
-    delegate string TryWriteImageCallback(string sourceTexturePath);
+    //delegate string TryWriteImageCallback(string sourceTexturePath);
     
-    internal interface IMaxGLTFMaterialExporter : IMaxMaterialExporter
-    {
-        /// <summary>
-        /// Creates a GLTF material using the given GameMaterial.
-        /// </summary>
-        /// <param name="exporter">The current exporter parameters, like CopyTexturesToOuput.</param>
-        /// <param name="gltf">The GLTF output structure, for adding instances of classes such as GLTFSampler, GLTFImage and GLTFTexture.</param>
-        /// <param name="material">The input material matching the MaterialClassID defined by the exporter. </param>
-        /// <param name="tryWriteImageFunc">Callback function to verify images and to write images to the output folder. 
-        /// Takes the source path and the output texture name.
-        /// Returns null if the file was not written because of an error, else the output file extension.</param>
-        /// <param name="raiseMessageAction">Callback function to raise messages. Takes a message and a color.</param>
-        /// <param name="raiseWarningAction">Callback function to raise warnings.</param>
-        /// <param name="raiseErrorAction">Callback function to raise errors.</param>
-        /// <returns>The exported GLTF material.</returns>
-        GLTFMaterial ExportGLTFMaterial(ExportParameters exportParameters, GLTF gltf, IIGameMaterial material, Func<string, string, string> tryWriteImageFunc,
-            Action<string, Color> raiseMessageAction, Action<string> raiseWarningAction, Action<string> raiseErrorAction);
-    }
+    //internal interface IMaxGLTFMaterialExporter : IMaxMaterialExporter
+    //{
+    //    /// <summary>
+    //    /// Creates a GLTF material using the given GameMaterial.
+    //    /// </summary>
+    //    /// <param name="exporter">The current exporter parameters, like CopyTexturesToOuput.</param>
+    //    /// <param name="gltf">The GLTF output structure, for adding instances of classes such as GLTFSampler, GLTFImage and GLTFTexture.</param>
+    //    /// <param name="material">The input material matching the MaterialClassID defined by the exporter. </param>
+    //    /// <param name="tryWriteImageFunc">Callback function to verify images and to write images to the output folder. 
+    //    /// Takes the source path and the output texture name.
+    //    /// Returns null if the file was not written because of an error, else the output file extension.</param>
+    //    /// <param name="raiseMessageAction">Callback function to raise messages. Takes a message and a color.</param>
+    //    /// <param name="raiseWarningAction">Callback function to raise warnings.</param>
+    //    /// <param name="raiseErrorAction">Callback function to raise errors.</param>
+    //    /// <returns>The exported GLTF material.</returns>
+    //    GLTFMaterial ExportGLTFMaterial(ExportParameters exportParameters, GLTF gltf, IIGameMaterial material, Func<string, string, string> tryWriteImageFunc,
+    //        Action<string, Color> raiseMessageAction, Action<string> raiseWarningAction, Action<string> raiseErrorAction);
+    //}
 
     // We require a separate struct, because the IClass_ID does not implement GetHashCode etc. to work with dictionaries
     public struct ClassIDWrapper : IEquatable<ClassIDWrapper>

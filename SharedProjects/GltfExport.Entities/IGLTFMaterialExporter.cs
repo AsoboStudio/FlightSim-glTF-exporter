@@ -15,6 +15,6 @@ namespace GLTFExport.Entities
         /// <param name="babylonMaterial"></param>
         /// <param name="gltfMaterial"></param>
         /// <returns></returns>
-        bool GetGltfMaterial(BabylonMaterial babylonMaterial, GLTF gltf, ILoggingProvider logger, out GLTFMaterial gltfMaterial);
+        //bool GetGltfMaterial(BabylonMaterial babylonMaterial, GLTF gltf, ILoggingProvider logger, out GLTFMaterial gltfMaterial);
     }
 }
