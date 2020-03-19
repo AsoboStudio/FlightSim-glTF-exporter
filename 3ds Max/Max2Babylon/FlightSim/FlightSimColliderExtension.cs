@@ -36,6 +36,7 @@ namespace Max2Babylon.FlightSimExtension
         [DataMember(EmitDefaultValue = false)] public float? width;
         [DataMember(EmitDefaultValue = false)] public float? height;
         [DataMember(EmitDefaultValue = false)] public float? length;
+        [DataMember(EmitDefaultValue = false)] public bool? isRoad;
     }
 
     [DataContract]
@@ -89,18 +90,21 @@ namespace Max2Babylon.FlightSimExtension
                     {
                         GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboBoxParams boxParams = new GLTFExtensionAsoboBoxParams();
-                        float height = FlightSimExtensionUtility.GetGizmoParameter(node, "BoxGizmo", "height");
-                        float width = FlightSimExtensionUtility.GetGizmoParameter(node, "BoxGizmo","width");
-                        float length = FlightSimExtensionUtility.GetGizmoParameter(node,"BoxGizmo", "length");
+                        float height = FlightSimExtensionUtility.GetGizmoParameterFloat(node, "BoxGizmo", "height");
+                        float width = FlightSimExtensionUtility.GetGizmoParameterFloat(node, "BoxGizmo","width");
+                        float length = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"BoxGizmo", "length");
+                        bool isRoad = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "BoxCollider", "IsRoad",IsSubClass:false);
                         collider.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
                         float[] rotation = FlightSimExtensionUtility.GetRotation(node, maxNode);
                         if (!FlightSimExtensionUtility.IsDefaultRotation(rotation))
                         {
                             collider.Rotation = rotation;
                         }
+                        
                         boxParams.width = width;
                         boxParams.height = height;
                         boxParams.length = length;
+                        if (isRoad) boxParams.isRoad = true;
 
                         collider.Params = boxParams;
                         collider.Type = "box";
@@ -110,8 +114,8 @@ namespace Max2Babylon.FlightSimExtension
                     {
                         GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboCylinderParams cylinderParams = new GLTFExtensionAsoboCylinderParams();
-                        float radius = FlightSimExtensionUtility.GetGizmoParameter(node,"CylGizmo", "radius");
-                        float height = FlightSimExtensionUtility.GetGizmoParameter(node,"CylGizmo", "height");
+                        float radius = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"CylGizmo", "radius");
+                        float height = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"CylGizmo", "height");
                         collider.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
                         float[] rotation = FlightSimExtensionUtility.GetRotation(node, maxNode);
                         if (!FlightSimExtensionUtility.IsDefaultRotation(rotation))
@@ -128,7 +132,7 @@ namespace Max2Babylon.FlightSimExtension
                     {
                         GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboSphereParams sphereParams = new GLTFExtensionAsoboSphereParams();
-                        float radius = FlightSimExtensionUtility.GetGizmoParameter(node,"SphereGizmo", "radius");
+                        float radius = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"SphereGizmo", "radius");
                         collider.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
                         sphereParams.radius = radius;
                         collider.Type = "sphere";

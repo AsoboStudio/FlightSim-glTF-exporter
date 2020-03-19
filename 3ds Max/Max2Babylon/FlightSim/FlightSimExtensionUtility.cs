@@ -9,9 +9,18 @@ namespace Max2Babylon.FlightSim
 {
     static class FlightSimExtensionUtility
     {
-        public static float GetGizmoParameter(IINode node, string gizmoClass, string paramName)
+        public static float GetGizmoParameterFloat(IINode node, string gizmoClass, string paramName, bool IsSubClass = true)
         {
-            string mxs = $"(maxOps.getNodeByHandle {node.Handle}).{gizmoClass}.{paramName}";
+            string mxs = String.Empty;
+            if (!IsSubClass)
+            {
+                mxs = $"(maxOps.getNodeByHandle {node.Handle}).{paramName}";
+            }
+            else
+            {
+                mxs = $"(maxOps.getNodeByHandle {node.Handle}).{gizmoClass}.{paramName}";
+            }
+            
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
 #if MAX2015 || MAX2017 || MAX2018
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
@@ -19,6 +28,28 @@ namespace Max2Babylon.FlightSim
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
 #endif
             var r=  mxsRetVal.F;
+            return r;
+        }
+
+        public static bool GetGizmoParameterBoolean(IINode node, string gizmoClass, string paramName, bool IsSubClass = true)
+        {
+            string mxs = String.Empty;
+            if (!IsSubClass)
+            {
+                mxs = $"(maxOps.getNodeByHandle {node.Handle}).{paramName}";
+            }
+            else
+            {
+                mxs = $"(maxOps.getNodeByHandle {node.Handle}).{gizmoClass}.{paramName}";
+            }
+
+            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
+#if MAX2015 || MAX2017 || MAX2018
+            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
+#else
+            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
+#endif
+            var r = mxsRetVal.B;
             return r;
         }
 

@@ -68,7 +68,7 @@ namespace Max2Babylon.FlightSimExtension
                     {
                         GLTFExtensionFade fadeSphere = new GLTFExtensionFade();
                         GLTFExtensionAsoboFadeSphereParams sphereParams = new GLTFExtensionAsoboFadeSphereParams();
-                        float radius = FlightSimExtensionUtility.GetGizmoParameter(node,"SphereGizmo", "radius");
+                        float radius = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"SphereGizmo", "radius");
                         fadeSphere.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
                         sphereParams.radius = radius;
                         fadeSphere.Type = "sphere";

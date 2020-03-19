@@ -121,6 +121,13 @@ namespace Max2Babylon
     }
 
     [DataContract]
+    class GLTFExtensionAsoboRoadObject : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_road_object";
+        [DataMember(EmitDefaultValue = true)] public bool enabled = true;
+    }
+
+    [DataContract]
     class GLTFExtensionAsoboMaterialFakeTerrain : GLTFProperty
     {
         public const string SerializedName = "ASOBO_material_fake_terrain";
@@ -588,6 +595,7 @@ namespace Max2Babylon
             GLTFExtensionAsoboMaterialFakeTerrain fakeTerrainExtensionObject = null;
             GLTFExtensionAsoboMaterialInvisible invisibleExtensionObject = null;
             GLTFExtensionAsoboCollisionObject collisionExtensionObject = null;
+            GLTFExtensionAsoboRoadObject roadObject = null;
             GLTFExtensionAsoboMaterialEnvironmentOccluder environmentOccluderExtensionObject = null;
 
             GLTFExtensions materialExtensions = new GLTFExtensions();
@@ -1209,7 +1217,7 @@ namespace Max2Babylon
             }
             #endregion
 
-            #region Collision
+            #region Collision&Road
             {
                 for (int i = 0; i < numProps; ++i)
                 {
@@ -1238,6 +1246,21 @@ namespace Max2Babylon
                                 }
                                 break;
                             }
+                        case "ROADMATERIAL":
+                        {
+                            if (!property.GetPropertyValue(ref int_out, param_t))
+                            {
+                                RaiseError("Could not retrieve ROADMATERIAL property.");
+                                continue;
+                            }
+                            bool roadMaterial = (int_out != 0);
+                            if (roadMaterial)
+                            {
+                                GLTFExtensionAsoboRoadObject roadMaterialExtensionObject = new GLTFExtensionAsoboRoadObject();
+                                materialExtensions.Add(GLTFExtensionAsoboRoadObject.SerializedName, roadMaterialExtensionObject);
+                            }
+                            break;
+                        }
                     }
                 }
             }

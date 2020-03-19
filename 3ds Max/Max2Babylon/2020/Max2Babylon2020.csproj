@@ -222,6 +222,9 @@
     <Compile Include="..\FlightSim\FlightSimFadeExtension.cs">
       <Link>FlightSim\FlightSimFadeExtension.cs</Link>
     </Compile>
+    <Compile Include="..\FlightSim\FlightSimGlobalFadeScaleExtension.cs">
+      <Link>FlightSim\FlightSimGlobalFadeScaleExtension.cs</Link>
+    </Compile>
     <Compile Include="..\FlightSim\FlightSimLightExtension.cs">
       <Link>FlightSim\FlightSimLightExtension.cs</Link>
     </Compile>
