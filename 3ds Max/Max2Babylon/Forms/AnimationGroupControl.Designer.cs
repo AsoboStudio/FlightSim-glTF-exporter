@@ -50,6 +50,7 @@ namespace Max2Babylon
             this.nodesGroupBox = new System.Windows.Forms.GroupBox();
             this.MaxNodeTree = new Max2Babylon.MaxNodeTreeView();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.animatedMaterialList = new System.Windows.Forms.GroupBox();
             nameFieldPanel = new System.Windows.Forms.Panel();
             optionsButtonsPanel = new System.Windows.Forms.Panel();
             nodeButtonsPanel = new System.Windows.Forms.Panel();
@@ -278,11 +279,12 @@ namespace Max2Babylon
             this.nodesGroupBox.AutoSize = true;
             this.nodesGroupBox.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.nodesGroupBox.Controls.Add(this.MaxNodeTree);
-            this.nodesGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.nodesGroupBox.Dock = System.Windows.Forms.DockStyle.Left;
             this.nodesGroupBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.nodesGroupBox.Location = new System.Drawing.Point(0, 0);
+            this.nodesGroupBox.MinimumSize = new System.Drawing.Size(250, 0);
             this.nodesGroupBox.Name = "nodesGroupBox";
-            this.nodesGroupBox.Size = new System.Drawing.Size(481, 482);
+            this.nodesGroupBox.Size = new System.Drawing.Size(250, 482);
             this.nodesGroupBox.TabIndex = 0;
             this.nodesGroupBox.TabStop = false;
             this.nodesGroupBox.Text = "Animation Nodes";
@@ -325,11 +327,24 @@ namespace Max2Babylon
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.animatedMaterialList);
             this.splitContainer1.Panel2.Controls.Add(this.nodesGroupBox);
-            this.splitContainer1.Size = new System.Drawing.Size(675, 482);
+            this.splitContainer1.Size = new System.Drawing.Size(875, 482);
             this.splitContainer1.SplitterDistance = 190;
             this.splitContainer1.TabIndex = 0;
             this.splitContainer1.TabStop = false;
+            // 
+            // animatedMaterialList
+            // 
+            this.animatedMaterialList.AutoSize = true;
+            this.animatedMaterialList.Dock = System.Windows.Forms.DockStyle.Right;
+            this.animatedMaterialList.Location = new System.Drawing.Point(231, 0);
+            this.animatedMaterialList.MinimumSize = new System.Drawing.Size(250, 0);
+            this.animatedMaterialList.Name = "animatedMaterialList";
+            this.animatedMaterialList.Size = new System.Drawing.Size(250, 482);
+            this.animatedMaterialList.TabIndex = 1;
+            this.animatedMaterialList.TabStop = false;
+            this.animatedMaterialList.Text = "Animated Materials";
             // 
             // AnimationGroupControl
             // 
@@ -377,5 +392,6 @@ namespace Max2Babylon
         private System.Windows.Forms.TextBox nameTextBox;
         private System.Windows.Forms.Button removeNodeButton;
         private System.Windows.Forms.Button calculateTimeRangeBtn;
+        private System.Windows.Forms.GroupBox animatedMaterialList;
     }
 }

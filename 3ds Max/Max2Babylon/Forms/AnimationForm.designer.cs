@@ -222,7 +222,7 @@ namespace Max2Babylon
             // 
             this.splitContainer1.Panel2.Controls.Add(this.animationGroupControl);
             this.splitContainer1.Panel2MinSize = 295;
-            this.splitContainer1.Size = new System.Drawing.Size(660, 385);
+            this.splitContainer1.Size = new System.Drawing.Size(760, 385);
             this.splitContainer1.SplitterDistance = 177;
             this.splitContainer1.TabIndex = 5;
             // 
@@ -244,11 +244,11 @@ namespace Max2Babylon
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(684, 461);
+            this.ClientSize = new System.Drawing.Size(900, 461);
             this.Controls.Add(ExportPropertiesGroupBox);
             this.Controls.Add(this.splitContainer1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.MinimumSize = new System.Drawing.Size(516, 371);
+            this.MinimumSize = new System.Drawing.Size(800, 371);
             this.Name = "AnimationForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Babylon.js - Animation Groups";
