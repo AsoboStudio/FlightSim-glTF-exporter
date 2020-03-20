@@ -78,7 +78,7 @@ ECHO "No Configuaration"
 GOTO Close
 
 :DebugOnMax
-START /d "%max_location%" 3dsmax.exe "C:\Users\lpierabella\Desktop\SANDBOX\AnimationBake.max"
+START /d "%max_location%" 3dsmax.exe "d:\KittyHawk\ASSETS\KittyHawk_Data\ART\fs\object\Global\Asobo_POI\TowerBridge\TowerBridge.max"
 GOTO Close
 
 :Close

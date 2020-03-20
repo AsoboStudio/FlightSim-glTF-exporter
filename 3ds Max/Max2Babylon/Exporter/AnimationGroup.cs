@@ -648,7 +648,7 @@ namespace Max2Babylon
                 helperPropBuffer = helperPropBuffer.Replace(oldGuid, newGuid.ToString());
 
                 n.Name = $"{n.Name}_{containerID}";
-                if (n.Mtl!=null && FlightSimMaterialExporter.HasFlightSimMaterials(n.Mtl) && FlightSimMaterialExporter.HasRuntimeAccess(n.Mtl))
+                if (n.Mtl!=null && FlightSimMaterialExtensionExporter.HasFlightSimMaterials(n.Mtl) && FlightSimMaterialExtensionExporter.HasRuntimeAccess(n.Mtl))
                 {
                     if (n.Mtl.IsMultiMtl)
                     {

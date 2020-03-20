@@ -13,6 +13,41 @@ namespace Utilities
         public static List<string> validGltfFormats = new List<string>(new string[] { "png", "jpg", "jpeg" });
         public static List<string> invalidGltfFormats = new List<string>(new string[] { "dds", "tga", "tif", "tiff", "bmp", "gif" });
 
+        public static string TryWriteImage(string outputFolder, string sourcePath, string textureName, ILoggingProvider logger, ExportParameters exportParameters)
+        {
+            if (sourcePath == null || sourcePath == "")
+            {
+                logger.RaiseWarning("Texture path is missing.", 3);
+                return null;
+            }
+
+            var validImageFormat = GetGltfValidImageFormat(Path.GetExtension(sourcePath));
+
+            if (validImageFormat == null)
+            {
+                // Image format is not supported by the exporter
+                logger.RaiseWarning(string.Format("Format of texture {0} is not supported by the exporter. Consider using a standard image format like jpg or png.", Path.GetFileName(sourcePath)), 3);
+                return null;
+            }
+
+            // Copy texture to output
+            var destPath = Path.Combine(outputFolder, textureName);
+            destPath = Path.ChangeExtension(destPath, validImageFormat);
+            CopyGltfTexture(sourcePath, destPath, logger,exportParameters);
+
+            return validImageFormat;
+        }
+
+        private static string GetGltfValidImageFormat(string extension)
+        {
+            return TextureUtilities.GetValidImageFormat(extension);
+        }
+
+        private static void CopyGltfTexture(string sourcePath, string destPath, ILoggingProvider logger, ExportParameters exportParameters)
+        {
+            TextureUtilities.CopyTexture(sourcePath, destPath, exportParameters.txtQuality, logger);
+        }
+
         public static bool GetMinimalBitmapDimensions(out int width, out int height, params Bitmap[] bitmaps)
         {
             var haveSameDimensions = true;

@@ -10,6 +10,7 @@ using Babylon2GLTF;
 using BabylonExport.Entities;
 using GLTFExport.Entities;
 using Max2Babylon.FlightSim;
+using Utilities;
 
 namespace Max2Babylon.FlightSimExtension
 {
@@ -20,8 +21,10 @@ namespace Max2Babylon.FlightSimExtension
     }
 
     [DataContract]
-    class GLTFExtensionAsoboTag : GLTFProperty
+    class GLTFExtensionAsoboTags : GLTFProperty
     {
+        public const string SerializedName = "ASOBO_tags";
+        [DataMember]
         public List<string> tags { get; set; }
     }
 
@@ -77,12 +80,18 @@ namespace Max2Babylon.FlightSimExtension
             return "ASOBO_gizmo_object";
         }
 
-        public Type GetGLTFExtendedType()
+        public BabylonExtendTypes GetExtendedType()
         {
-            return typeof(GLTFMesh);
+            return new BabylonExtendTypes(typeof(GLTFMesh));
         }
 
-        public object ExportBabylonExtension<T>(T babylonObject)
+        public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
+        {
+            // just skip this extension is ment only for GLTF
+            return false;
+        }
+
+        public object ExportGLTFExtension<T>(T babylonObject, ExportParameters parameters, ref GLTF gltf, ILoggingProvider logger)
         {
             var babylonMesh = babylonObject as BabylonMesh;
             if (babylonMesh != null)
@@ -98,9 +107,9 @@ namespace Max2Babylon.FlightSimExtension
                 {
                     IObject obj = node.ObjectRef;
                     List<AsoboTag> tags = new List<AsoboTag>();
+                    GLTFExtensionGizmo gizmo = new GLTFExtensionGizmo();;
                     if (new ClassIDWrapper(obj.ClassID).Equals(BoxColliderClassID))
                     {
-                        GLTFExtensionGizmo gizmo = new GLTFExtensionGizmo();
                         GLTFExtensionAsoboBoxParams boxParams = new GLTFExtensionAsoboBoxParams();
                         float height = FlightSimExtensionUtility.GetGizmoParameterFloat(node, "BoxGizmo", "height");
                         float width = FlightSimExtensionUtility.GetGizmoParameterFloat(node, "BoxGizmo","width");
@@ -118,7 +127,6 @@ namespace Max2Babylon.FlightSimExtension
 
                         gizmo.Params = boxParams;
                         gizmo.Type = "box";
-                        collisions.Add(gizmo);
 
                         bool isRoad = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "BoxCollider", "IsRoad",IsSubClass:false);
                         bool isCollision = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "BoxCollider", "IsCollision",IsSubClass:false);
@@ -129,7 +137,6 @@ namespace Max2Babylon.FlightSimExtension
                     }
                     else if (new ClassIDWrapper(obj.ClassID).Equals(CylinderColliderClassID))
                     {
-                        GLTFExtensionGizmo gizmo = new GLTFExtensionGizmo();
                         GLTFExtensionAsoboCylinderParams cylinderParams = new GLTFExtensionAsoboCylinderParams();
                         float radius = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"CylGizmo", "radius");
                         float height = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"CylGizmo", "height");
@@ -143,7 +150,6 @@ namespace Max2Babylon.FlightSimExtension
                         cylinderParams.radius = radius;
                         gizmo.Params = cylinderParams;
                         gizmo.Type = "cylinder";
-                        collisions.Add(gizmo);
 
                         bool isRoad = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "CylCollider", "IsRoad",IsSubClass:false);
                         bool isCollision = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "CylCollider", "IsCollision",IsSubClass:false);
@@ -153,14 +159,12 @@ namespace Max2Babylon.FlightSimExtension
                     }
                     else if (new ClassIDWrapper(obj.ClassID).Equals(SphereColliderClassID))
                     {
-                        GLTFExtensionGizmo gizmo = new GLTFExtensionGizmo();
                         GLTFExtensionAsoboSphereParams sphereParams = new GLTFExtensionAsoboSphereParams();
                         float radius = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"SphereGizmo", "radius");
                         gizmo.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
                         sphereParams.radius = radius;
                         gizmo.Type = "sphere";
                         gizmo.Params = sphereParams;
-                        collisions.Add(gizmo);
 
                         bool isRoad = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "SphereCollider", "IsRoad",IsSubClass:false);
                         bool isCollision = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "SphereCollider", "IsCollision",IsSubClass:false);
@@ -169,15 +173,22 @@ namespace Max2Babylon.FlightSimExtension
                         if(isRoad) tags.Add(AsoboTag.Road);
                     }
 
-                    GLTFExtensionAsoboTag asoboTagExtension = new GLTFExtensionAsoboTag();
-                    asoboTagExtension.tags = tags.ConvertAll(x => x.ToString());
+                    GLTFExtensionAsoboTags asoboTagsExtension = new GLTFExtensionAsoboTags();
+                    asoboTagsExtension.tags = tags.ConvertAll(x => x.ToString());
                     if (tags.Count > 0)
                     {
-                        gltfExtensionAsoboGizmo.extensions = new GLTFExtensions()
+                        if(gizmo.extensions==null) gizmo.extensions = new GLTFExtensions();
+                        gizmo.extensions.Add(GLTFExtensionAsoboTags.SerializedName,asoboTagsExtension);
+
+                        if (gltf.extensionsUsed == null) gltf.extensionsUsed = new List<string>();
+                        if (!gltf.extensionsUsed.Contains(GLTFExtensionAsoboTags.SerializedName))
                         {
-                            {"ASOBO_tags",asoboTagExtension}
-                        };
+                            gltf.extensionsUsed.Add(GLTFExtensionAsoboTags.SerializedName);
+                        }
                     }
+
+                    
+                    collisions.Add(gizmo);
                     
 
                 }

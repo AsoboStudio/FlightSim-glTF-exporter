@@ -17,15 +17,16 @@ namespace Babylon2GLTF
             var id = babylonMaterial.id;
             logger.RaiseMessage("GLTFExporter.Material | Export material named: " + name, 1);
 
-            GLTFMaterial gltfMaterial = null;
+            GLTFMaterial gltfMaterial = new GLTFMaterial();
+            gltfMaterial.index = -1;
             string message = null;
-            IGLTFMaterialExporter customMaterialExporter = exportParameters.customGLTFMaterialExporter;
-            if (customMaterialExporter != null && customMaterialExporter.GetGltfMaterial(babylonMaterial, gltf, logger, out gltfMaterial))
-            {
-                gltfMaterial.index = gltf.MaterialsList.Count;
-                gltf.MaterialsList.Add(gltfMaterial);
-            }
-            else if (babylonMaterial.GetType() == typeof(BabylonStandardMaterial))
+            
+            //IGLTFMaterialExporter customMaterialExporter = exportParameters.customGLTFMaterialExporter;
+            //if (customMaterialExporter != null && customMaterialExporter.GetGltfMaterial(babylonMaterial, gltf, logger, out gltfMaterial))
+            //{
+            //    gltfMaterial.index = gltf.MaterialsList.Count;
+            //    gltf.MaterialsList.Add(gltfMaterial);
+            if (babylonMaterial.GetType() == typeof(BabylonStandardMaterial))
             {
                 var babylonStandardMaterial = babylonMaterial as BabylonStandardMaterial;
 
@@ -571,12 +572,9 @@ namespace Babylon2GLTF
                     }
                 }
             }
-            else
-            {
-                logger.RaiseWarning("GLTFExporter.Material | Unsupported material type: " + babylonMaterial.GetType(), 2);
-            }
 
-            if (gltfMaterial != null && babylonMaterial.isUnlit)
+
+            if (gltfMaterial.index != -1 && babylonMaterial.isUnlit)
             {
                 // Add Unlit extension
                 if (!exportParameters.enableKHRMaterialsUnlit)
@@ -600,6 +598,13 @@ namespace Babylon2GLTF
                     gltfMaterial.extensions["KHR_materials_unlit"] = new object();
                 }
             }
+
+            ExportGLTFExtension(babylonMaterial, ref gltfMaterial, gltf);
+
+            //if (gltfMaterial.index == -1)
+            //{
+            //    logger.RaiseWarning("GLTFExporter.Material | Unsupported material type: " + babylonMaterial.GetType(), 2);
+            //}
         }
 
         private void getAlphaMode(BabylonStandardMaterial babylonMaterial, out string alphaMode, out float? alphaCutoff)
