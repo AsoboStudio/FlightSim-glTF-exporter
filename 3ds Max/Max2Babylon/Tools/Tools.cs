@@ -1029,15 +1029,16 @@ namespace Max2Babylon
             int id = 1;
             string guidStr = container.ContainerNode.GetStringProperty("babylonjs_GUID",Guid.NewGuid().ToString());
             List<IIContainerObject> containers = GetAllContainers();
-            foreach (IIContainerObject iContainerObject in containers)
+            foreach (IIContainerObject othersContainer in containers)
             {
-                if (container.ContainerNode.Handle == iContainerObject.ContainerNode.Handle) continue;
+                if (container.ContainerNode.Handle == othersContainer.ContainerNode.Handle) continue;
                 //string compareGuid = iContainerObject.ContainerNode.GetStringProperty("babylonjs_GUID",Guid.NewGuid().ToString());
-                string defaultName = Regex.Replace(iContainerObject.ContainerNode.Name, @"_\d+","");
-                if (defaultName == container.ContainerNode.Name)
+                string otherName = Regex.Replace(othersContainer.ContainerNode.Name, @"_\d+","");
+                string originalName = Regex.Replace(container.ContainerNode.Name, @"_\d+","");
+                if (otherName == originalName)
                 {
                     int containerID = 1;
-                    iContainerObject.ContainerNode.GetUserPropInt("babylonjs_ContainerID",ref containerID);
+                    othersContainer.ContainerNode.GetUserPropInt("babylonjs_ContainerID",ref containerID);
                     id = Math.Max(id, containerID+1);
                 }
             }
