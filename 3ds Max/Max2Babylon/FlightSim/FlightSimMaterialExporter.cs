@@ -117,13 +117,6 @@ namespace Max2Babylon
     }
 
     [DataContract]
-    class GLTFExtensionAsoboCollisionObject : GLTFProperty
-    {
-        public const string SerializedName = "ASOBO_collision_object";
-        [DataMember(EmitDefaultValue = true)] public bool enabled = true;
-    }
-
-    [DataContract]
     class GLTFExtensionAsoboMaterialFakeTerrain : GLTFProperty
     {
         public const string SerializedName = "ASOBO_material_fake_terrain";
@@ -642,7 +635,6 @@ namespace Max2Babylon
             GLTFExtensionAsoboMaterialGeometryDecal decalExtensionObject = null;
             GLTFExtensionAsoboMaterialFakeTerrain fakeTerrainExtensionObject = null;
             GLTFExtensionAsoboMaterialInvisible invisibleExtensionObject = null;
-            GLTFExtensionAsoboCollisionObject collisionExtensionObject = null;
             GLTFExtensionAsoboMaterialEnvironmentOccluder environmentOccluderExtensionObject = null;
 
             GLTFExtensions materialExtensions = new GLTFExtensions();
@@ -1292,8 +1284,6 @@ namespace Max2Babylon
                                 bool collisionMaterial = (int_out != 0);
                                 if (collisionMaterial)
                                 {
-                                    GLTFExtensionAsoboCollisionObject collisionMaterialExtensionObject = new GLTFExtensionAsoboCollisionObject();
-                                    materialExtensions.Add(GLTFExtensionAsoboCollisionObject.SerializedName, collisionMaterialExtensionObject);
                                     asoboTagsExtensionObject.tags.Add(AsoboTag.Collision.ToString());
                                 }
                                 break;
@@ -1844,9 +1834,6 @@ namespace Max2Babylon
 
             if (fresnelFadeExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialFresnelFade.SerializedName, fresnelFadeExtensionObject);
-
-            if (collisionExtensionObject != null)
-                materialExtensions.Add(GLTFExtensionAsoboMaterialFresnelFade.SerializedName, collisionExtensionObject);
 
             if(UVOptionsExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialUVOptions.SerializedName, UVOptionsExtensionObject);
