@@ -222,7 +222,7 @@ namespace Max2Babylon
             // 
             this.splitContainer1.Panel2.Controls.Add(this.animationGroupControl);
             this.splitContainer1.Panel2MinSize = 295;
-            this.splitContainer1.Size = new System.Drawing.Size(760, 385);
+            this.splitContainer1.Size = new System.Drawing.Size(876, 385);
             this.splitContainer1.SplitterDistance = 177;
             this.splitContainer1.TabIndex = 5;
             // 
