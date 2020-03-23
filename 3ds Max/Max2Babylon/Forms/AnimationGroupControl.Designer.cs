@@ -51,6 +51,9 @@ namespace Max2Babylon
             this.MaxNodeTree = new Max2Babylon.MaxNodeTreeView();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.animatedMaterialList = new System.Windows.Forms.GroupBox();
+            this.displayCheckedButton = new System.Windows.Forms.Button();
+            this.materialPanel = new System.Windows.Forms.Panel();
+            this.materialsView = new System.Windows.Forms.ListView();
             nameFieldPanel = new System.Windows.Forms.Panel();
             optionsButtonsPanel = new System.Windows.Forms.Panel();
             nodeButtonsPanel = new System.Windows.Forms.Panel();
@@ -68,6 +71,8 @@ namespace Max2Babylon
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.animatedMaterialList.SuspendLayout();
+            this.materialPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // nameFieldPanel
@@ -251,7 +256,7 @@ namespace Max2Babylon
             // 
             warningLabelPanel.Controls.Add(warningLabel);
             warningLabelPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            warningLabelPanel.Location = new System.Drawing.Point(3, 376);
+            warningLabelPanel.Location = new System.Drawing.Point(3, 390);
             warningLabelPanel.Name = "warningLabelPanel";
             warningLabelPanel.Padding = new System.Windows.Forms.Padding(3);
             warningLabelPanel.Size = new System.Drawing.Size(184, 103);
@@ -269,7 +274,7 @@ namespace Max2Babylon
             this.optionsGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.optionsGroupBox.Location = new System.Drawing.Point(0, 0);
             this.optionsGroupBox.Name = "optionsGroupBox";
-            this.optionsGroupBox.Size = new System.Drawing.Size(190, 482);
+            this.optionsGroupBox.Size = new System.Drawing.Size(190, 496);
             this.optionsGroupBox.TabIndex = 0;
             this.optionsGroupBox.TabStop = false;
             this.optionsGroupBox.Text = "Animation Options";
@@ -284,7 +289,7 @@ namespace Max2Babylon
             this.nodesGroupBox.Location = new System.Drawing.Point(0, 0);
             this.nodesGroupBox.MinimumSize = new System.Drawing.Size(250, 0);
             this.nodesGroupBox.Name = "nodesGroupBox";
-            this.nodesGroupBox.Size = new System.Drawing.Size(250, 482);
+            this.nodesGroupBox.Size = new System.Drawing.Size(250, 496);
             this.nodesGroupBox.TabIndex = 0;
             this.nodesGroupBox.TabStop = false;
             this.nodesGroupBox.Text = "Animation Nodes";
@@ -311,7 +316,7 @@ namespace Max2Babylon
             this.MaxNodeTree.NodeDowngradedForeColor = System.Drawing.SystemColors.GrayText;
             this.MaxNodeTree.NodeRemovedBackColor = System.Drawing.Color.IndianRed;
             this.MaxNodeTree.NodeRemovedForeColor = System.Drawing.SystemColors.ControlText;
-            this.MaxNodeTree.Size = new System.Drawing.Size(475, 463);
+            this.MaxNodeTree.Size = new System.Drawing.Size(244, 477);
             this.MaxNodeTree.TabIndex = 7;
             // 
             // splitContainer1
@@ -329,7 +334,7 @@ namespace Max2Babylon
             // 
             this.splitContainer1.Panel2.Controls.Add(this.animatedMaterialList);
             this.splitContainer1.Panel2.Controls.Add(this.nodesGroupBox);
-            this.splitContainer1.Size = new System.Drawing.Size(875, 482);
+            this.splitContainer1.Size = new System.Drawing.Size(697, 496);
             this.splitContainer1.SplitterDistance = 190;
             this.splitContainer1.TabIndex = 0;
             this.splitContainer1.TabStop = false;
@@ -337,14 +342,49 @@ namespace Max2Babylon
             // animatedMaterialList
             // 
             this.animatedMaterialList.AutoSize = true;
+            this.animatedMaterialList.Controls.Add(this.materialPanel);
+            this.animatedMaterialList.Controls.Add(this.displayCheckedButton);
             this.animatedMaterialList.Dock = System.Windows.Forms.DockStyle.Right;
-            this.animatedMaterialList.Location = new System.Drawing.Point(231, 0);
+            this.animatedMaterialList.Location = new System.Drawing.Point(253, 0);
             this.animatedMaterialList.MinimumSize = new System.Drawing.Size(250, 0);
             this.animatedMaterialList.Name = "animatedMaterialList";
-            this.animatedMaterialList.Size = new System.Drawing.Size(250, 482);
+            this.animatedMaterialList.Size = new System.Drawing.Size(250, 496);
             this.animatedMaterialList.TabIndex = 1;
             this.animatedMaterialList.TabStop = false;
             this.animatedMaterialList.Text = "Animated Materials";
+            // 
+            // displayCheckedButton
+            // 
+            this.displayCheckedButton.Dock = System.Windows.Forms.DockStyle.Top;
+            this.displayCheckedButton.Location = new System.Drawing.Point(3, 16);
+            this.displayCheckedButton.Name = "displayCheckedButton";
+            this.displayCheckedButton.Size = new System.Drawing.Size(244, 23);
+            this.displayCheckedButton.TabIndex = 1;
+            this.displayCheckedButton.Text = "Display only checked";
+            this.displayCheckedButton.UseVisualStyleBackColor = true;
+            // 
+            // materialPanel
+            // 
+            this.materialPanel.Controls.Add(this.materialsView);
+            this.materialPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.materialPanel.Location = new System.Drawing.Point(3, 39);
+            this.materialPanel.Name = "materialPanel";
+            this.materialPanel.Size = new System.Drawing.Size(244, 454);
+            this.materialPanel.TabIndex = 2;
+            // 
+            // materialsView
+            // 
+            this.materialsView.Alignment = System.Windows.Forms.ListViewAlignment.Left;
+            this.materialsView.CheckBoxes = true;
+            this.materialsView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.materialsView.HideSelection = false;
+            this.materialsView.Location = new System.Drawing.Point(0, 0);
+            this.materialsView.Name = "materialsView";
+            this.materialsView.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.materialsView.Size = new System.Drawing.Size(244, 454);
+            this.materialsView.TabIndex = 0;
+            this.materialsView.UseCompatibleStateImageBehavior = false;
+            this.materialsView.View = System.Windows.Forms.View.SmallIcon;
             // 
             // AnimationGroupControl
             // 
@@ -353,7 +393,7 @@ namespace Max2Babylon
             this.AutoSize = true;
             this.Controls.Add(this.splitContainer1);
             this.Name = "AnimationGroupControl";
-            this.Size = new System.Drawing.Size(675, 482);
+            this.Size = new System.Drawing.Size(697, 496);
             nameFieldPanel.ResumeLayout(false);
             nameFieldPanel.PerformLayout();
             optionsButtonsPanel.ResumeLayout(false);
@@ -371,6 +411,8 @@ namespace Max2Babylon
             this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.animatedMaterialList.ResumeLayout(false);
+            this.materialPanel.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -393,5 +435,8 @@ namespace Max2Babylon
         private System.Windows.Forms.Button removeNodeButton;
         private System.Windows.Forms.Button calculateTimeRangeBtn;
         private System.Windows.Forms.GroupBox animatedMaterialList;
+        private System.Windows.Forms.Button displayCheckedButton;
+        private System.Windows.Forms.Panel materialPanel;
+        private System.Windows.Forms.ListView materialsView;
     }
 }
