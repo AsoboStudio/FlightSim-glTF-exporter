@@ -1284,7 +1284,10 @@ namespace Max2Babylon
                                 bool collisionMaterial = (int_out != 0);
                                 if (collisionMaterial)
                                 {
-                                    asoboTagsExtensionObject.tags.Add(AsoboTag.Collision.ToString());
+                                    if (!asoboTagsExtensionObject.tags.Contains(AsoboTag.Road.ToString()))
+                                    {
+                                        asoboTagsExtensionObject.tags.Add(AsoboTag.Road.ToString());
+                                    }
                                 }
                                 break;
                             }
@@ -1298,7 +1301,10 @@ namespace Max2Babylon
                             bool roadMaterial = (int_out != 0);
                             if (roadMaterial)
                             {
-                                asoboTagsExtensionObject.tags.Add(AsoboTag.Road.ToString());
+                                if (!asoboTagsExtensionObject.tags.Contains(AsoboTag.Road.ToString()))
+                                {
+                                    asoboTagsExtensionObject.tags.Add(AsoboTag.Road.ToString());
+                                }
                             }
                             break;
                         }
