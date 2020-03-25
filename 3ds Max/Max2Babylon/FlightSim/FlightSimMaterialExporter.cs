@@ -270,9 +270,9 @@ namespace Max2Babylon
 
     public class FlightSimMaterialExtensionExporter : IBabylonMaterialExtensionExporter
     {
-        public ClassIDWrapper MaterialClassID
+        public MaterialUtilities.ClassIDWrapper MaterialClassID
         {
-            get { return class_ID; }
+            get { return FlightSimMaterialUtilities.class_ID; }
         }
         public string GetGLTFExtensionName()
         {
@@ -309,7 +309,7 @@ namespace Max2Babylon
         {
             var babylonMaterial = babylonObject as BabylonMaterial;
 
-            if (class_ID.Equals(new ClassIDWrapper(babylonMaterial.maxGameMaterial.MaxMaterial.ClassID)))
+            if (FlightSimMaterialUtilities.class_ID.Equals(new MaterialUtilities.ClassIDWrapper(babylonMaterial.maxGameMaterial.MaxMaterial.ClassID)))
             {
                 string outputFolder = gltf.OutputFolder;
                 GLTFMaterial gltfObject = ExportGLTFMaterial(parameters,gltf,babylonMaterial.maxGameMaterial,
@@ -323,58 +323,7 @@ namespace Max2Babylon
             return null;
         }
 
-        public static bool HasFlightSimMaterials(IMtl mat)
-        {
-            if (mat.IsMultiMtl)
-            {
-                for (int i = 0; i < mat.NumSubMtls; i++)
-                {
-                    IMtl childMat = mat.GetSubMtl(i);
-                    if (childMat!= null && class_ID.Equals(childMat.ClassID))
-                    {
-                        return true;
-                    }
-                }
-            }
-            else if (mat!= null && class_ID.Equals(mat.ClassID))
-            {
-                return true;
-            }
-            
-
-            return false;
-        }
-
-        public static bool HasRuntimeAccess(IMtl mat)
-        {
-            if (mat.IsMultiMtl)
-            {
-                for (int i = 0; i < mat.NumSubMtls; i++)
-                {
-                    IMtl childMat = mat.GetSubMtl(i);
-                    if (childMat!= null)
-                    {
-                        if (class_ID.Equals(childMat.ClassID))
-                        {
-                            int p =Tools.GetMaterialProperty(childMat, "uniqueInContainer");
-                            if (Convert.ToBoolean(p))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-            else if (class_ID.Equals(mat.ClassID))
-            { 
-                int p =Tools.GetMaterialProperty(mat, "uniqueInContainer");
-                if (Convert.ToBoolean(p))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+       
 
 
         enum MaterialType
@@ -396,7 +345,7 @@ namespace Max2Babylon
             EnvironmentOccluder
         }
 
-        static readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x5ac74889, 0x27e705cd);
+        
 
         //ClassIDWrapper IBabylonMaterialExtensionExporter.MaterialClassID => class_ID;
 

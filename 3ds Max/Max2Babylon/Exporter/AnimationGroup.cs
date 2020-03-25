@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using Autodesk.Max;
 using Autodesk.Max.Plugins;
 using ManagedServices;
+using Max2Babylon.FlightSimExtension;
 using Newtonsoft.Json;
 using Utilities;
 
@@ -32,6 +33,22 @@ namespace Max2Babylon
             Guid = _guid;
             Name = _name;
             ParentName = _parentName;
+        }
+
+    }
+
+    [DataContract]
+    public class AnimationGroupMaterial
+    {
+        [DataMember]
+        public Guid Guid { get; set; } 
+        [DataMember]
+        public string Name { get; set; }
+
+        public AnimationGroupMaterial(Guid _guid, string _name)
+        {
+            Guid = _guid;
+            Name = _name;
         }
 
     }
@@ -91,6 +108,9 @@ namespace Max2Babylon
         [DataMember]
         public List<AnimationGroupNode> AnimationGroupNodes {get; set;}
 
+        [DataMember]
+        public List<AnimationGroupNode> AnimationGroupMaterials {get; set;}
+
         public IList<Guid> NodeGuids
         {
             get { return nodeGuids.AsReadOnly(); }
@@ -117,6 +137,35 @@ namespace Max2Babylon
                 IsDirty = true;
                 nodeGuids.Clear();
                 nodeGuids.AddRange(value);
+            }
+        }
+
+        public IList<Guid> MaterialGuids
+        {
+            get { return materialsGuids.AsReadOnly(); }
+            set
+            {
+                // if the lists are equal, return early so isdirty is not touched
+                if (materialsGuids.Count == value.Count)
+                {
+                    bool equal = true;
+                    int i = 0;
+                    foreach (Guid newMaterialGuid in value)
+                    {
+                        if (!newMaterialGuid.Equals(materialsGuids[i]))
+                        {
+                            equal = false;
+                            break;
+                        }
+                        ++i;
+                    }
+                    if (equal)
+                        return;
+                }
+
+                IsDirty = true;
+                materialsGuids.Clear();
+                materialsGuids.AddRange(value);
             }
         }
 
@@ -147,6 +196,7 @@ namespace Max2Babylon
         // use current timeline frame range by default
 
         private List<Guid> nodeGuids = new List<Guid>();
+        private List<Guid> materialsGuids = new List<Guid>();
 
         public AnimationGroup() { }
         public AnimationGroup(AnimationGroup other)
@@ -572,7 +622,6 @@ namespace Max2Babylon
             Loader.Global.SetSaveRequiredFlag(true, false);
         }
 
-
         public static void LoadDataFromAllContainers()
         {
             List<IIContainerObject> containers = Tools.GetAllContainers();
@@ -648,7 +697,7 @@ namespace Max2Babylon
                 helperPropBuffer = helperPropBuffer.Replace(oldGuid, newGuid.ToString());
 
                 n.Name = $"{n.Name}_{containerID}";
-                if (n.Mtl!=null && FlightSimMaterialExtensionExporter.HasFlightSimMaterials(n.Mtl) && FlightSimMaterialExtensionExporter.HasRuntimeAccess(n.Mtl))
+                if (n.Mtl!=null && FlightSimMaterialUtilities.HasFlightSimMaterials(n.Mtl) && FlightSimMaterialUtilities.HasRuntimeAccess(n.Mtl))
                 {
                     if (n.Mtl.IsMultiMtl)
                     {
@@ -704,8 +753,6 @@ namespace Max2Babylon
             }
             container.ContainerNode.SetUserPropBool("flightsim_resolved", true);
         }
-
-
 
         public static void RemoveDataOnContainer(IIContainerObject containerObject)
         {

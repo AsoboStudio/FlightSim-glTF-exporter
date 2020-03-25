@@ -3,12 +3,18 @@ using System.Collections.Generic;
 using System;
 using System.Drawing;
 using Autodesk.Max;
+using Max2Babylon.FlightSimExtension;
 using Max2Babylon.Forms;
 
 namespace Max2Babylon
 {
     public partial class AnimationGroupControl : UserControl
     {
+        enum AnimationParseType
+        {
+            Nodes,
+            Materials
+        }
         public Color ChangedTextColor { get; set; } = Color.Red;
 
         AnimationGroup currentInfo = null;
@@ -16,10 +22,13 @@ namespace Max2Babylon
         // Typically called when the user presses confirm, but can also happen when scene changes are detected.
         public event Action<AnimationGroup> InfoChanged;
         public event Action<AnimationGroup> ConfirmPressed;
+        private AnimationParseType currentAnimationParseType = AnimationParseType.Nodes;
+
 
         public AnimationGroupControl()
         {
             InitializeComponent();
+            MaxNodeTree.BackColor = Color.DodgerBlue;
         }
 
         public void SetAnimationGroupInfo(AnimationGroup info)
@@ -53,6 +62,7 @@ namespace Max2Babylon
                 List<uint> handles;
                 MaxNodeTree.ApplyQueuedChanges(out handles, false);
                 MaxNodeTree.EndUpdate();
+                
 
                 // if the nodes changed on max' side, even though the data has not changed, the list may be different (e.g. deleted nodes)
                 // since we haven't loaded the list before, we can't compare it to the node tree
@@ -195,51 +205,75 @@ namespace Max2Babylon
             SetFieldsFromInfo(currentInfo);
         }
 
+        private void AddMaterialItem(IMtl material)
+        {
+            if(!FlightSimMaterialUtilities.IsFlightSimMaterial(material)) return;
+            ListViewItem item = new ListViewItem();
+            item.Text = material.Name;
+            materialsView.Items.Add(item);
+        }
+
+        private void RemovedMaterialItem(IMtl material)
+        {
+            if(!FlightSimMaterialUtilities.IsFlightSimMaterial(material)) return;
+            ListViewItem item = new ListViewItem();
+            item.Text = material.Name;
+            materialsView.Items.Add(item);
+        }
+
+
 
         private void addSelectedButton_Click(object sender, EventArgs e)
         {
             if (currentInfo == null)
                 return;
 
-            MaxNodeTree.BeginUpdate();
-            for (int i = 0; i < Loader.Core.SelNodeCount; ++i)
+            if (currentAnimationParseType == AnimationParseType.Nodes)
             {
-                IINode node = Loader.Core.GetSelNode(i);
-
-                //added in flightsim to add lod node "x0_name" and all other lod relative
-                // x1_name,x2_name etc
-                //todo expost addnode to maxscript and call this outside
-                if (node.Name.StartsWith("x"))
+                MaxNodeTree.BeginUpdate();
+                for (int i = 0; i < Loader.Core.SelNodeCount; ++i)
                 {
-                    string lod_name = node.Name.Substring(3);
-                    string lod_prefix = node.Name.Replace(lod_name, "");
-                    if (lod_prefix.ToCharArray()[0] == 'x' && lod_prefix.ToCharArray()[2]=='_')
+                    IINode node = Loader.Core.GetSelNode(i);
+
+                    //added in flightsim to add lod node "x0_name" and all other lod relative
+                    // x1_name,x2_name etc
+                    //todo expost addnode to maxscript and call this outside
+                    if (node.Name.StartsWith("x"))
                     {
-                        for (int j = 0; j < 7; j++)
+                        string lod_name = node.Name.Substring(3);
+                        string lod_prefix = node.Name.Replace(lod_name, "");
+                        if (lod_prefix.ToCharArray()[0] == 'x' && lod_prefix.ToCharArray()[2]=='_')
                         {
-                            string relativeLodName = "x" + j + "_" + lod_name;
-                            IINode relativeLodNode = Loader.Core.GetINodeByName(relativeLodName);
-                            if (relativeLodNode != null)
+                            for (int j = 0; j < 7; j++)
                             {
-                                MaxNodeTree.QueueAddNode(relativeLodNode);
+                                string relativeLodName = "x" + j + "_" + lod_name;
+                                IINode relativeLodNode = Loader.Core.GetINodeByName(relativeLodName);
+                                if (relativeLodNode != null)
+                                {
+                                    MaxNodeTree.QueueAddNode(relativeLodNode);
+                                }
                             }
+                        }
+                        else
+                        { 
+                            MaxNodeTree.QueueAddNode(node);
                         }
                     }
                     else
                     {
-                MaxNodeTree.QueueAddNode(node);
-            }
-                }
-                else
-                {
-                    MaxNodeTree.QueueAddNode(node);
-                }
+                        MaxNodeTree.QueueAddNode(node);
+                    }
                 
 
+                }
+                MaxNodeTree.EndUpdate();
             }
-            MaxNodeTree.EndUpdate();
 
-
+            if (currentAnimationParseType==AnimationParseType.Materials)
+            {
+                IMtl material = MaterialUtilities.GetSelectedMaterial();
+                AddMaterialItem(material);
+            }
         }
 
         private void removeNodeButton_Click(object sender, EventArgs e)
@@ -264,5 +298,18 @@ namespace Max2Babylon
             endTextBox.Text = Tools.CalculateEndFrameFromAnimationGroupNodes(currentInfo).ToString();
         }
 
+        private void OnMaterialFocusEnter(object sender, EventArgs e)
+        {
+            currentAnimationParseType = AnimationParseType.Materials;
+            materialsView.BackColor = Color.DodgerBlue;
+            MaxNodeTree.BackColor = Color.White;
+        }
+
+        private void OnNodesFocusEnter(object sender, EventArgs e)
+        {
+            currentAnimationParseType = AnimationParseType.Nodes;
+            MaxNodeTree.BackColor = Color.DodgerBlue;
+            materialsView.BackColor = Color.White;
+        }
     }
 }

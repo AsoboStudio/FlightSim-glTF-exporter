@@ -36,6 +36,68 @@ namespace Max2Babylon.FlightSimExtension
 
             return false;
         }
+    }
 
+    public static class FlightSimMaterialUtilities
+    {
+        public static readonly MaterialUtilities.ClassIDWrapper class_ID = new MaterialUtilities.ClassIDWrapper(0x5ac74889, 0x27e705cd);
+
+        public static bool IsFlightSimMaterial(IMtl mat)
+        {
+            return mat != null && class_ID.Equals(mat.ClassID);
+        }
+
+        public static bool HasFlightSimMaterials(IMtl mat)
+        {
+            if (mat.IsMultiMtl)
+            {
+                for (int i = 0; i < mat.NumSubMtls; i++)
+                {
+                    IMtl childMat = mat.GetSubMtl(i);
+                    if (childMat!= null && class_ID.Equals(childMat.ClassID))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else if (mat!= null && class_ID.Equals(mat.ClassID))
+            {
+                return true;
+            }
+            
+
+            return false;
+        }
+
+        public static bool HasRuntimeAccess(IMtl mat)
+        {
+            if (mat.IsMultiMtl)
+            {
+                for (int i = 0; i < mat.NumSubMtls; i++)
+                {
+                    IMtl childMat = mat.GetSubMtl(i);
+                    if (childMat!= null)
+                    {
+                        if (class_ID.Equals(childMat.ClassID))
+                        {
+                            int p =Tools.GetMaterialProperty(childMat, "uniqueInContainer");
+                            if (Convert.ToBoolean(p))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (class_ID.Equals(mat.ClassID))
+            { 
+                int p =Tools.GetMaterialProperty(mat, "uniqueInContainer");
+                if (Convert.ToBoolean(p))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

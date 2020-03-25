@@ -24,8 +24,8 @@ namespace Max2Babylon.FlightSimExtension
 
     class FlightSimLightExtension : IBabylonExtensionExporter
     {
-        readonly ClassIDWrapper MacroLightOmniClassID = new ClassIDWrapper(0x3eb36fbb, 0x36275949);
-        readonly ClassIDWrapper MacroLightSpotClassID = new ClassIDWrapper(0x451a77a6, 0x232b0194);
+        readonly MaterialUtilities.ClassIDWrapper MacroLightOmniClassID = new MaterialUtilities.ClassIDWrapper(0x3eb36fbb, 0x36275949);
+        readonly MaterialUtilities.ClassIDWrapper MacroLightSpotClassID = new MaterialUtilities.ClassIDWrapper(0x451a77a6, 0x232b0194);
 
         public static Dictionary<string, string> MacroLight = new Dictionary<string, string>()
         {
@@ -65,7 +65,7 @@ namespace Max2Babylon.FlightSimExtension
                 if (maxNode != null)
                 {  
                     IObject obj = maxNode.ObjectRef;
-                    if (new ClassIDWrapper(obj.ClassID).Equals(MacroLightOmniClassID) || new ClassIDWrapper(obj.ClassID).Equals(MacroLightSpotClassID) )
+                    if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(MacroLightOmniClassID) || new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(MacroLightSpotClassID) )
                     {
                         string macroLightValue = maxNode.GetStringProperty("flightsim_macro_light_type", FlightSimLightExtension.MacroLight.Keys.ElementAt(0));
                         string macroLightType = FlightSimLightExtension.MacroLight[macroLightValue];

@@ -37,7 +37,7 @@ namespace Max2Babylon.FlightSimExtension
 
     class FlightSimFadeExtension : IBabylonExtensionExporter
     {
-        readonly ClassIDWrapper SphereFadeClassID = new ClassIDWrapper(0x794b56ca, 0x172623ba);
+        readonly MaterialUtilities.ClassIDWrapper SphereFadeClassID = new MaterialUtilities.ClassIDWrapper(0x794b56ca, 0x172623ba);
 
         #region Implementation of IBabylonExtensionExporter
 
@@ -71,7 +71,7 @@ namespace Max2Babylon.FlightSimExtension
                 foreach (IINode node in maxNode.DirectChildren())
                 {
                     IObject obj = node.ObjectRef;
-                    if (new ClassIDWrapper(obj.ClassID).Equals(SphereFadeClassID))
+                    if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(SphereFadeClassID))
                     {
                         GLTFExtensionFade fadeSphere = new GLTFExtensionFade();
                         GLTFExtensionAsoboFadeSphereParams sphereParams = new GLTFExtensionAsoboFadeSphereParams();

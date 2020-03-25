@@ -825,32 +825,32 @@ namespace Max2Babylon
 
         public bool isPhysicalMaterial(IIGameMaterial materialNode)
         {
-            return ClassIDWrapper.Physical_Material.Equals(materialNode.MaxMaterial.ClassID);
+            return MaterialUtilities.ClassIDWrapper.Physical_Material.Equals(materialNode.MaxMaterial.ClassID);
         }
 
         public bool isDoubleSidedMaterial(IIGameMaterial materialNode)
         {
-            return ClassIDWrapper.Double_Sided_Material.Equals(materialNode.MaxMaterial.ClassID);
+            return MaterialUtilities.ClassIDWrapper.Double_Sided_Material.Equals(materialNode.MaxMaterial.ClassID);
         }
 
         public bool isMultiSubObjectMaterial(IIGameMaterial materialNode)
         {
-            return ClassIDWrapper.Multi_Sub_Object_Material.Equals(materialNode.MaxMaterial.ClassID);
+            return MaterialUtilities.ClassIDWrapper.Multi_Sub_Object_Material.Equals(materialNode.MaxMaterial.ClassID);
         }
 
         public bool isDirectXShaderMaterial(IIGameMaterial materialNode)
         {
-            return ClassIDWrapper.DirectX_Shader_Material.Equals(materialNode.MaxMaterial.ClassID);
+            return MaterialUtilities.ClassIDWrapper.DirectX_Shader_Material.Equals(materialNode.MaxMaterial.ClassID);
         }
 
         public bool isArnoldMaterial(IIGameMaterial materialNode)
         {
-            return ClassIDWrapper.Standard_Surface_Material.Equals(materialNode.MaxMaterial.ClassID);
+            return MaterialUtilities.ClassIDWrapper.Standard_Surface_Material.Equals(materialNode.MaxMaterial.ClassID);
         }
 
         public bool isShellMaterial(IIGameMaterial materialNode)
         {
-            return ClassIDWrapper.Shell_Material.Equals(materialNode.MaxMaterial.ClassID);
+            return MaterialUtilities.ClassIDWrapper.Shell_Material.Equals(materialNode.MaxMaterial.ClassID);
         }
 
         /// <summary>
@@ -927,7 +927,7 @@ namespace Max2Babylon
                     .Select(x => x.Key as IBabylonMaterialExtensionExporter);
                 foreach (IBabylonMaterialExtensionExporter maxMaterialExporter in materialExporters)
                 {
-                    if (maxMaterialExporter.MaterialClassID.Equals(new ClassIDWrapper(materialNode.MaxMaterial.ClassID)))
+                    if (maxMaterialExporter.MaterialClassID.Equals(new MaterialUtilities.ClassIDWrapper(materialNode.MaxMaterial.ClassID)))
                         return null;
                 }
 

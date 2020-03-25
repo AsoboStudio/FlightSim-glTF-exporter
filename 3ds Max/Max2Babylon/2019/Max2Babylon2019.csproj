@@ -361,6 +361,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Tools\MaterialUtilities.cs" />
+    <Compile Include="Tools\NativeMethods.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Forms\AnimationForm.resx">

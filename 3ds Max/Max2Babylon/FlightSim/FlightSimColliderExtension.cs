@@ -69,9 +69,9 @@ namespace Max2Babylon.FlightSimExtension
 
     class FlightSimColliderExtension : IBabylonExtensionExporter
     {
-        readonly ClassIDWrapper BoxColliderClassID = new ClassIDWrapper(0x231f3b1a, 0x5a974704);
-        readonly ClassIDWrapper CylinderColliderClassID = new ClassIDWrapper(0x7c242166, 0x5dbf7d08);
-        readonly ClassIDWrapper SphereColliderClassID = new ClassIDWrapper(0x736e21e7, 0x45da3199);
+        readonly MaterialUtilities.ClassIDWrapper BoxColliderClassID = new MaterialUtilities.ClassIDWrapper(0x231f3b1a, 0x5a974704);
+        readonly MaterialUtilities.ClassIDWrapper CylinderColliderClassID = new MaterialUtilities.ClassIDWrapper(0x7c242166, 0x5dbf7d08);
+        readonly MaterialUtilities.ClassIDWrapper SphereColliderClassID = new MaterialUtilities.ClassIDWrapper(0x736e21e7, 0x45da3199);
 
         #region Implementation of IBabylonExtensionExporter
 
@@ -108,7 +108,7 @@ namespace Max2Babylon.FlightSimExtension
                     IObject obj = node.ObjectRef;
                     List<AsoboTag> tags = new List<AsoboTag>();
                     GLTFExtensionGizmo gizmo = new GLTFExtensionGizmo();;
-                    if (new ClassIDWrapper(obj.ClassID).Equals(BoxColliderClassID))
+                    if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(BoxColliderClassID))
                     {
                         GLTFExtensionAsoboBoxParams boxParams = new GLTFExtensionAsoboBoxParams();
                         float height = FlightSimExtensionUtility.GetGizmoParameterFloat(node, "BoxGizmo", "height");
@@ -135,7 +135,7 @@ namespace Max2Babylon.FlightSimExtension
                         if(isRoad) tags.Add(AsoboTag.Road);
 
                     }
-                    else if (new ClassIDWrapper(obj.ClassID).Equals(CylinderColliderClassID))
+                    else if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(CylinderColliderClassID))
                     {
                         GLTFExtensionAsoboCylinderParams cylinderParams = new GLTFExtensionAsoboCylinderParams();
                         float radius = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"CylGizmo", "radius");
@@ -157,7 +157,7 @@ namespace Max2Babylon.FlightSimExtension
                         if(isCollision) tags.Add(AsoboTag.Collision);
                         if(isRoad) tags.Add(AsoboTag.Road);
                     }
-                    else if (new ClassIDWrapper(obj.ClassID).Equals(SphereColliderClassID))
+                    else if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(SphereColliderClassID))
                     {
                         GLTFExtensionAsoboSphereParams sphereParams = new GLTFExtensionAsoboSphereParams();
                         float radius = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"SphereGizmo", "radius");
