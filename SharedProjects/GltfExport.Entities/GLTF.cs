@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace GLTFExport.Entities
@@ -218,5 +219,7 @@ namespace GLTFExport.Entities
             TexturesList.Add(gltfTexture);
             return gltfTexture;
         }
+
+        
     }
 }

@@ -297,7 +297,7 @@ namespace Max2Babylon
                 isMaterialDoubleSided = false;
                 if (mtl != null)
                 {
-                    IIGameMaterial unsupportedMaterial = isMaterialSupported(mtl);
+                    IIGameMaterial unsupportedMaterial = isMaterialSupported(mtl,babylonScene);
                     if (unsupportedMaterial == null)
                     {
                         babylonMesh.materialId = mtl.MaxMaterial.GetGuid().ToString();

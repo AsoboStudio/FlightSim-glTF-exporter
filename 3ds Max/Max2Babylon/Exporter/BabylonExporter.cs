@@ -402,7 +402,7 @@ namespace Max2Babylon
 
             
             // Instantiate custom material exporters
-            materialExporters = new Dictionary<ClassIDWrapper, IMaxMaterialExporter>();
+            //materialExporters = new Dictionary<ClassIDWrapper, IBabylonMaterialExtensionExporter>();
             foreach (Type type in Tools.GetAllLoadableTypes())
             {
                 if (type.IsAbstract || type.IsInterface )
@@ -415,19 +415,19 @@ namespace Max2Babylon
                     if (exporter == null)
                         RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
 
-                    Type t = exporter.GetGLTFExtendedType();
+                    BabylonExtendTypes t = exporter.GetExtendedType();
                     babylonScene.BabylonToGLTFExtensions.Add(exporter,t);
                 }
 
-                if (typeof(IMaxMaterialExporter).IsAssignableFrom(type))
-                {
-                    IMaxMaterialExporter exporter = Activator.CreateInstance(type) as IMaxMaterialExporter;
+                //if (typeof(IBabylonMaterialExtensionExporter).IsAssignableFrom(type))
+                //{
+                //    IBabylonMaterialExtensionExporter exporter = Activator.CreateInstance(type) as IBabylonMaterialExtensionExporter;
 
-                    if (exporter == null)
-                        RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
+                //    if (exporter == null)
+                //        RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
 
-                    materialExporters.Add(exporter.MaterialClassID, exporter);
-                }
+                //    materialExporters.Add(exporter.MaterialClassID, exporter);
+                //}
             }
 
             // Sounds
@@ -770,7 +770,7 @@ namespace Max2Babylon
                 bool generateBinary = outputFormat == "glb";
 
                 GLTFExporter gltfExporter = new GLTFExporter();
-                exportParameters.customGLTFMaterialExporter = new MaxGLTFMaterialExporter(exportParameters, gltfExporter, this);
+                //exportParameters.customGLTFMaterialExporter = new MaxGLTFMaterialExporter(exportParameters, gltfExporter, this);
                 gltfExporter.ExportGltf(this.exportParameters, babylonScene, tempOutputDirectory, outputFileName, generateBinary, this);
             }
             // Move files to output directory
@@ -860,6 +860,19 @@ namespace Max2Babylon
                 }
             }
             ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Available""");
+        }
+
+        private bool ExportBabylonExtension<T1>(T1 sceneObject,Type babylonType, ref BabylonScene babylonScene)
+        {
+            foreach (var extensionExporter in babylonScene.BabylonToGLTFExtensions)
+            {
+                if (extensionExporter.Value.babylonType == babylonType)
+                {
+                   if(extensionExporter.Key.ExportBabylonExtension(sceneObject,exportParameters,ref babylonScene,this)) return true;
+                }
+            }
+
+            return false;
         }
 
         private void moveFileToOutputDirectory(string sourceFilePath, string targetFilePath, ExportParameters exportParameters)

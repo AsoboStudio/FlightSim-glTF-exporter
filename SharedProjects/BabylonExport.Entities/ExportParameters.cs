@@ -49,7 +49,7 @@ namespace BabylonExport.Entities
         public string pbrEnvironment;
         
 
-        public IGLTFMaterialExporter customGLTFMaterialExporter;
+        
         public bool useMultiExporter = false;
 
 		public bool removeLodPrefix = true;

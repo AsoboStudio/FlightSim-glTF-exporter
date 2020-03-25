@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using Autodesk.Max;
 using Autodesk.Max.Plugins;
 using ManagedServices;
+using Max2Babylon.FlightSimExtension;
 using Newtonsoft.Json;
 using Utilities;
 
@@ -648,7 +649,7 @@ namespace Max2Babylon
                 helperPropBuffer = helperPropBuffer.Replace(oldGuid, newGuid.ToString());
 
                 n.Name = $"{n.Name}_{containerID}";
-                if (n.Mtl!=null && FlightSimMaterialExporter.HasFlightSimMaterials(n.Mtl) && FlightSimMaterialExporter.HasRuntimeAccess(n.Mtl))
+                if (n.Mtl!=null && FlightSimMaterialUtilities.HasFlightSimMaterials(n.Mtl) && FlightSimMaterialUtilities.HasRuntimeAccess(n.Mtl))
                 {
                     if (n.Mtl.IsMultiMtl)
                     {

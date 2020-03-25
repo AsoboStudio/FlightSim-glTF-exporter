@@ -10,6 +10,7 @@ using Babylon2GLTF;
 using BabylonExport.Entities;
 using GLTFExport.Entities;
 using Max2Babylon.FlightSim;
+using Utilities;
 
 namespace Max2Babylon.FlightSimExtension
 {
@@ -23,8 +24,8 @@ namespace Max2Babylon.FlightSimExtension
 
     class FlightSimLightExtension : IBabylonExtensionExporter
     {
-        readonly ClassIDWrapper MacroLightOmniClassID = new ClassIDWrapper(0x3eb36fbb, 0x36275949);
-        readonly ClassIDWrapper MacroLightSpotClassID = new ClassIDWrapper(0x451a77a6, 0x232b0194);
+        readonly MaterialUtilities.ClassIDWrapper MacroLightOmniClassID = new MaterialUtilities.ClassIDWrapper(0x3eb36fbb, 0x36275949);
+        readonly MaterialUtilities.ClassIDWrapper MacroLightSpotClassID = new MaterialUtilities.ClassIDWrapper(0x451a77a6, 0x232b0194);
 
         public static Dictionary<string, string> MacroLight = new Dictionary<string, string>()
         {
@@ -41,12 +42,17 @@ namespace Max2Babylon.FlightSimExtension
             return "ASOBO_macro_light";
         }
 
-        public Type GetGLTFExtendedType()
+        public BabylonExtendTypes GetExtendedType()
         {
-            return typeof(GLTFNode);
+            return new BabylonExtendTypes(typeof(GLTFNode));
+        }
+        public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
+        {
+            // just skip this extension is ment only for GLTF
+            return false;
         }
 
-        public object ExportBabylonExtension<T>(T babylonObject)
+        public object ExportGLTFExtension<T>(T babylonObject, ExportParameters parameters, ref GLTF gltf, ILoggingProvider logger)
         {
             var babylonLight = babylonObject as BabylonNode;
             if (babylonLight != null)
@@ -59,7 +65,7 @@ namespace Max2Babylon.FlightSimExtension
                 if (maxNode != null)
                 {  
                     IObject obj = maxNode.ObjectRef;
-                    if (new ClassIDWrapper(obj.ClassID).Equals(MacroLightOmniClassID) || new ClassIDWrapper(obj.ClassID).Equals(MacroLightSpotClassID) )
+                    if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(MacroLightOmniClassID) || new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(MacroLightSpotClassID) )
                     {
                         string macroLightValue = maxNode.GetStringProperty("flightsim_macro_light_type", FlightSimLightExtension.MacroLight.Keys.ElementAt(0));
                         string macroLightType = FlightSimLightExtension.MacroLight[macroLightValue];
@@ -71,6 +77,8 @@ namespace Max2Babylon.FlightSimExtension
             }
             return null;
         }
+        
+
         #endregion
 
     }

@@ -7,7 +7,10 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
+using Babylon2GLTF;
 using BabylonExport.Entities;
+using Max2Babylon.FlightSimExtension;
+using Utilities;
 
 namespace Max2Babylon
 {
@@ -111,20 +114,6 @@ namespace Max2Babylon
         {
             public static readonly bool responsiveAA = false;
         }
-    }
-
-    [DataContract]
-    class GLTFExtensionAsoboCollisionObject : GLTFProperty
-    {
-        public const string SerializedName = "ASOBO_collision_object";
-        [DataMember(EmitDefaultValue = true)] public bool enabled = true;
-    }
-
-    [DataContract]
-    class GLTFExtensionAsoboRoadObject : GLTFProperty
-    {
-        public const string SerializedName = "ASOBO_road_object";
-        [DataMember(EmitDefaultValue = true)] public bool enabled = true;
     }
 
     [DataContract]
@@ -279,61 +268,62 @@ namespace Max2Babylon
 
     #endregion
 
-    public class FlightSimMaterialExporter : IMaxGLTFMaterialExporter
+    public class FlightSimMaterialExtensionExporter : IBabylonMaterialExtensionExporter
     {
-
-        public static bool HasFlightSimMaterials(IMtl mat)
+        public MaterialUtilities.ClassIDWrapper MaterialClassID
         {
-            if (mat.IsMultiMtl)
+            get { return FlightSimMaterialUtilities.class_ID; }
+        }
+        public string GetGLTFExtensionName()
+        {
+            return "ASOBO_flightsim_material";
+        }
+
+        public BabylonExtendTypes GetExtendedType()
+        {
+            BabylonExtendTypes extendType = new BabylonExtendTypes(typeof(BabylonMaterial),typeof(GLTFMaterial));
+            return extendType;
+        }
+
+        public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
+        {
+            var materialNode = babylonObject as Autodesk.Max.IIGameMaterial;
+            bool isGLTFExported = parameters.outputFormat == "gltf";
+            if (isGLTFExported )
             {
-                for (int i = 0; i < mat.NumSubMtls; i++)
+                var id = materialNode.MaxMaterial.GetGuid().ToString();
+                // add a basic babylon material to the list to forward the max material reference
+                var babylonMaterial = new BabylonMaterial(id)
                 {
-                    IMtl childMat = mat.GetSubMtl(i);
-                    if (childMat!= null && class_ID.Equals(childMat.ClassID))
-                    {
-                        return true;
-                    }
-                }
-            }
-            else if (mat!= null && class_ID.Equals(mat.ClassID))
-            {
+                    maxGameMaterial = materialNode,
+                    name = materialNode.MaterialName
+                };
+                babylonScene.MaterialsList.Add(babylonMaterial);
                 return true;
             }
-            
 
             return false;
         }
 
-        public static bool HasRuntimeAccess(IMtl mat)
+        public object ExportGLTFExtension<T1>(T1 babylonObject, ExportParameters parameters, ref GLTF gltf, ILoggingProvider logger)
         {
-            if (mat.IsMultiMtl)
+            var babylonMaterial = babylonObject as BabylonMaterial;
+
+            if (FlightSimMaterialUtilities.class_ID.Equals(new MaterialUtilities.ClassIDWrapper(babylonMaterial.maxGameMaterial.MaxMaterial.ClassID)))
             {
-                for (int i = 0; i < mat.NumSubMtls; i++)
-                {
-                    IMtl childMat = mat.GetSubMtl(i);
-                    if (childMat!= null)
-                    {
-                        if (class_ID.Equals(childMat.ClassID))
-                        {
-                            int p =Tools.GetMaterialProperty(childMat, "uniqueInContainer");
-                            if (Convert.ToBoolean(p))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
+                string outputFolder = gltf.OutputFolder;
+                GLTFMaterial gltfObject = ExportGLTFMaterial(parameters,gltf,babylonMaterial.maxGameMaterial,
+                        (string sourcePath, string textureName) => { return TextureUtilities.TryWriteImage(outputFolder, sourcePath, textureName,logger,exporterParameters); },
+                        (string message, Color color) => { logger.RaiseMessage(message, color, 2); },
+                        (string message) => { logger.RaiseWarning(message, 2); },
+                        (string message) => { logger.RaiseError(message, 2); });
+                gltf.MaterialsList.Add(gltfObject);
             }
-            else if (class_ID.Equals(mat.ClassID))
-            { 
-                int p =Tools.GetMaterialProperty(mat, "uniqueInContainer");
-                if (Convert.ToBoolean(p))
-                {
-                    return true;
-                }
-            }
-            return false;
+
+            return null;
         }
+
+       
 
 
         enum MaterialType
@@ -355,11 +345,11 @@ namespace Max2Babylon
             EnvironmentOccluder
         }
 
-        static readonly ClassIDWrapper class_ID = new ClassIDWrapper(0x5ac74889, 0x27e705cd);
+        
 
-        ClassIDWrapper IMaxMaterialExporter.MaterialClassID => class_ID;
+        //ClassIDWrapper IBabylonMaterialExtensionExporter.MaterialClassID => class_ID;
 
-        public FlightSimMaterialExporter() { }
+        public FlightSimMaterialExtensionExporter() { }
 
         ExportParameters exporterParameters;
         GLTF gltf;
@@ -452,7 +442,7 @@ namespace Max2Babylon
 
         #endregion
 
-        GLTFMaterial IMaxGLTFMaterialExporter.ExportGLTFMaterial(ExportParameters exportParameters, GLTF gltf, IIGameMaterial maxGameMaterial, 
+        GLTFMaterial ExportGLTFMaterial(ExportParameters exportParameters, GLTF gltf, IIGameMaterial maxGameMaterial, 
             Func<string, string, string> tryWriteImageFunc, 
             Action<string, Color> raiseMessageAction, 
             Action<string> raiseWarningAction, 
@@ -594,8 +584,6 @@ namespace Max2Babylon
             GLTFExtensionAsoboMaterialGeometryDecal decalExtensionObject = null;
             GLTFExtensionAsoboMaterialFakeTerrain fakeTerrainExtensionObject = null;
             GLTFExtensionAsoboMaterialInvisible invisibleExtensionObject = null;
-            GLTFExtensionAsoboCollisionObject collisionExtensionObject = null;
-            GLTFExtensionAsoboRoadObject roadObject = null;
             GLTFExtensionAsoboMaterialEnvironmentOccluder environmentOccluderExtensionObject = null;
 
             GLTFExtensions materialExtensions = new GLTFExtensions();
@@ -1219,6 +1207,8 @@ namespace Max2Babylon
 
             #region Collision&Road
             {
+                GLTFExtensionAsoboTags asoboTagsExtensionObject = new GLTFExtensionAsoboTags();
+                asoboTagsExtensionObject.tags = new List<string>();
                 for (int i = 0; i < numProps; ++i)
                 {
                     IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
@@ -1229,8 +1219,10 @@ namespace Max2Babylon
                     IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
                     string propertyName = property.Name.ToUpperInvariant();
 
+                    
                     switch (propertyName)
-                    {
+                    { 
+                           
                         case "COLLISIONMATERIAL":
                             {
                                 if (!property.GetPropertyValue(ref int_out, param_t))
@@ -1241,8 +1233,10 @@ namespace Max2Babylon
                                 bool collisionMaterial = (int_out != 0);
                                 if (collisionMaterial)
                                 {
-                                    GLTFExtensionAsoboCollisionObject collisionMaterialExtensionObject = new GLTFExtensionAsoboCollisionObject();
-                                    materialExtensions.Add(GLTFExtensionAsoboCollisionObject.SerializedName, collisionMaterialExtensionObject);
+                                    if (!asoboTagsExtensionObject.tags.Contains(AsoboTag.Road.ToString()))
+                                    {
+                                        asoboTagsExtensionObject.tags.Add(AsoboTag.Road.ToString());
+                                    }
                                 }
                                 break;
                             }
@@ -1256,11 +1250,21 @@ namespace Max2Babylon
                             bool roadMaterial = (int_out != 0);
                             if (roadMaterial)
                             {
-                                GLTFExtensionAsoboRoadObject roadMaterialExtensionObject = new GLTFExtensionAsoboRoadObject();
-                                materialExtensions.Add(GLTFExtensionAsoboRoadObject.SerializedName, roadMaterialExtensionObject);
+                                if (!asoboTagsExtensionObject.tags.Contains(AsoboTag.Road.ToString()))
+                                {
+                                    asoboTagsExtensionObject.tags.Add(AsoboTag.Road.ToString());
+                                }
                             }
                             break;
                         }
+                    }
+                    
+                }
+                if (asoboTagsExtensionObject.tags.Count > 0)
+                {
+                    if (!materialExtensions.ContainsKey(GLTFExtensionAsoboTags.SerializedName))
+                    {
+                        materialExtensions.Add(GLTFExtensionAsoboTags.SerializedName,asoboTagsExtensionObject);
                     }
                 }
             }
@@ -1786,9 +1790,6 @@ namespace Max2Babylon
             if (fresnelFadeExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialFresnelFade.SerializedName, fresnelFadeExtensionObject);
 
-            if (collisionExtensionObject != null)
-                materialExtensions.Add(GLTFExtensionAsoboMaterialFresnelFade.SerializedName, collisionExtensionObject);
-
             if(UVOptionsExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialUVOptions.SerializedName, UVOptionsExtensionObject);
 
@@ -2160,6 +2161,9 @@ namespace Max2Babylon
         {
             return new T { index = texture.index };
         }
+
+
+       
     }
     
     static class FlightSimClassExtensions

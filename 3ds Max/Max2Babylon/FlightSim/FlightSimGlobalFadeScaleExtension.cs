@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 using Babylon2GLTF;
 using BabylonExport.Entities;
 using GLTFExport.Entities;
+using Utilities;
 
 namespace Max2Babylon.FlightSimExtension
 {
@@ -21,12 +22,18 @@ namespace Max2Babylon.FlightSimExtension
             return "ASOBO_scene_fade_scale";
         }
 
-        public Type GetGLTFExtendedType()
+        public BabylonExtendTypes GetExtendedType()
         {
-            return typeof(GLTFScene);
+            return new BabylonExtendTypes(typeof(GLTFScene));
         }
 
-        public object ExportBabylonExtension<T>(T babylonObject)
+        public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
+        {
+            // just skip this extension is ment only for GLTF
+            return false;
+        }
+
+        public object ExportGLTFExtension<T>(T babylonObject, ExportParameters parameters, ref GLTF gltf, ILoggingProvider logger)
         {
             var babylonScene = babylonObject as BabylonScene;
             if (babylonScene != null)

@@ -10,6 +10,7 @@ using Babylon2GLTF;
 using BabylonExport.Entities;
 using GLTFExport.Entities;
 using Max2Babylon.FlightSim;
+using Utilities;
 
 namespace Max2Babylon.FlightSimExtension
 {
@@ -36,7 +37,7 @@ namespace Max2Babylon.FlightSimExtension
 
     class FlightSimFadeExtension : IBabylonExtensionExporter
     {
-        readonly ClassIDWrapper SphereFadeClassID = new ClassIDWrapper(0x794b56ca, 0x172623ba);
+        readonly MaterialUtilities.ClassIDWrapper SphereFadeClassID = new MaterialUtilities.ClassIDWrapper(0x794b56ca, 0x172623ba);
 
         #region Implementation of IBabylonExtensionExporter
 
@@ -45,12 +46,18 @@ namespace Max2Babylon.FlightSimExtension
             return "ASOBO_fade_object";
         }
 
-        public Type GetGLTFExtendedType()
+        public BabylonExtendTypes GetExtendedType()
         {
-            return typeof(GLTFMesh);
+            return new BabylonExtendTypes(typeof(GLTFMesh));
         }
 
-        public object ExportBabylonExtension<T>(T babylonObject)
+        public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
+        {
+            // just skip this extension is ment only for GLTF
+            return false;
+        }
+
+        public object ExportGLTFExtension<T>(T babylonObject, ExportParameters parameters, ref GLTF gltf, ILoggingProvider logger)
         {
             var babylonMesh = babylonObject as BabylonMesh;
             if (babylonMesh != null)
@@ -64,7 +71,7 @@ namespace Max2Babylon.FlightSimExtension
                 foreach (IINode node in maxNode.DirectChildren())
                 {
                     IObject obj = node.ObjectRef;
-                    if (new ClassIDWrapper(obj.ClassID).Equals(SphereFadeClassID))
+                    if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(SphereFadeClassID))
                     {
                         GLTFExtensionFade fadeSphere = new GLTFExtensionFade();
                         GLTFExtensionAsoboFadeSphereParams sphereParams = new GLTFExtensionAsoboFadeSphereParams();

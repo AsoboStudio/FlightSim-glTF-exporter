@@ -59,33 +59,10 @@ namespace Babylon2GLTF
         private GLTFTextureInfo ExportTexture(BabylonTexture babylonTexture, GLTF gltf)
         {
             return ExportTexture(babylonTexture, gltf, null, 
-                () => { return TryWriteImage(gltf, babylonTexture.originalPath, babylonTexture.name); });
+                () => { return TextureUtilities.TryWriteImage(gltf.OutputFolder, babylonTexture.originalPath, babylonTexture.name,logger,exportParameters); });
         }
 
-        public string TryWriteImage(GLTF gltf, string sourcePath, string textureName)
-            {
-                if (sourcePath == null || sourcePath == "")
-                {
-                    logger.RaiseWarning("Texture path is missing.", 3);
-                    return null;
-                }
-
-                var validImageFormat = GetGltfValidImageFormat(Path.GetExtension(sourcePath));
-
-                if (validImageFormat == null)
-                {
-                    // Image format is not supported by the exporter
-                    logger.RaiseWarning(string.Format("Format of texture {0} is not supported by the exporter. Consider using a standard image format like jpg or png.", Path.GetFileName(sourcePath)), 3);
-                    return null;
-                }
-
-                // Copy texture to output
-                var destPath = Path.Combine(gltf.OutputFolder, textureName);
-                destPath = Path.ChangeExtension(destPath, validImageFormat);
-                CopyGltfTexture(sourcePath, destPath);
-
-                return validImageFormat;
-        }
+        
 
         private GLTFTextureInfo ExportTexture(BabylonTexture babylonTexture, GLTF gltf, string name, Func<string> writeImageFunc)
         {
@@ -409,15 +386,7 @@ namespace Babylon2GLTF
             }
         }
 
-        private string GetGltfValidImageFormat(string extension)
-        {
-            return TextureUtilities.GetValidImageFormat(extension);
-        }
-
-        private void CopyGltfTexture(string sourcePath, string destPath)
-        {
-            TextureUtilities.CopyTexture(sourcePath, destPath, exportParameters.txtQuality, logger);
-        }
+        
 
         /// <summary>
         /// Add the KHR_texture_transform to the glTF file

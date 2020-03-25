@@ -10,18 +10,33 @@ using Babylon2GLTF;
 using BabylonExport.Entities;
 using GLTFExport.Entities;
 using Max2Babylon.FlightSim;
+using Utilities;
 
 namespace Max2Babylon.FlightSimExtension
 {
-    [DataContract]
-    class GLTFExtensionAsoboCollider : GLTFProperty
+    enum AsoboTag
     {
-        [DataMember(Name = "collision_objects")] 
-        public List<GLTFExtensionCollider> colliders { get; set; }
+        Collision,
+        Road
     }
 
     [DataContract]
-    class GLTFExtensionCollider : GLTFProperty
+    class GLTFExtensionAsoboTags : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_tags";
+        [DataMember]
+        public List<string> tags { get; set; }
+    }
+
+    [DataContract]
+    class GLTFExtensionAsoboGizmo : GLTFProperty
+    {
+        [DataMember(Name = "gizmo_objects")] 
+        public List<GLTFExtensionGizmo> gizmos { get; set; }
+    }
+
+    [DataContract]
+    class GLTFExtensionGizmo : GLTFProperty
     {
         [DataMember(EmitDefaultValue = false,Name = "type")] public string Type { get; set; }
         [DataMember(EmitDefaultValue = false, Name = "translation")] public object Translation;
@@ -36,7 +51,6 @@ namespace Max2Babylon.FlightSimExtension
         [DataMember(EmitDefaultValue = false)] public float? width;
         [DataMember(EmitDefaultValue = false)] public float? height;
         [DataMember(EmitDefaultValue = false)] public float? length;
-        [DataMember(EmitDefaultValue = false)] public bool? isRoad;
     }
 
     [DataContract]
@@ -55,30 +69,36 @@ namespace Max2Babylon.FlightSimExtension
 
     class FlightSimColliderExtension : IBabylonExtensionExporter
     {
-        readonly ClassIDWrapper BoxColliderClassID = new ClassIDWrapper(0x231f3b1a, 0x5a974704);
-        readonly ClassIDWrapper CylinderColliderClassID = new ClassIDWrapper(0x7c242166, 0x5dbf7d08);
-        readonly ClassIDWrapper SphereColliderClassID = new ClassIDWrapper(0x736e21e7, 0x45da3199);
+        readonly MaterialUtilities.ClassIDWrapper BoxColliderClassID = new MaterialUtilities.ClassIDWrapper(0x231f3b1a, 0x5a974704);
+        readonly MaterialUtilities.ClassIDWrapper CylinderColliderClassID = new MaterialUtilities.ClassIDWrapper(0x7c242166, 0x5dbf7d08);
+        readonly MaterialUtilities.ClassIDWrapper SphereColliderClassID = new MaterialUtilities.ClassIDWrapper(0x736e21e7, 0x45da3199);
 
         #region Implementation of IBabylonExtensionExporter
 
         public string GetGLTFExtensionName()
         {
-            return "ASOBO_collision_object";
+            return "ASOBO_gizmo_object";
         }
 
-        public Type GetGLTFExtendedType()
+        public BabylonExtendTypes GetExtendedType()
         {
-            return typeof(GLTFMesh);
+            return new BabylonExtendTypes(typeof(GLTFMesh));
         }
 
-        public object ExportBabylonExtension<T>(T babylonObject)
+        public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
+        {
+            // just skip this extension is ment only for GLTF
+            return false;
+        }
+
+        public object ExportGLTFExtension<T>(T babylonObject, ExportParameters parameters, ref GLTF gltf, ILoggingProvider logger)
         {
             var babylonMesh = babylonObject as BabylonMesh;
             if (babylonMesh != null)
             {
-                GLTFExtensionAsoboCollider gltfExtensionAsoboCollider = new GLTFExtensionAsoboCollider();
-                List<GLTFExtensionCollider> collisions = new List<GLTFExtensionCollider>();
-                gltfExtensionAsoboCollider.colliders = collisions;
+                GLTFExtensionAsoboGizmo gltfExtensionAsoboGizmo = new GLTFExtensionAsoboGizmo();
+                List<GLTFExtensionGizmo> collisions = new List<GLTFExtensionGizmo>();
+                gltfExtensionAsoboGizmo.gizmos = collisions;
 
                 Guid guid = Guid.Empty;
                 Guid.TryParse(babylonMesh.id, out guid);
@@ -86,63 +106,95 @@ namespace Max2Babylon.FlightSimExtension
                 foreach (IINode node in maxNode.DirectChildren())
                 {
                     IObject obj = node.ObjectRef;
-                    if (new ClassIDWrapper(obj.ClassID).Equals(BoxColliderClassID))
+                    List<AsoboTag> tags = new List<AsoboTag>();
+                    GLTFExtensionGizmo gizmo = new GLTFExtensionGizmo();;
+                    if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(BoxColliderClassID))
                     {
-                        GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboBoxParams boxParams = new GLTFExtensionAsoboBoxParams();
                         float height = FlightSimExtensionUtility.GetGizmoParameterFloat(node, "BoxGizmo", "height");
                         float width = FlightSimExtensionUtility.GetGizmoParameterFloat(node, "BoxGizmo","width");
                         float length = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"BoxGizmo", "length");
-                        bool isRoad = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "BoxCollider", "IsRoad",IsSubClass:false);
-                        collider.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
+                        gizmo.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
                         float[] rotation = FlightSimExtensionUtility.GetRotation(node, maxNode);
                         if (!FlightSimExtensionUtility.IsDefaultRotation(rotation))
                         {
-                            collider.Rotation = rotation;
+                            gizmo.Rotation = rotation;
                         }
                         
                         boxParams.width = width;
                         boxParams.height = height;
                         boxParams.length = length;
-                        if (isRoad) boxParams.isRoad = true;
 
-                        collider.Params = boxParams;
-                        collider.Type = "box";
-                        collisions.Add(collider);
+                        gizmo.Params = boxParams;
+                        gizmo.Type = "box";
+
+                        bool isRoad = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "BoxCollider", "IsRoad",IsSubClass:false);
+                        bool isCollision = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "BoxCollider", "IsCollision",IsSubClass:false);
+                        
+                        if(isCollision) tags.Add(AsoboTag.Collision);
+                        if(isRoad) tags.Add(AsoboTag.Road);
+
                     }
-                    else if (new ClassIDWrapper(obj.ClassID).Equals(CylinderColliderClassID))
+                    else if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(CylinderColliderClassID))
                     {
-                        GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboCylinderParams cylinderParams = new GLTFExtensionAsoboCylinderParams();
                         float radius = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"CylGizmo", "radius");
                         float height = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"CylGizmo", "height");
-                        collider.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
+                        gizmo.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
                         float[] rotation = FlightSimExtensionUtility.GetRotation(node, maxNode);
                         if (!FlightSimExtensionUtility.IsDefaultRotation(rotation))
                         {
-                            collider.Rotation = rotation;
+                            gizmo.Rotation = rotation;
                         }
                         cylinderParams.height = height;
                         cylinderParams.radius = radius;
-                        collider.Params = cylinderParams;
-                        collider.Type = "cylinder";
-                        collisions.Add(collider);
+                        gizmo.Params = cylinderParams;
+                        gizmo.Type = "cylinder";
+
+                        bool isRoad = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "CylCollider", "IsRoad",IsSubClass:false);
+                        bool isCollision = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "CylCollider", "IsCollision",IsSubClass:false);
+                        
+                        if(isCollision) tags.Add(AsoboTag.Collision);
+                        if(isRoad) tags.Add(AsoboTag.Road);
                     }
-                    else if (new ClassIDWrapper(obj.ClassID).Equals(SphereColliderClassID))
+                    else if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(SphereColliderClassID))
                     {
-                        GLTFExtensionCollider collider = new GLTFExtensionCollider();
                         GLTFExtensionAsoboSphereParams sphereParams = new GLTFExtensionAsoboSphereParams();
                         float radius = FlightSimExtensionUtility.GetGizmoParameterFloat(node,"SphereGizmo", "radius");
-                        collider.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
+                        gizmo.Translation = FlightSimExtensionUtility.GetTranslation(node,maxNode);
                         sphereParams.radius = radius;
-                        collider.Type = "sphere";
-                        collider.Params = sphereParams;
-                        collisions.Add(collider);
+                        gizmo.Type = "sphere";
+                        gizmo.Params = sphereParams;
+
+                        bool isRoad = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "SphereCollider", "IsRoad",IsSubClass:false);
+                        bool isCollision = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "SphereCollider", "IsCollision",IsSubClass:false);
+                        
+                        if(isCollision) tags.Add(AsoboTag.Collision);
+                        if(isRoad) tags.Add(AsoboTag.Road);
                     }
+
+                    GLTFExtensionAsoboTags asoboTagsExtension = new GLTFExtensionAsoboTags();
+                    asoboTagsExtension.tags = tags.ConvertAll(x => x.ToString());
+                    if (tags.Count > 0)
+                    {
+                        if(gizmo.extensions==null) gizmo.extensions = new GLTFExtensions();
+                        gizmo.extensions.Add(GLTFExtensionAsoboTags.SerializedName,asoboTagsExtension);
+
+                        if (gltf.extensionsUsed == null) gltf.extensionsUsed = new List<string>();
+                        if (!gltf.extensionsUsed.Contains(GLTFExtensionAsoboTags.SerializedName))
+                        {
+                            gltf.extensionsUsed.Add(GLTFExtensionAsoboTags.SerializedName);
+                        }
+                    }
+
+                    
+                    collisions.Add(gizmo);
+                    
+
                 }
                 if(collisions.Count>0)
                 {
-                    return gltfExtensionAsoboCollider;
+                    return gltfExtensionAsoboGizmo;
                 }
             }
             return null;
