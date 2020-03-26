@@ -1233,9 +1233,9 @@ namespace Max2Babylon
                                 bool collisionMaterial = (int_out != 0);
                                 if (collisionMaterial)
                                 {
-                                    if (!asoboTagsExtensionObject.tags.Contains(AsoboTag.Road.ToString()))
+                                    if (!asoboTagsExtensionObject.tags.Contains(AsoboTag.Collision.ToString()))
                                     {
-                                        asoboTagsExtensionObject.tags.Add(AsoboTag.Road.ToString());
+                                        asoboTagsExtensionObject.tags.Add(AsoboTag.Collision.ToString());
                                     }
                                 }
                                 break;

@@ -134,6 +134,9 @@ namespace Max2Babylon.FlightSimExtension
                         if(isCollision) tags.Add(AsoboTag.Collision);
                         if(isRoad) tags.Add(AsoboTag.Road);
 
+                        ParseTags(ref gizmo, ref gltf, ref tags);
+                        collisions.Add(gizmo);
+
                     }
                     else if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(CylinderColliderClassID))
                     {
@@ -156,6 +159,9 @@ namespace Max2Babylon.FlightSimExtension
                         
                         if(isCollision) tags.Add(AsoboTag.Collision);
                         if(isRoad) tags.Add(AsoboTag.Road);
+
+                        ParseTags(ref gizmo, ref gltf, ref tags);
+                        collisions.Add(gizmo);
                     }
                     else if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(SphereColliderClassID))
                     {
@@ -171,26 +177,10 @@ namespace Max2Babylon.FlightSimExtension
                         
                         if(isCollision) tags.Add(AsoboTag.Collision);
                         if(isRoad) tags.Add(AsoboTag.Road);
+
+                        ParseTags(ref gizmo, ref gltf, ref tags);
+                        collisions.Add(gizmo);
                     }
-
-                    GLTFExtensionAsoboTags asoboTagsExtension = new GLTFExtensionAsoboTags();
-                    asoboTagsExtension.tags = tags.ConvertAll(x => x.ToString());
-                    if (tags.Count > 0)
-                    {
-                        if(gizmo.extensions==null) gizmo.extensions = new GLTFExtensions();
-                        gizmo.extensions.Add(GLTFExtensionAsoboTags.SerializedName,asoboTagsExtension);
-
-                        if (gltf.extensionsUsed == null) gltf.extensionsUsed = new List<string>();
-                        if (!gltf.extensionsUsed.Contains(GLTFExtensionAsoboTags.SerializedName))
-                        {
-                            gltf.extensionsUsed.Add(GLTFExtensionAsoboTags.SerializedName);
-                        }
-                    }
-
-                    
-                    collisions.Add(gizmo);
-                    
-
                 }
                 if(collisions.Count>0)
                 {
@@ -199,6 +189,24 @@ namespace Max2Babylon.FlightSimExtension
             }
             return null;
         }
+
+        void ParseTags(ref GLTFExtensionGizmo gizmo,ref GLTF gltf,ref List<AsoboTag> tags )
+        {
+            GLTFExtensionAsoboTags asoboTagsExtension = new GLTFExtensionAsoboTags();
+            asoboTagsExtension.tags = tags.ConvertAll(x => x.ToString());
+            if (tags.Count > 0)
+            {
+                if(gizmo.extensions==null) gizmo.extensions = new GLTFExtensions();
+                gizmo.extensions.Add(GLTFExtensionAsoboTags.SerializedName,asoboTagsExtension);
+
+                if (gltf.extensionsUsed == null) gltf.extensionsUsed = new List<string>();
+                if (!gltf.extensionsUsed.Contains(GLTFExtensionAsoboTags.SerializedName))
+                {
+                    gltf.extensionsUsed.Add(GLTFExtensionAsoboTags.SerializedName);
+                }
+            }
+        }
+
         #endregion
 
         
