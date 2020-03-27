@@ -334,8 +334,14 @@
     <Compile Include="..\Tools\LayerUtilities.cs">
       <Link>Tools\LayerUtilities.cs</Link>
     </Compile>
+    <Compile Include="..\Tools\MaterialUtilities.cs">
+      <Link>Tools\MaterialUtilities.cs</Link>
+    </Compile>
     <Compile Include="..\Tools\MeshUtlities.cs">
       <Link>Tools\MeshUtlities.cs</Link>
+    </Compile>
+    <Compile Include="..\Tools\NativeMethods.cs">
+      <Link>Tools\NativeMethods.cs</Link>
     </Compile>
     <Compile Include="..\Tools\ScriptsUtilities.cs">
       <Link>Tools\ScriptsUtilities.cs</Link>
@@ -361,8 +367,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Tools\MaterialUtilities.cs" />
-    <Compile Include="Tools\NativeMethods.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Forms\AnimationForm.resx">
