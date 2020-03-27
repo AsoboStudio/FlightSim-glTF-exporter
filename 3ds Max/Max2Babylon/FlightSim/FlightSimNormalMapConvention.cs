@@ -15,7 +15,7 @@ namespace FlightSimExtension
     [DataContract]
     class GLTFExtensionNormalMapConvention : GLTFProperty
     {
-        [DataMember(Name = "tanget_space_convention")] 
+        [DataMember(Name = "tangent_space_convention")] 
         public string tangentSpaceConvention { get; set; }
     }
 
