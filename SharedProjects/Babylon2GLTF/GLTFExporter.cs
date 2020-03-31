@@ -33,7 +33,7 @@ namespace Babylon2GLTF
             this.exportParameters = exportParameters;
             this.logger = logger;
 
-            logger.RaiseMessage("GLTFExporter | Exportation started", Color.Blue);
+            logger.Print("GLTFExporter | Exportation started", Color.Blue);
 #if DEBUG
             var watch = new Stopwatch();
             watch.Start();
@@ -83,7 +83,7 @@ namespace Babylon2GLTF
  
 
             // Root nodes
-            logger.RaiseMessage("GLTFExporter | Exporting nodes");
+            logger.Print("GLTFExporter | Exporting nodes",Color.Black);
             progression = 30.0f;
             logger.ReportProgressChanged((int)progression);
             List<BabylonNode> babylonRootNodes = babylonNodes.FindAll(node => node.parentId == null);
@@ -104,7 +104,7 @@ namespace Babylon2GLTF
 #endif
 
             // Meshes
-            logger.RaiseMessage("GLTFExporter | Exporting meshes");
+            logger.Print("GLTFExporter | Exporting meshes",Color.Black);
             progression = 10.0f;
             logger.ReportProgressChanged((int)progression);
             progressionStep = 40.0f / babylonScene.meshes.Length;
@@ -121,7 +121,7 @@ namespace Babylon2GLTF
 #endif
  
             //Mesh Skins, light and Cameras
-            logger.RaiseMessage("GLTFExporter | Exporting skins, lights and cameras");
+            logger.Print("GLTFExporter | Exporting skins, lights and cameras", Color.Black);
             progression = 50.0f;
             logger.ReportProgressChanged((int)progression);
             progressionStep = 50.0f / babylonRootNodes.Count;
@@ -139,7 +139,7 @@ namespace Babylon2GLTF
             // Materials
             progression = 70.0f;
             logger.ReportProgressChanged((int)progression);
-            logger.RaiseMessage("GLTFExporter | Exporting materials");
+            logger.Print("GLTFExporter | Exporting materials",Color.Black);
             foreach (var babylonMaterial in babylonMaterialsToExport)
             {
                 ExportMaterial(babylonMaterial, gltf);
@@ -156,7 +156,7 @@ namespace Babylon2GLTF
                 // Animations
                 progression = 90.0f;
                 logger.ReportProgressChanged((int) progression);
-                logger.RaiseMessage("GLTFExporter | Exporting Animations");
+                logger.Print("GLTFExporter | Exporting animations",Color.Black);
                 ExportAnimationGroups(gltf, babylonScene);
 #if DEBUG
                 var animationGroupsExportTime = watch.ElapsedMilliseconds / 1000.0 - materialsExportTime;
@@ -216,7 +216,7 @@ namespace Babylon2GLTF
             }
 
             // Output
-            logger.RaiseMessage("GLTFExporter | Saving to output file");
+            logger.Print("GLTFExporter | Saving to output file",Color.Black);
             if (!generateBinary) {
 
                 // Cast lists to arrays

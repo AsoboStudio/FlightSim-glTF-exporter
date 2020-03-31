@@ -102,6 +102,8 @@ namespace Max2Babylon
             this.chkRemoveNamespace = new System.Windows.Forms.CheckBox();
             this.chk_RemoveLodPrefix = new System.Windows.Forms.CheckBox();
             this.pictureBox_flightsim = new System.Windows.Forms.PictureBox();
+            this.logLevelcmb = new System.Windows.Forms.ComboBox();
+            this.label9 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.grpGeometry.SuspendLayout();
             this.grpAnimations.SuspendLayout();
@@ -1000,11 +1002,37 @@ namespace Max2Babylon
             this.pictureBox_flightsim.TabIndex = 112;
             this.pictureBox_flightsim.TabStop = false;
             // 
+            // logLevelcmb
+            // 
+            this.logLevelcmb.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.logLevelcmb.FormattingEnabled = true;
+            this.logLevelcmb.Items.AddRange(new object[] {
+            "ERROR",
+            "WARNING",
+            "MESSAGE",
+            "VERBOSE"});
+            this.logLevelcmb.Location = new System.Drawing.Point(66, 495);
+            this.logLevelcmb.Name = "logLevelcmb";
+            this.logLevelcmb.Size = new System.Drawing.Size(103, 21);
+            this.logLevelcmb.TabIndex = 35;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(13, 498);
+            this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(53, 13);
+            this.label9.TabIndex = 43;
+            this.label9.Text = "Log level:";
+            // 
             // ExporterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1276, 898);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.logLevelcmb);
             this.Controls.Add(this.pictureBox_flightsim);
             this.Controls.Add(this.grp_FlightSim);
             this.Controls.Add(this.saveOptionBtn);
@@ -1038,6 +1066,7 @@ namespace Max2Babylon
             this.grp_FlightSim.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox_flightsim)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -1115,5 +1144,7 @@ namespace Max2Babylon
         private System.Windows.Forms.Label lblCE_from;
         private System.Windows.Forms.TextBox txtSrcTextureExt;
         private System.Windows.Forms.Label lblConvertExtension;
+        private System.Windows.Forms.ComboBox logLevelcmb;
+        private System.Windows.Forms.Label label9;
     }
 }

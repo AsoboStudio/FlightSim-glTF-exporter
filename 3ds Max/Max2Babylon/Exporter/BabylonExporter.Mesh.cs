@@ -52,11 +52,18 @@ namespace Max2Babylon
             Loader.Global.IInstanceMgr.InstanceMgr.GetInstances(meshNode.MaxNode, tabs);
             if (tabs.Count > 1)
             {
+                foreach (IINode instanceNode in Tools.ITabToIEnumerable(tabs))
+                {
+                    //this make sure every instance node is indexed in guid dictionary
+                    Tools.GetGuid(instanceNode);
+                }
+
                 // For a mesh with instances, we distinguish between master and instance meshes:
                 //      - a master mesh stores all the info of the mesh (transform, hierarchy, animations + vertices, indices, materials, bones...)
                 //      - an instance mesh only stores the info of the node (transform, hierarchy, animations)
 
                 // Check if this mesh has already been exported
+
                 List<BabylonMesh> babylonMasterMeshes = new List<BabylonMesh>();
                 var index = 0;
                 while (index < tabs.Count)
@@ -66,10 +73,10 @@ namespace Max2Babylon
 #else
                     var tab = tabs[new IntPtr(index)];
 #endif
-
+                    Guid nodeGuid = Tools.guids.FirstOrDefault(x => x.Value == tab).Key;
                     babylonMasterMeshes.AddRange(babylonScene.MeshesList.FindAll(_babylonMesh => {
                         // Same id
-                        return _babylonMesh.id == tab.GetGuid().ToString() &&
+                        return _babylonMesh.id == nodeGuid.ToString() &&
                                // Mesh is not a dummy
                                _babylonMesh.isDummy == false;
                     }));
@@ -87,8 +94,7 @@ namespace Max2Babylon
                     BabylonMesh babylonMasterMesh = null;
                     foreach (var mesh in babylonMasterMeshes)
                     {
-                        if (mesh.materialId == null
-                         || (meshNode.NodeMaterial != null && meshNode.NodeMaterial.MaxMaterial.GetGuid().ToString().Equals(mesh.materialId)))
+                        if (mesh.materialId == null|| (meshNode.NodeMaterial != null && meshNode.NodeMaterial.MaxMaterial.GetGuid().ToString().Equals(mesh.materialId)))
                         {
                             babylonMasterMesh = mesh;
                         }

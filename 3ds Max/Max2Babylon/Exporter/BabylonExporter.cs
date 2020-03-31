@@ -39,6 +39,8 @@ namespace Max2Babylon
         public const int MaxSceneTicksPerSecond = 4800; //https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2016/ENU/MAXScript-Help/files/GUID-141213A1-B5A8-457B-8838-E602022C8798-htm.html
 
 
+        
+
         public void CheckCancelled()
         {
             //Application.DoEvents();
@@ -210,7 +212,7 @@ namespace Max2Babylon
                 ScriptsUtilities.ExecuteMaxScriptCommand($@"(getNodeByName(""{containerObject.ContainerNode.Name}"")).LoadContainer()");
                 ScriptsUtilities.ExecuteMaxScriptCommand($@"(getNodeByName(""{containerObject.ContainerNode.Name}"")).UpdateContainer()");
                 bool makeUnique = containerObject.MakeUnique;
-                RaiseMessage($"Update and merge container {containerObject.ContainerNode.Name}...");
+                Print($"Update and merge container {containerObject.ContainerNode.Name}...",Color.Green);
             }
             AnimationGroupList.LoadDataFromAllContainers();
         }
@@ -221,7 +223,7 @@ namespace Max2Babylon
             while (Loader.IIObjXRefManager.RecordCount>0)
             {
                 var record = Loader.IIObjXRefManager.GetRecord(0);
-                RaiseMessage($"Merge XRef record {record.SrcFile.FileName}...");
+                Print($"Merge XRef record {record.SrcFile.FileName}...",Color.Black);
                 Loader.IIObjXRefManager.MergeRecordIntoScene(record);
                 //todo: load data from animation helper of xref scene merged
                 //to prevent to load animations from helper created without intenction
@@ -231,6 +233,7 @@ namespace Max2Babylon
 
         public void Export(ExportParameters exportParameters)
         {
+            
             ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Unavailable""");
             var watch = new Stopwatch();
             watch.Start();
@@ -241,6 +244,7 @@ namespace Max2Babylon
             if (exportParameters is MaxExportParameters)
             {
                 MaxExportParameters maxExporterParameters = (exportParameters as MaxExportParameters);
+                logLevel = maxExporterParameters.logLevel;
                 exportNode = maxExporterParameters.exportNode;
 
                 if (maxExporterParameters.usePreExportProcess)
@@ -248,12 +252,12 @@ namespace Max2Babylon
                     if (maxExporterParameters.mergeContainersAndXRef)
                     {
                         string message = "Merging containers and Xref...";
-                        RaiseMessage(message, 0);
+                        Print(message,  Color.Black,0);
                         ExportClosedContainers();
                         MergeAllXrefRecords();
 #if DEBUG
                         var containersXrefMergeTime = watch.ElapsedMilliseconds / 1000.0;
-                        RaiseMessage(string.Format("Containers and Xref  merged in {0:0.00}s", containersXrefMergeTime ), Color.Blue);
+                        Print(string.Format("Containers and Xref  merged in {0:0.00}s", containersXrefMergeTime ), Color.Blue);
 #endif
                     }
                     BakeAnimationsFrame(exportNode,maxExporterParameters.bakeAnimationType);
@@ -264,7 +268,7 @@ namespace Max2Babylon
                     FlattenItem(ref exportNode);
 #if DEBUG
                     flattenTime = watch.ElapsedMilliseconds / 1000.0;
-                    RaiseMessage(string.Format("Nodes flattened in {0:0.00}s", flattenTime ), Color.Blue);
+                    Print(string.Format("Nodes flattened in {0:0.00}s", flattenTime ), Color.Blue);
 #endif
                 }
             }
@@ -272,7 +276,7 @@ namespace Max2Babylon
             Tools.InitializeGuidNodesMap();
 
             string fileExportString = exportNode != null? $"{exportNode.NodeName} | {exportParameters.outputPath}": exportParameters.outputPath;
-            RaiseMessage($"Exportation started: {fileExportString}", Color.Blue);
+            Print($"Exportation started: {fileExportString}", Color.Blue);
 
 
             this.scaleFactor = Tools.GetScaleFactorToMeters();
@@ -459,7 +463,7 @@ namespace Max2Babylon
             }
 
             // Root nodes
-            RaiseMessage("Exporting nodes");
+            Print("Exporting nodes",Color.Black);
             HashSet<IIGameNode> maxRootNodes = getRootNodes(gameScene);
             var progressionStep = 80.0f / maxRootNodes.Count;
             var progression = 10.0f;
@@ -519,7 +523,7 @@ namespace Max2Babylon
                 // Set first camera as main one
                 babylonMainCamera = babylonScene.CamerasList[0];
                 babylonScene.activeCameraID = babylonMainCamera.id;
-                RaiseMessage("Active camera set to " + babylonMainCamera.name, Color.Green, 1, true);
+                Print("Active camera set to " + babylonMainCamera.name, Color.Green, 1, true);
 
                 // Retreive camera node with same GUID
                 var maxCameraNodesAsTab = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Camera);
@@ -588,13 +592,13 @@ namespace Max2Babylon
 
 #if DEBUG
             var nodesExportTime = watch.ElapsedMilliseconds / 1000.0 - flattenTime;
-            RaiseMessage($"Nodes exported in {nodesExportTime:0.00}s", Color.Blue);
+            Print($"Nodes exported in {nodesExportTime:0.00}s", Color.Blue);
 #endif
 
             // Materials
             if (exportParameters.exportMaterials)
             {
-                RaiseMessage("Exporting materials");
+                Print("Exporting materials",Color.Black);
                 var matsToExport =
                     referencedMaterials.ToArray(); // Snapshot because multimaterials can export new materials
                 foreach (var mat in matsToExport)
@@ -607,11 +611,11 @@ namespace Max2Babylon
             }
             else
             {
-                RaiseMessage("Skipping material export.");
+                Print("Skipping material export.",Color.Black);
             }
 #if DEBUG
             var materialsExportTime = watch.ElapsedMilliseconds / 1000.0 - nodesExportTime;
-            RaiseMessage($"Materials exported in {materialsExportTime:0.00}s", Color.Blue);
+            Print($"Materials exported in {materialsExportTime:0.00}s", Color.Blue);
 #endif
 
 
@@ -642,7 +646,7 @@ namespace Max2Babylon
             // Skeletons
             if (skins.Count > 0)
             {
-                RaiseMessage("Exporting skeletons");
+                Print("Exporting skeletons",Color.Black);
                 foreach (var skin in skins)
                 {
                     ExportSkin(skin, babylonScene);
@@ -650,7 +654,7 @@ namespace Max2Babylon
             }
 #if DEBUG
             var skeletonsExportTime = watch.ElapsedMilliseconds / 1000.0 - materialsExportTime;
-            RaiseMessage($"Skeletons exported in {skeletonsExportTime:0.00}s", Color.Blue);
+            Print($"Skeletons exported in {skeletonsExportTime:0.00}s", Color.Blue);
 #endif
 
 
@@ -658,12 +662,12 @@ namespace Max2Babylon
             // ----- Animation groups -----
             // ----------------------------
             
-            RaiseMessage("Export animation groups");
+            Print("Export animation groups",Color.Black);
             // add animation groups to the scene
             babylonScene.animationGroups = ExportAnimationGroups(babylonScene);
 #if DEBUG
             var animationGroupExportTime = watch.ElapsedMilliseconds / 1000.0 -nodesExportTime;
-            RaiseMessage(string.Format("Animation groups exported in {0:0.00}s", animationGroupExportTime), Color.Blue);
+            Print(string.Format("Animation groups exported in {0:0.00}s", animationGroupExportTime), Color.Blue);
 #endif
 
 
@@ -732,7 +736,7 @@ namespace Max2Babylon
             babylonScene.Prepare(false, false);
             if (isBabylonExported)
             {
-                RaiseMessage("Saving to output file");
+                Print("Saving to output file",Color.Black);
 
                 var outputFile = Path.Combine(outputBabylonDirectory, outputFileName);
 
@@ -847,7 +851,7 @@ namespace Max2Babylon
             Directory.Delete(tempOutputDirectory, true);
             watch.Stop();
 
-            RaiseMessage(string.Format("Exportation done in {0:0.00}s: {1}", watch.ElapsedMilliseconds / 1000.0, fileExportString), Color.Blue);
+            Print(string.Format("Exportation done in {0:0.00}s: {1}", watch.ElapsedMilliseconds / 1000.0, fileExportString), Color.Blue);
             IUTF8Str max_notification = Autodesk.Max.GlobalInterface.Instance.UTF8Str.Create("BabylonExportComplete");
             Loader.Global.BroadcastNotification(SystemNotificationCode.PostExport, max_notification);
 
@@ -890,13 +894,13 @@ namespace Max2Babylon
                         {
                             File.Delete(targetFilePath);
                             File.Move(sourceFilePath, targetFilePath);
-                            RaiseMessage(sourceFilePath + " -> " + targetFilePath);
+                            Print(sourceFilePath + " -> " + targetFilePath,Color.Green);
                         }
                     }
                     else
                     {
                         File.Move(sourceFilePath, targetFilePath);
-                        RaiseMessage(sourceFilePath + " -> " + targetFilePath);
+                        Print(sourceFilePath + " -> " + targetFilePath,Color.Green);
                     }
                 }
             }
@@ -909,7 +913,7 @@ namespace Max2Babylon
                     File.Delete(targetFilePath);
                 }
                 File.Move(sourceFilePath, targetFilePath);
-                RaiseMessage(sourceFilePath + " -> " + targetFilePath);
+                Print(sourceFilePath + " -> " + targetFilePath, Color.Green);
             }
         }
 

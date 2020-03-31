@@ -456,30 +456,30 @@ namespace Max2Babylon
         private void ExportColor3Animation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)
         {
-            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Color3);
+            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Color3,exportParameters.optimizeAnimations);
         }
 
         private void ExportVector3Animation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)
         {
-            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Vector3);
+            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Vector3,exportParameters.optimizeAnimations);
         }
 
         private void ExportQuaternionAnimation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)
         {
-            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Quaternion);
+            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Quaternion,exportParameters.optimizeAnimations);
         }
 
         private void ExportFloatAnimation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)
         {
-            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Float);
+            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Float,exportParameters.optimizeAnimations);
         }
 
-        private BabylonAnimation ExportMatrixAnimation(string property, Func<int, float[]> extractValueFunc, bool removeLinearAnimationKeys = true)
+        private BabylonAnimation ExportMatrixAnimation(string property, Func<int, float[]> extractValueFunc, bool removeLinearAnimationKeys = true, bool optimize = false)
         {
-            return ExportAnimation(property, extractValueFunc, BabylonAnimation.DataType.Matrix, removeLinearAnimationKeys);
+            return ExportAnimation(property, extractValueFunc, BabylonAnimation.DataType.Matrix, removeLinearAnimationKeys,optimize);
         }
 
         private void OptimizeAnimations(List<BabylonAnimationKey> keys, bool removeLinearAnimationKeys)
@@ -535,19 +535,17 @@ namespace Max2Babylon
 
         }
 
-        private void ExportAnimation(string property, List<BabylonAnimation> animations, Func<int, float[]> extractValueFunc, BabylonAnimation.DataType dataType, bool removeLinearAnimationKeys = true)
+        private void ExportAnimation(string property, List<BabylonAnimation> animations, Func<int, float[]> extractValueFunc, BabylonAnimation.DataType dataType, bool removeLinearAnimationKeys = true, bool optimize = false)
         {
-            var babylonAnimation = ExportAnimation(property, extractValueFunc, dataType, removeLinearAnimationKeys);
+            var babylonAnimation = ExportAnimation(property, extractValueFunc, dataType, removeLinearAnimationKeys,optimize);
             if (babylonAnimation != null)
             {
                 animations.Add(babylonAnimation);
             }
         }
 
-        private BabylonAnimation ExportAnimation(string property, Func<int, float[]> extractValueFunc, BabylonAnimation.DataType dataType, bool removeLinearAnimationKeys = true)
+        private BabylonAnimation ExportAnimation(string property, Func<int, float[]> extractValueFunc, BabylonAnimation.DataType dataType, bool removeLinearAnimationKeys = true,bool optimizeAnimations = false)
         {
-            var optimizeAnimations = !Loader.Core.RootNode.GetBoolProperty("babylonjs_donotoptimizeanimations"); // reverse negation for clarity
-
             var start = Loader.Core.AnimRange.Start;
             var end = Loader.Core.AnimRange.End;
 

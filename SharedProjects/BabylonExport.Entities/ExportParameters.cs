@@ -1,3 +1,4 @@
+using Autodesk.Max;
 using FlightSimExtension;
 using Utilities;
 using GLTFExport.Entities;
@@ -47,6 +48,7 @@ namespace BabylonExport.Entities
         public bool pbrNoLight = false;
         public bool createDefaultSkybox = false;
         public string pbrEnvironment;
+        
         
 
         

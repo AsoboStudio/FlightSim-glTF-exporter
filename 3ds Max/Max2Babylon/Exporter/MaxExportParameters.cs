@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Autodesk.Max;
 using BabylonExport.Entities;
 
 namespace Max2Babylon
@@ -20,6 +21,7 @@ namespace Max2Babylon
         public bool mergeContainersAndXRef = false;
         public bool flattenScene = false;
         public BakeAnimationType bakeAnimationType = BakeAnimationType.DoNotBakeAnimation;
+        public LogLevel logLevel = LogLevel.WARNING;
 
     }
 }

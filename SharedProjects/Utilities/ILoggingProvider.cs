@@ -15,6 +15,8 @@ namespace Utilities
         void RaiseMessage(string message, Color color, int rank = 0, bool emphasis = false);
 
         void RaiseVerbose(string message, int rank = 0, bool emphasis = false);
+        
+        void Print(string message, Color color, int rank = 0, bool emphasis = false);
 
         void CheckCancelled();
     }

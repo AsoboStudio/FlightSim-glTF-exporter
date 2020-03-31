@@ -342,7 +342,7 @@ namespace Max2Babylon
                         }
                         return mat.ToArray();
                     },
-                    false); // Do not remove linear animation keys for bones
+                    false,exportParameters.optimizeAnimations); // Do not remove linear animation keys for bones
 
                 if (babylonAnimation != null)
                 {

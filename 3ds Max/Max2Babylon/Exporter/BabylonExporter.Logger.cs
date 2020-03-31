@@ -4,16 +4,15 @@ using System.Drawing;
 
 namespace Max2Babylon
 {
+    public enum LogLevel
+    {
+        ERROR,
+        WARNING,
+        MESSAGE,
+        VERBOSE
+    }
     internal partial class BabylonExporter
     {
-        public enum LogLevel
-        {
-            ERROR,
-            WARNING,
-            MESSAGE,
-            VERBOSE
-        }
-
         // TODO - Update log level for release
         public LogLevel logLevel = LogLevel.VERBOSE;
 
@@ -22,6 +21,7 @@ namespace Max2Babylon
         public event Action<string, int> OnWarning;
         public event Action<string, Color, int, bool> OnMessage;
         public event Action<string, Color, int, bool> OnVerbose;
+        public event Action<string, Color, int, bool> OnPrint;
 
         public void ReportProgressChanged(int progress)
         {
@@ -75,6 +75,14 @@ namespace Max2Babylon
             if (OnVerbose != null && logLevel >= LogLevel.VERBOSE)
             {
                 OnVerbose(message, color, rank, emphasis);
+            }
+        }
+
+        public void Print(string message, Color color ,int rank = 0, bool emphasis = false)
+        {
+            if (OnPrint != null)
+            {
+                OnPrint(message, color, rank, emphasis);
             }
         }
 

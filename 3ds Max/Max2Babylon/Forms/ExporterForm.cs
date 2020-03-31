@@ -124,6 +124,8 @@ namespace Max2Babylon
             Tools.PrepareTextBox(txtDstTextureExt, Loader.Core.RootNode, "flightsim_texture_destination_extension",string.Empty);
             Tools.PrepareComboBox(cmbNormalMapConvention, Loader.Core.RootNode, "flightsim_tangent_space_convention",TangentSpaceConvention.DirectX.ToString());
 
+            Tools.PrepareComboBox(logLevelcmb, Loader.Core.RootNode, "babylonjs_logLevel",LogLevel.WARNING.ToString());
+
             if (comboOutputFormat.SelectedText == "babylon" || comboOutputFormat.SelectedText == "binary babylon" || !gltfPipelineInstalled)
             {
                 chkDracoCompression.Checked = false;
@@ -333,6 +335,7 @@ namespace Max2Babylon
             Tools.UpdateCheckBox(chkExportMorphNormals, Loader.Core.RootNode, "babylonjs_export_Morph_Normals");
             Tools.UpdateComboBoxByIndex(cmbBakeAnimationOptions, Loader.Core.RootNode, "babylonjs_bakeAnimationsType");
             Tools.UpdateCheckBox(chkApplyPreprocessToScene,Loader.Core.RootNode, "babylonjs_applyPreprocess");
+            Tools.UpdateComboBoxByIndex(logLevelcmb, Loader.Core.RootNode, "babylonjs_logLevel");
 
 			Tools.UpdateCheckBox(chk_RemoveLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix");
             Tools.UpdateCheckBox(chkRemoveNamespace, Loader.Core.RootNode, "flightsim_removenamespaces");
@@ -401,23 +404,9 @@ namespace Max2Babylon
 
             exporter.OnMessage += (message, color, rank, emphasis) => CreateMessage(message, color, rank, emphasis);
 
-            exporter.OnVerbose += (message, color, rank, emphasis) =>
-            {
-                try
-                {
-                    currentNode = CreateTreeNode(rank, message, color);
+            exporter.OnVerbose += (message, color, rank, emphasis) => CreateMessage(message, color, rank, emphasis);
 
-                    if (emphasis)
-                    {
-                        currentNode.EnsureVisible();
-                    }
-                }
-                catch
-                {
-                    //do nothing
-                }
-                //Application.DoEvents();
-            };
+            exporter.OnPrint += (message, color, rank, emphasis) => CreateMessage(message, color, rank, emphasis);
 
             butExport.Enabled = false;
             butExportAndRun.Enabled = false;
@@ -467,6 +456,7 @@ namespace Max2Babylon
                     txtQuality = textureQualityParsed,
                     mergeAOwithMR = chkMergeAOwithMR.Enabled && chkMergeAOwithMR.Checked,
                     bakeAnimationType = (BakeAnimationType)cmbBakeAnimationOptions.SelectedIndex,
+                    logLevel = (LogLevel)logLevelcmb.SelectedIndex,
                     dracoCompression = chkDracoCompression.Enabled && chkDracoCompression.Checked,
                     enableKHRLightsPunctual = chkKHRLightsPunctual.Checked,
                     enableKHRTextureTransform = chkKHRTextureTransform.Checked,
@@ -582,7 +572,9 @@ namespace Max2Babylon
                 if (rank < 0 || rank > currentRank + 1)
                 {
                     rank = 0;
+#if DEBUG
                     treeView.Nodes.Add(new TreeNode("Invalid rank passed to CreateTreeNode (through RaiseMessage, RaiseWarning or RaiseError)!") { ForeColor = Color.DarkOrange });
+#endif
                 }
                 if (rank == 0)
                 {

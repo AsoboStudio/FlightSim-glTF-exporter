@@ -94,13 +94,14 @@ namespace Max2Babylon
             exportParameters.animgroupExportNonAnimated = Loader.Core.RootNode.GetBoolProperty("babylonjs_animgroupexportnonanimated");
             exportParameters.optimizeAnimations = !Loader.Core.RootNode.GetBoolProperty("babylonjs_donotoptimizeanimations");
             exportParameters.exportMaterials = Loader.Core.RootNode.GetBoolProperty("babylonjs_export_materials");
+            
 
             exportParameters.exportMorphTangents = Loader.Core.RootNode.GetBoolProperty("babylonjs_export_Morph_Tangents");
             exportParameters.exportMorphNormals = Loader.Core.RootNode.GetBoolProperty("babylonjs_export_Morph_Normals");
             exportParameters.usePreExportProcess = Loader.Core.RootNode.GetBoolProperty("babylonjs_preproces");
             exportParameters.flattenScene = Loader.Core.RootNode.GetBoolProperty("babylonjs_flattenScene");
             exportParameters.mergeContainersAndXRef = Loader.Core.RootNode.GetBoolProperty("babylonjs_mergecontainersandxref");
-            exportParameters.bakeAnimationType = (BakeAnimationType) Loader.Core.RootNode.GetFloatProperty("babylonjs_bakeAnimationsType", 0);
+            
 
             exportParameters.pbrFull = Loader.Core.RootNode.GetBoolProperty(ExportParameters.PBRFullPropertyName);
             exportParameters.pbrNoLight = Loader.Core.RootNode.GetBoolProperty(ExportParameters.PBRNoLightPropertyName);
@@ -113,6 +114,8 @@ namespace Max2Babylon
             exportParameters.removeLodPrefix = Loader.Core.RootNode.GetBoolProperty("flightsim_removelodprefix");
             exportParameters.removeNamespaces = Loader.Core.RootNode.GetBoolProperty("flightsim_removenamespaces");
             exportParameters.tangentSpaceConvention =(TangentSpaceConvention)Loader.Core.RootNode.GetFloatProperty("flightsim_tangent_space_convention", 0);
+
+            exportParameters.logLevel = (LogLevel) Loader.Core.RootNode.GetFloatProperty("babylonjs_logLevel", 1);
 
             return exportParameters;
         }
