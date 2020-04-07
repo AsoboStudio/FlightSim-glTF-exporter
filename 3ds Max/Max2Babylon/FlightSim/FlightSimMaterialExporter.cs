@@ -48,7 +48,7 @@ namespace Max2Babylon
     class GLTFExtensionAsoboMaterialDrawOrder : GLTFProperty
     {
         public const string SerializedName = "ASOBO_material_draw_order";
-        [DataMember(EmitDefaultValue = false)] public float? drawOrderOffset;
+        [DataMember(EmitDefaultValue = false)] public int? drawOrderOffset;
         public static class Defaults
         {
             public static readonly int drawOrderOffset = 0;
