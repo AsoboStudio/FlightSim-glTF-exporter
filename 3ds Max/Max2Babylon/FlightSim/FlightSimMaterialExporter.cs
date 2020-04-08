@@ -288,18 +288,21 @@ namespace Max2Babylon
         public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
         {
             var materialNode = babylonObject as Autodesk.Max.IIGameMaterial;
-            bool isGLTFExported = parameters.outputFormat == "gltf";
-            if (isGLTFExported )
+            if (FlightSimMaterialUtilities.class_ID.Equals(new MaterialUtilities.ClassIDWrapper(materialNode.MaxMaterial.ClassID)))
             {
-                var id = materialNode.MaxMaterial.GetGuid().ToString();
-                // add a basic babylon material to the list to forward the max material reference
-                var babylonMaterial = new BabylonMaterial(id)
+                bool isGLTFExported = parameters.outputFormat == "gltf";
+                if (isGLTFExported )
                 {
-                    maxGameMaterial = materialNode,
-                    name = materialNode.MaterialName
-                };
-                babylonScene.MaterialsList.Add(babylonMaterial);
-                return true;
+                    var id = materialNode.MaxMaterial.GetGuid().ToString();
+                    // add a basic babylon material to the list to forward the max material reference
+                    var babylonMaterial = new BabylonMaterial(id)
+                    {
+                        maxGameMaterial = materialNode,
+                        name = materialNode.MaterialName
+                    };
+                    babylonScene.MaterialsList.Add(babylonMaterial);
+                    return true;
+                }
             }
 
             return false;
