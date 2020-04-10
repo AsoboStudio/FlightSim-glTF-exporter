@@ -360,6 +360,25 @@ namespace Max2Babylon
                         animGroup.FrameStart = timelineStart;
                         animGroup.FrameEnd = timelineEnd;
                     }
+                    foreach (Guid guid in animGroup.NodeGuids)
+                    {
+                        IINode node = Tools.GetINodeByGuid(guid);
+                        if(node!= null)
+                        {
+                            if(!(node.TMController.IsKeyAtTime(animGroup.TicksStart, (1<<0)) || node.TMController.IsKeyAtTime(animGroup.TicksStart, (1<<1)) ||node.TMController.IsKeyAtTime(animGroup.TicksStart, (1<<2))))
+                            {
+                                int key = animGroup.TicksStart /160;
+                                string msg = string.Format("Node {0} has no key on min frame: {1} of animation group {2}", node.NodeName,key,animGroup.Name);
+                                warnings.Add(msg);
+                            }
+                              if(!(node.TMController.IsKeyAtTime(animGroup.TicksEnd, (1<<0)) || node.TMController.IsKeyAtTime(animGroup.TicksEnd, (1<<1)) ||node.TMController.IsKeyAtTime(animGroup.TicksEnd, (1<<2))))
+                            {
+                                int key = animGroup.TicksEnd /160;
+                                string msg = string.Format("Node {0} has no key on max frame: {1} of animation group {2}", node.NodeName,key,animGroup.Name);
+                                warnings.Add(msg);
+                            }
+                        }
+                    }
 
                     // Print animation group warnings if any
                     // Nothing printed otherwise

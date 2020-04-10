@@ -124,7 +124,7 @@ namespace Max2Babylon
             Tools.PrepareTextBox(txtDstTextureExt, Loader.Core.RootNode, "flightsim_texture_destination_extension",string.Empty);
             Tools.PrepareComboBox(cmbNormalMapConvention, Loader.Core.RootNode, "flightsim_tangent_space_convention",TangentSpaceConvention.DirectX.ToString());
 
-            Tools.PrepareComboBox(logLevelcmb, Loader.Core.RootNode, "babylonjs_logLevel",LogLevel.WARNING.ToString());
+            Tools.PrepareComboBox(logLevelcmb, Loader.Core.RootNode, "babylonjs_logLevel",(int)LogLevel.WARNING);
 
             if (comboOutputFormat.SelectedText == "babylon" || comboOutputFormat.SelectedText == "binary babylon" || !gltfPipelineInstalled)
             {

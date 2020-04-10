@@ -1453,7 +1453,7 @@ namespace Max2Babylon
             foreach (Guid nodeGuid in animationGroup.NodeGuids)
             {
                 IINode node = Tools.GetINodeByGuid(nodeGuid);
-                if (node.IsAnimated && node.TMController != null)
+                if (node!= null && node.IsAnimated && node.TMController != null)
                 {
                     int lastKey = 0;
                     if (node.TMController.PositionController != null && node.TMController.PositionController.NumKeys>0 )
