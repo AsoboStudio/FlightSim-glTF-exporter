@@ -65,7 +65,12 @@ namespace Max2Babylon.FlightSimExtension
                 if (maxNode != null)
                 {  
                     IObject obj = maxNode.ObjectRef;
-                    if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(MacroLightOmniClassID) || new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(MacroLightSpotClassID) )
+                    if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(MacroLightOmniClassID))
+                    {
+                        logger.RaiseError($"{maxNode.NodeName} is type of MacroLightOmni and it is DEPRECATED, use MACROLIGHT");
+                        return null;
+                    }
+                    else if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(MacroLightSpotClassID) )
                     {
                         string macroLightValue = maxNode.GetStringProperty("flightsim_macro_light_type", FlightSimLightExtension.MacroLight.Keys.ElementAt(0));
                         string macroLightType = FlightSimLightExtension.MacroLight[macroLightValue];
