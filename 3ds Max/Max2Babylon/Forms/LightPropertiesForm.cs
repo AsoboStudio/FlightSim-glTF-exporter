@@ -40,7 +40,7 @@ namespace Max2Babylon
             Tools.PrepareNumericUpDown(nupBlurBoxOffset, lights, "babylonjs_shadows_blurBoxOffset", 1);
             Tools.PrepareComboBox(cbCameraType, lights[0], "babylonjs_shadows_type", "Blurred ESM");
 
-            Tools.PrepareComboBox(flightSimLightType,lights[0],"flightsim_macro_light_type",FlightSimLightExtension.MacroLight.Keys.ElementAt(0));
+            //Tools.PrepareComboBox(flightSimLightType,lights[0],"flightsim_macro_light_type",FlightSimLightExtension.MacroLight.Keys.ElementAt(0));
 
             Tools.PrepareTextBox(tagInput, lights, "babylonjs_tag");
         }
@@ -58,8 +58,6 @@ namespace Max2Babylon
             Tools.UpdateNumericUpDown(nupBlurScale, lights, "babylonjs_shadows_blurScale");
             Tools.UpdateNumericUpDown(nupBlurBoxOffset, lights, "babylonjs_shadows_blurBoxOffset");
             Tools.UpdateComboBox(cbCameraType, lights, "babylonjs_shadows_type");
-
-            Tools.UpdateComboBox(flightSimLightType,lights,"flightsim_macro_light_type");
 
             Tools.UpdateTextBox(tagInput, lights, "babylonjs_tag");
         }

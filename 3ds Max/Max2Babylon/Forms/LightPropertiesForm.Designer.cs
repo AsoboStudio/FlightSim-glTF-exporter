@@ -56,9 +56,6 @@ namespace Max2Babylon
             this.label6 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.cbCameraType = new System.Windows.Forms.ComboBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.flightSimLightType = new System.Windows.Forms.ComboBox();
             this.groupBox3.SuspendLayout();
             this.grpAutoAnimate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nupTo)).BeginInit();
@@ -69,7 +66,6 @@ namespace Max2Babylon
             ((System.ComponentModel.ISupportInitialize)(this.nupBlurBoxOffset)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupBlurScale)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupBias)).BeginInit();
-            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // butOK
@@ -77,7 +73,7 @@ namespace Max2Babylon
             this.butOK.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.butOK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butOK.Location = new System.Drawing.Point(93, 576);
+            this.butOK.Location = new System.Drawing.Point(93, 485);
             this.butOK.Name = "butOK";
             this.butOK.Size = new System.Drawing.Size(75, 23);
             this.butOK.TabIndex = 100;
@@ -90,7 +86,7 @@ namespace Max2Babylon
             this.butCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.butCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.butCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butCancel.Location = new System.Drawing.Point(174, 576);
+            this.butCancel.Location = new System.Drawing.Point(174, 485);
             this.butCancel.Name = "butCancel";
             this.butCancel.Size = new System.Drawing.Size(75, 23);
             this.butCancel.TabIndex = 101;
@@ -381,45 +377,13 @@ namespace Max2Babylon
             this.cbCameraType.TabIndex = 15;
             this.cbCameraType.SelectedIndexChanged += new System.EventHandler(this.cbCameraType_SelectedIndexChanged);
             // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.label9);
-            this.groupBox2.Controls.Add(this.flightSimLightType);
-            this.groupBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.groupBox2.Location = new System.Drawing.Point(12, 481);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(319, 82);
-            this.groupBox2.TabIndex = 21;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "FlightSim";
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(15, 27);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(34, 13);
-            this.label9.TabIndex = 14;
-            this.label9.Text = "Type:";
-            // 
-            // flightSimLightType
-            // 
-            this.flightSimLightType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.flightSimLightType.FormattingEnabled = true;
-            this.flightSimLightType.Items.AddRange( FlightSimLightExtension.MacroLight.Keys.ToArray() );
-            this.flightSimLightType.Location = new System.Drawing.Point(18, 44);
-            this.flightSimLightType.Name = "flightSimLightType";
-            this.flightSimLightType.Size = new System.Drawing.Size(289, 21);
-            this.flightSimLightType.TabIndex = 15;
-            // 
             // LightPropertiesForm
             // 
             this.AcceptButton = this.butOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.butCancel;
-            this.ClientSize = new System.Drawing.Size(343, 611);
-            this.Controls.Add(this.groupBox2);
+            this.ClientSize = new System.Drawing.Size(343, 520);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
@@ -445,8 +409,6 @@ namespace Max2Babylon
             ((System.ComponentModel.ISupportInitialize)(this.nupBlurBoxOffset)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupBlurScale)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nupBias)).EndInit();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -478,8 +440,5 @@ namespace Max2Babylon
         private System.Windows.Forms.CheckBox ckForceBackFaces;
         private System.Windows.Forms.Label tagLabel;
         private System.Windows.Forms.TextBox tagInput;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.ComboBox flightSimLightType;
     }
 }
