@@ -1,10 +1,5 @@
-Hi.
-
-Test:
-1. one
-1. two
-1. three
-1. four
-1. five
-1. six
-1. seven
+Microsoft Flight Simulator
+--------------------
+glTF exporter for 3ds Max
+====================
+With thanks to BabylonJS. This code started as a fork from https://github.com/BabylonJS/Exporters.
