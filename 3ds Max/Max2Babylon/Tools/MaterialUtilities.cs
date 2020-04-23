@@ -57,7 +57,7 @@ namespace Max2Babylon
             mxs += "\r\n" + "smeSelMats[1]";
             
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 || MAX2017 || MAX2018
+#if MAX2015 || MAX2016|| MAX2017 || MAX2018
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
 #else
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
