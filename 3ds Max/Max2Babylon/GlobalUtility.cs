@@ -52,7 +52,7 @@ namespace Max2Babylon
             Tools.guids = new Dictionary<Guid, IAnimatable>();
         }
 
-#if MAX2015
+#if MAX2015 || MAX2016
         private void OnNodeAdded(IntPtr param0, IntPtr param1)
         {
             try
@@ -82,7 +82,7 @@ namespace Max2Babylon
         }
 #endif
 
-#if MAX2015
+#if MAX2015 || MAX2016
         private void OnNodeDeleted(IntPtr objPtr, IntPtr param1)
         {
             try
@@ -244,7 +244,7 @@ namespace Max2Babylon
             if (!nodeAddedCallback)
             {
                 m_NodeAddedDelegate = new GlobalDelegates.Delegate5(this.OnNodeAdded);
-#if MAX2015
+#if MAX2015 
                 //bug on Autodesk API  SystemNotificationCode.SceneAddedNode doesn't work for max 2015-2016
                 GlobalInterface.Instance.RegisterNotification(this.m_NodeAddedDelegate, null, SystemNotificationCode.NodeLinked );
 #else

@@ -6,8 +6,6 @@ SET max_version=%2
 SET exporter_version=%max_version%
 SET max_location=!ADSK_3DSMAX_x64_%max_version%!
 
-IF %exporter_version%==2016 SET exporter_version=2015
-
 ECHO "Max version is %max_version%"
 ECHO "Exporter version is %exporter_version%"
 

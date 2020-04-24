@@ -830,7 +830,7 @@ namespace Max2Babylon
             bool undo = false;
             for (int i = 0; i < resultTarget.Count; i++)
             {
-#if MAX2015
+#if MAX2015 || MAX2016
                 IINode n = resultTarget[(IntPtr)i];
 #else
                 IINode n = resultTarget[i];
@@ -947,7 +947,7 @@ namespace Max2Babylon
 
             for (int i = 0; i < selection.Count; i++)
             {
-#if MAX2015
+#if MAX2015 || MAX2016
                 var selectedNode = selection[(IntPtr)i];
 #else
                 var selectedNode = selection[i];
@@ -1736,7 +1736,7 @@ namespace Max2Babylon
 
                 for (short k = 0; k < pBlock.NumParams; k++)
                 {
-#if MAX2015
+#if MAX2015 || MAX2016
 
                     IParamDef p = pBlock.GetParamDef(k);
 #else
@@ -1763,7 +1763,7 @@ namespace Max2Babylon
         /// </summary>
         public static IEnumerable<T> ITabToIEnumerable<T>(ITab<T> tab)
         {
-        #if MAX2015
+        #if MAX2015 || MAX2016
                     for (int i = 0; i < tab.Count; i++)
                     {
                         yield return tab[(IntPtr)i];
