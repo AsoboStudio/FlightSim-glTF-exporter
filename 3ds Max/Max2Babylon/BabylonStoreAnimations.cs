@@ -11,7 +11,7 @@ namespace Max2Babylon
 
         public override bool ExecuteAction()
         {
-            Tools.InitializeGuidNodesMap();
+            Tools.InitializeGuidsMap();
             var selectedContainers = Tools.GetContainerInSelection();
 
             if (selectedContainers.Count <= 0)

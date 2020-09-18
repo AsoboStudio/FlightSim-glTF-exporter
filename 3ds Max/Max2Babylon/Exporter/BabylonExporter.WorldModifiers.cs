@@ -5,7 +5,7 @@ using BabylonExport.Entities;
 
 namespace Max2Babylon
 {
-    partial class BabylonExporter
+    public partial class BabylonExporter
     {
         const int CUT_LENGTH_PARAM_ID = 3;
         const int ROOT_THICKNESS_PARAM_ID = 7;
@@ -30,7 +30,7 @@ namespace Max2Babylon
                     }
                     else
                     {
-                        RaiseWarning("Modifier or Language '" + modifier.Name + "' is not supported", 2);
+                        logger?.RaiseWarning("Modifier or Language '" + modifier.Name + "' is not supported", 2);
                     }
                 }
             }
@@ -38,7 +38,7 @@ namespace Max2Babylon
 
         private BabylonFurMaterial ExportFurModifier(IModifier modifier, String sourceMeshName, BabylonScene babylonScene)
         {
-            RaiseMessage("Export Fur Modifier", 2);
+           logger?.RaiseMessage("Export Fur Modifier", 2);
             var paramBlock = modifier.GetParamBlock(0);
             
             // 3dsMax "Cut Length" is in percentages - "100%" will be "20" babylon spacing 
@@ -56,7 +56,7 @@ namespace Max2Babylon
 
             if (paramBlock.GetTexmap(MAPS_PARAM_ID, 0, 11) != null)
             {
-                RaiseWarning("Tip texture is not supported. Use root texture instead", 2);
+                logger?.RaiseWarning("Tip texture is not supported. Use root texture instead", 2);
             }
 
             BabylonTexture diffuseTexture = null;

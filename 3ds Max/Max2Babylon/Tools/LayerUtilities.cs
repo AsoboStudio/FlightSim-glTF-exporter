@@ -39,7 +39,7 @@ namespace Max2Babylon
 
         public static bool HasNode(this IILayer layer,IINode node,bool checkInChild = true)
         {
-#if MAX2020
+#if MAX2020 || MAX2021
             ITab<IINode> nodes = Loader.Global.INodeTab.Create();
 #else
             ITab<IINode> nodes = Loader.Global.INodeTabNS.Create();
@@ -106,7 +106,7 @@ namespace Max2Babylon
         public static IEnumerable<IINode> LayerNodes(this IILayer layer)
         {
             IILayerProperties layerProp = Loader.IIFPLayerManager.GetLayer(layer.Name);
-#if MAX2020
+#if MAX2020 || MAX2021
             ITab<IINode> nodes = Loader.Global.INodeTab.Create();
 #else
             ITab<IINode> nodes = Loader.Global.INodeTabNS.Create();
@@ -114,5 +114,30 @@ namespace Max2Babylon
             layerProp.Nodes(nodes);
             return Tools.ITabToIEnumerable(nodes);
         }
+
+        public static IILayer GetNodeLayer(this IINode node)
+        {
+            string mxs = $"(maxOps.getNodeByHandle {node.Handle}).layer.name)";
+             string result = ScriptsUtilities.ExecuteMaxScriptQuery(mxs);
+             if(!string.IsNullOrWhiteSpace(result))
+             {
+                 IILayer layer = Loader.Core.LayerManager.GetLayer(result);
+                 return layer;
+             }
+            return null;
+        }
+
+        public static List<IILayer> GetContainerLayers(this IIContainerObject container)
+        {
+            List<IILayer> result = new List<IILayer>();
+            List<IINode> containerNodes = container.ContainerNode.ContainerNodeTree(true);
+            foreach (IINode node in containerNodes)
+            {
+                IILayer nodeLayer = node.GetNodeLayer();
+                if(nodeLayer!=null)result.Add(node.GetNodeLayer());
+            }
+            return result;
+        }
+
     }
 }

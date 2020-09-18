@@ -35,6 +35,12 @@ namespace Max2Babylon
             System.Windows.Forms.Label warningLabel;
             System.Windows.Forms.Panel startEndPanel;
             System.Windows.Forms.Panel warningLabelPanel;
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("D");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("C");
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("B");
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("A", new System.Windows.Forms.TreeNode[] {
+            treeNode2,
+            treeNode3});
             this.nameTextBox = new System.Windows.Forms.TextBox();
             this.nameLabel = new System.Windows.Forms.Label();
             this.ConfirmButton = new System.Windows.Forms.Button();
@@ -50,6 +56,10 @@ namespace Max2Babylon
             this.nodesGroupBox = new System.Windows.Forms.GroupBox();
             this.MaxNodeTree = new Max2Babylon.MaxNodeTreeView();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.animatedMaterialList = new System.Windows.Forms.GroupBox();
+            this.materialPanel = new System.Windows.Forms.Panel();
+            this.maxMaterialView = new Max2Babylon.MaxMaterialView();
             nameFieldPanel = new System.Windows.Forms.Panel();
             optionsButtonsPanel = new System.Windows.Forms.Panel();
             nodeButtonsPanel = new System.Windows.Forms.Panel();
@@ -67,6 +77,12 @@ namespace Max2Babylon
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
+            this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
+            this.splitContainer2.SuspendLayout();
+            this.animatedMaterialList.SuspendLayout();
+            this.materialPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // nameFieldPanel
@@ -250,7 +266,7 @@ namespace Max2Babylon
             // 
             warningLabelPanel.Controls.Add(warningLabel);
             warningLabelPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            warningLabelPanel.Location = new System.Drawing.Point(3, 376);
+            warningLabelPanel.Location = new System.Drawing.Point(3, 392);
             warningLabelPanel.Name = "warningLabelPanel";
             warningLabelPanel.Padding = new System.Windows.Forms.Padding(3);
             warningLabelPanel.Size = new System.Drawing.Size(184, 103);
@@ -268,7 +284,7 @@ namespace Max2Babylon
             this.optionsGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.optionsGroupBox.Location = new System.Drawing.Point(0, 0);
             this.optionsGroupBox.Name = "optionsGroupBox";
-            this.optionsGroupBox.Size = new System.Drawing.Size(190, 482);
+            this.optionsGroupBox.Size = new System.Drawing.Size(190, 498);
             this.optionsGroupBox.TabIndex = 0;
             this.optionsGroupBox.TabStop = false;
             this.optionsGroupBox.Text = "Animation Options";
@@ -282,7 +298,7 @@ namespace Max2Babylon
             this.nodesGroupBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.nodesGroupBox.Location = new System.Drawing.Point(0, 0);
             this.nodesGroupBox.Name = "nodesGroupBox";
-            this.nodesGroupBox.Size = new System.Drawing.Size(481, 482);
+            this.nodesGroupBox.Size = new System.Drawing.Size(254, 498);
             this.nodesGroupBox.TabIndex = 0;
             this.nodesGroupBox.TabStop = false;
             this.nodesGroupBox.Text = "Animation Nodes";
@@ -309,8 +325,9 @@ namespace Max2Babylon
             this.MaxNodeTree.NodeDowngradedForeColor = System.Drawing.SystemColors.GrayText;
             this.MaxNodeTree.NodeRemovedBackColor = System.Drawing.Color.IndianRed;
             this.MaxNodeTree.NodeRemovedForeColor = System.Drawing.SystemColors.ControlText;
-            this.MaxNodeTree.Size = new System.Drawing.Size(475, 463);
+            this.MaxNodeTree.Size = new System.Drawing.Size(248, 479);
             this.MaxNodeTree.TabIndex = 7;
+            this.MaxNodeTree.Enter += new System.EventHandler(this.OnNodesFocusEnter);
             // 
             // splitContainer1
             // 
@@ -325,11 +342,61 @@ namespace Max2Babylon
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.nodesGroupBox);
-            this.splitContainer1.Size = new System.Drawing.Size(675, 482);
+            this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
+            this.splitContainer1.Size = new System.Drawing.Size(723, 498);
             this.splitContainer1.SplitterDistance = 190;
             this.splitContainer1.TabIndex = 0;
             this.splitContainer1.TabStop = false;
+            // 
+            // splitContainer2
+            // 
+            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer2.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer2.Name = "splitContainer2";
+            // 
+            // splitContainer2.Panel1
+            // 
+            this.splitContainer2.Panel1.Controls.Add(this.nodesGroupBox);
+            // 
+            // splitContainer2.Panel2
+            // 
+            this.splitContainer2.Panel2.Controls.Add(this.animatedMaterialList);
+            this.splitContainer2.Size = new System.Drawing.Size(529, 498);
+            this.splitContainer2.SplitterDistance = 254;
+            this.splitContainer2.TabIndex = 2;
+            // 
+            // animatedMaterialList
+            // 
+            this.animatedMaterialList.AutoSize = true;
+            this.animatedMaterialList.Controls.Add(this.materialPanel);
+            this.animatedMaterialList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.animatedMaterialList.Location = new System.Drawing.Point(0, 0);
+            this.animatedMaterialList.MinimumSize = new System.Drawing.Size(250, 0);
+            this.animatedMaterialList.Name = "animatedMaterialList";
+            this.animatedMaterialList.Size = new System.Drawing.Size(271, 498);
+            this.animatedMaterialList.TabIndex = 1;
+            this.animatedMaterialList.TabStop = false;
+            this.animatedMaterialList.Text = "Animated Materials";
+            // 
+            // materialPanel
+            // 
+            this.materialPanel.Controls.Add(this.maxMaterialView);
+            this.materialPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.materialPanel.Location = new System.Drawing.Point(3, 16);
+            this.materialPanel.Name = "materialPanel";
+            this.materialPanel.Size = new System.Drawing.Size(265, 479);
+            this.materialPanel.TabIndex = 2;
+            // 
+            // maxMaterialView
+            // 
+            this.maxMaterialView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.maxMaterialView.Location = new System.Drawing.Point(0, 0);
+            this.maxMaterialView.Name = "maxMaterialView";
+            this.maxMaterialView.Size = new System.Drawing.Size(265, 479);
+            this.maxMaterialView.TabIndex = 0;
+            this.maxMaterialView.UseCompatibleStateImageBehavior = false;
+            this.maxMaterialView.View = System.Windows.Forms.View.List;
+            this.maxMaterialView.Enter += new System.EventHandler(this.OnMaterialFocusEnter);
             // 
             // AnimationGroupControl
             // 
@@ -338,7 +405,7 @@ namespace Max2Babylon
             this.AutoSize = true;
             this.Controls.Add(this.splitContainer1);
             this.Name = "AnimationGroupControl";
-            this.Size = new System.Drawing.Size(675, 482);
+            this.Size = new System.Drawing.Size(723, 498);
             nameFieldPanel.ResumeLayout(false);
             nameFieldPanel.PerformLayout();
             optionsButtonsPanel.ResumeLayout(false);
@@ -353,9 +420,16 @@ namespace Max2Babylon
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel1.PerformLayout();
             this.splitContainer1.Panel2.ResumeLayout(false);
-            this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel1.PerformLayout();
+            this.splitContainer2.Panel2.ResumeLayout(false);
+            this.splitContainer2.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
+            this.splitContainer2.ResumeLayout(false);
+            this.animatedMaterialList.ResumeLayout(false);
+            this.materialPanel.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -377,5 +451,9 @@ namespace Max2Babylon
         private System.Windows.Forms.TextBox nameTextBox;
         private System.Windows.Forms.Button removeNodeButton;
         private System.Windows.Forms.Button calculateTimeRangeBtn;
+        private System.Windows.Forms.GroupBox animatedMaterialList;
+        private System.Windows.Forms.Panel materialPanel;
+        private MaxMaterialView maxMaterialView;
+        private System.Windows.Forms.SplitContainer splitContainer2;
     }
 }

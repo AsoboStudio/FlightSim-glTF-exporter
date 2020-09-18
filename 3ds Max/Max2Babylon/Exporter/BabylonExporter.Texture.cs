@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace Max2Babylon
 {
-    partial class BabylonExporter
+    public partial class BabylonExporter
     {
         private static List<string> validFormats = new List<string>(new string[] { "png", "jpg", "jpeg", "tga", "bmp", "gif" });
         private static List<string> invalidFormats = new List<string>(new string[] { "dds", "tif", "tiff" });
@@ -44,7 +44,7 @@ namespace Max2Babylon
 
             if (texMap == null)
             {
-                RaiseWarning("Texture channel " + index + " activated but no texture found.", 2);
+                logger?.RaiseWarning("Texture channel " + index + " activated but no texture found.", 2);
                 return null;
             }
 
@@ -80,7 +80,7 @@ namespace Max2Babylon
                 return null;
             }
 
-            RaiseMessage("Multiply specular color and level textures", 2);
+           logger?.RaiseMessage("Multiply specular color and level textures", 2);
 
             string nameText = null;
 
@@ -124,7 +124,7 @@ namespace Max2Babylon
                     if (specularLevelBitmap == null)
                     {
                         // Copy specular color image
-                        RaiseError("Failed to load specular level texture. Specular color is exported alone.", 3);
+                        logger?.RaiseError("Failed to load specular level texture. Specular color is exported alone.", 3);
                         return ExportTexture(specularColorTexture, babylonScene);
                     }
 
@@ -134,7 +134,7 @@ namespace Max2Babylon
                     var haveSameDimensions = TextureUtilities.GetMinimalBitmapDimensions(out width, out height, specularColorBitmap, specularLevelBitmap);
                     if (!haveSameDimensions)
                     {
-                        RaiseError("Specular color and specular level maps should have same dimensions", 3);
+                        logger?.RaiseError("Specular color and specular level maps should have same dimensions", 3);
                     }
 
                     // Create pre-multiplied specular color map
@@ -159,8 +159,8 @@ namespace Max2Babylon
                     // Write bitmap
                     if (isBabylonExported)
                     {
-                        RaiseMessage($"Texture | write image '{babylonTexture.name}'", 3);
-                        TextureUtilities.SaveBitmap(specularColorPreMultipliedBitmap, babylonScene.OutputPath, babylonTexture.name, ImageFormat.Jpeg, exportParameters.txtQuality, this);
+                       logger?.RaiseMessage($"Texture | write image '{babylonTexture.name}'", 3);
+                       TextureUtilities.SaveBitmap(specularColorPreMultipliedBitmap, babylonScene.OutputPath, babylonTexture.name, ImageFormat.Jpeg, exportParameters.txtQuality, logger);
                     }
                     else
                     {
@@ -197,7 +197,7 @@ namespace Max2Babylon
 
             // Use one as a reference for UVs parameters
 
-            RaiseMessage("Export Clear Coat weight+roughness texture", 2);
+           logger?.RaiseMessage("Export Clear Coat weight+roughness texture", 2);
 
             string nameText = Path.GetFileNameWithoutExtension(texture.Map.FullFilePath);
 
@@ -246,7 +246,7 @@ namespace Max2Babylon
                     var haveSameDimensions = TextureUtilities.GetMinimalBitmapDimensions(out width, out height, intensityBitmap, roughnessBitmap);
                     if (!haveSameDimensions)
                     {
-                        RaiseError("Base color and transparency color maps should have same dimensions", 3);
+                        logger?.RaiseError("Base color and transparency color maps should have same dimensions", 3);
                     }
 
                     // Create map
@@ -279,8 +279,8 @@ namespace Max2Babylon
                     // Write bitmap
                     if (isBabylonExported)
                     {
-                        RaiseMessage($"Texture | write image '{babylonTexture.name}'", 3);
-                        TextureUtilities.SaveBitmap(intensityRoughnessBitmap, babylonScene.OutputPath, babylonTexture.name, imageFormat, exportParameters.txtQuality, this);
+                       logger?.RaiseMessage($"Texture | write image '{babylonTexture.name}'", 3);
+                        TextureUtilities.SaveBitmap(intensityRoughnessBitmap, babylonScene.OutputPath, babylonTexture.name, imageFormat, exportParameters.txtQuality, logger);
                     }
                     else
                     {
@@ -314,8 +314,8 @@ namespace Max2Babylon
                 if (baseColorTexture.AlphaSource == 0 &&
                         (baseColorTextureMapExtension == ".tif" || baseColorTextureMapExtension == ".tiff"))
                     {
-                        RaiseWarning($"Diffuse texture named {baseColorTexture.Map.FullFilePath} is a .tif file and its Alpha Source is 'Image Alpha' by default.", 3);
-                        RaiseWarning($"If you don't want material to be in BLEND mode, set diffuse texture Alpha Source to 'None (Opaque)'", 3);
+                        logger?.RaiseWarning($"Diffuse texture named {baseColorTexture.Map.FullFilePath} is a .tif file and its Alpha Source is 'Image Alpha' by default.", 3);
+                        logger?.RaiseWarning($"If you don't want material to be in BLEND mode, set diffuse texture Alpha Source to 'None (Opaque)'", 3);
                     }
 
 
@@ -330,7 +330,7 @@ namespace Max2Babylon
             // Use one as a reference for UVs parameters
 
 
-            RaiseMessage("Export baseColor+Alpha texture", 2);
+           logger?.RaiseMessage("Export baseColor+Alpha texture", 2);
 
             string nameText = null;
 
@@ -378,8 +378,8 @@ namespace Max2Babylon
                 if ((!isTextureOk(alphaTexMap) && alpha == 1.0f && (isTextureOk(baseColorTexMap) && baseColorTexture.AlphaSource == 0)) &&
                     (baseColorTextureMapExtension == ".tif" || baseColorTextureMapExtension == ".tiff"))
                 {
-                    RaiseWarning($"Diffuse texture named {baseColorTexture.Map.FullFilePath} is a .tif file and its Alpha Source is 'Image Alpha' by default.", 3);
-                    RaiseWarning($"If you don't want material to be in BLEND mode, set diffuse texture Alpha Source to 'None (Opaque)'", 3);
+                    logger?.RaiseWarning($"Diffuse texture named {baseColorTexture.Map.FullFilePath} is a .tif file and its Alpha Source is 'Image Alpha' by default.", 3);
+                    logger?.RaiseWarning($"If you don't want material to be in BLEND mode, set diffuse texture Alpha Source to 'None (Opaque)'", 3);
                 }
 
                 if (!hasBaseColor && !hasAlpha)
@@ -405,7 +405,7 @@ namespace Max2Babylon
                     var haveSameDimensions = TextureUtilities.GetMinimalBitmapDimensions(out width, out height, baseColorBitmap, alphaBitmap);
                     if (!haveSameDimensions)
                     {
-                        RaiseError("Base color and transparency color maps should have same dimensions", 3);
+                        logger?.RaiseError("Base color and transparency color maps should have same dimensions", 3);
                     }
 
                     var getAlphaFromRGB = alphaTexture != null && ((alphaTexture.AlphaSource == 2) || (alphaTexture.AlphaSource == 3)); // 'RGB intensity' or 'None (Opaque)'
@@ -453,8 +453,8 @@ namespace Max2Babylon
                     // Write bitmap
                     if (isBabylonExported)
                     {
-                        RaiseMessage($"Texture | write image '{babylonTexture.name}'", 3);
-                        TextureUtilities.SaveBitmap(baseColorAlphaBitmap, babylonScene.OutputPath, babylonTexture.name, imageFormat, exportParameters.txtQuality, this);
+                       logger?.RaiseMessage($"Texture | write image '{babylonTexture.name}'", 3);
+                        TextureUtilities.SaveBitmap(baseColorAlphaBitmap, babylonScene.OutputPath, babylonTexture.name, imageFormat, exportParameters.txtQuality, logger);
                     }
                     else
                     {
@@ -482,7 +482,7 @@ namespace Max2Babylon
                 return null;
             }
 
-            RaiseMessage("Export ORM texture", 2);
+           logger?.RaiseMessage("Export ORM texture", 2);
 
             var textureID = texture.GetGuid().ToString();
             if (textureMap.ContainsKey(textureID))
@@ -524,7 +524,7 @@ namespace Max2Babylon
                     var haveSameDimensions = TextureUtilities.GetMinimalBitmapDimensions(out width, out height, metallicBitmap, roughnessBitmap, ambientOcclusionBitmap);
                     if (!haveSameDimensions)
                     {
-                        RaiseError((ambientOcclusionBitmap != null ? "Occlusion, roughness and metallic " : "Metallic and roughness") + " maps should have same dimensions", 3);
+                        logger?.RaiseError((ambientOcclusionBitmap != null ? "Occlusion, roughness and metallic " : "Metallic and roughness") + " maps should have same dimensions", 3);
                     }
 
                     // Create ORM map
@@ -548,8 +548,8 @@ namespace Max2Babylon
                     // Write bitmap
                     if (isBabylonExported)
                     {
-                        RaiseMessage($"Texture | write image '{babylonTexture.name}'", 3);
-                        TextureUtilities.SaveBitmap(ormBitmap, babylonScene.OutputPath, babylonTexture.name, ImageFormat.Jpeg, exportParameters.txtQuality, this);
+                       logger?.RaiseMessage($"Texture | write image '{babylonTexture.name}'", 3);
+                        TextureUtilities.SaveBitmap(ormBitmap, babylonScene.OutputPath, babylonTexture.name, ImageFormat.Jpeg, exportParameters.txtQuality, logger);
                     }
                     else
                     {
@@ -566,7 +566,7 @@ namespace Max2Babylon
         {
             if (texMap.GetParamBlock(0) == null || texMap.GetParamBlock(0).Owner == null)
             {
-                RaiseWarning("Failed to export environment texture. Uncheck \"Use Map\" option to fix this warning.");
+                logger?.RaiseWarning("Failed to export environment texture. Uncheck \"Use Map\" option to fix this warning.");
                 return null;
             }
 
@@ -574,7 +574,7 @@ namespace Max2Babylon
 
             if (texture == null)
             {
-                RaiseWarning("Failed to export environment texture. Uncheck \"Use Map\" option to fix this warning.");
+                logger?.RaiseWarning("Failed to export environment texture. Uncheck \"Use Map\" option to fix this warning.");
                 return null;
             }
 
@@ -584,7 +584,7 @@ namespace Max2Babylon
             // Allow only dds file format
             if (!fileName.EndsWith(".dds"))
             {
-                RaiseWarning("Failed to export environment texture: only .dds format is supported. Uncheck \"Use map\" to fix this warning.");
+                logger?.RaiseWarning("Failed to export environment texture: only .dds format is supported. Uncheck \"Use map\" to fix this warning.");
                 return null;
             }
 
@@ -647,32 +647,32 @@ namespace Max2Babylon
                     var mapEnabled = block.GetInt(4, 0, 0);     // Normal texture Enable
                     if (mapEnabled == 0)
                     {
-                        RaiseError($"Only Normal Bump Texture with Normal enabled are supported.", 2);
+                        logger?.RaiseError($"Only Normal Bump Texture with Normal enabled are supported.", 2);
                         return null;
                     }
 
                     var method = block.GetInt(6, 0, 0);         // Normal texture mode (Tangent, screen...)
                     if (method != 0)
                     {
-                        RaiseError($"Only Normal Bump Texture in tangent space are supported.", 2);
+                        logger?.RaiseError($"Only Normal Bump Texture in tangent space are supported.", 2);
                         return null;
                     }
                     var flipR = block.GetInt(7, 0, 0);          // Normal texture Red chanel Flip
                     if (flipR != 0)
                     {
-                        RaiseError($"Only Normal Bump Texture without R flip are supported.", 2);
+                        logger?.RaiseError($"Only Normal Bump Texture without R flip are supported.", 2);
                         return null;
                     }
                     var flipG = block.GetInt(8, 0, 0);          // Normal texture Green chanel Flip
                     if (flipG != 0)
                     {
-                        RaiseError($"Only Normal Bump Texture without G flip are supported.", 2);
+                        logger?.RaiseError($"Only Normal Bump Texture without G flip are supported.", 2);
                         return null;
                     }
                     var swapRG = block.GetInt(9, 0, 0);         // Normal texture swap R and G channels
                     if (swapRG != 0)
                     {
-                        RaiseError($"Only Normal Bump Texture without R and G swap are supported.", 2);
+                        logger?.RaiseError($"Only Normal Bump Texture without R and G swap are supported.", 2);
                         return null;
                     }
 
@@ -681,7 +681,7 @@ namespace Max2Babylon
                     var bumpMapEnable = block.GetInt(5, 0, 0);  // Bump texture Enable
                     if (bumpMapEnable == 1)
                     {
-                        RaiseError($"Only Normal Bump Texture without Bump are supported.", 2);
+                        logger?.RaiseError($"Only Normal Bump Texture without Bump are supported.", 2);
                         return null;
                     }
 
@@ -690,7 +690,7 @@ namespace Max2Babylon
             }
 
             amount = 0.0f;
-            RaiseError($"Texture type is not supported. Use a Bitmap or Normal Bump map instead.", 2);
+            logger?.RaiseError($"Texture type is not supported. Use a Bitmap or Normal Bump map instead.", 2);
             return null;
         }
 
@@ -714,17 +714,17 @@ namespace Max2Babylon
 
             if (sourcePath == null || sourcePath == "")
             {
-                RaiseWarning("Texture path is missing.", 2);
+                logger?.RaiseWarning("Texture path is missing.", 2);
                 return null;
             }
 
-            RaiseMessage("Export texture named: " + Path.GetFileName(sourcePath), 2);
+           logger?.RaiseMessage("Export texture named: " + Path.GetFileName(sourcePath), 2);
 
             var validImageFormat = TextureUtilities.GetValidImageFormat(Path.GetExtension(sourcePath));
             if (validImageFormat == null)
             {
                 // Image format is not supported by the exporter
-                RaiseWarning(string.Format("Format of texture {0} is not supported by the exporter. Consider using a standard image format like jpg or png.", Path.GetFileName(sourcePath)), 3);
+                logger?.RaiseWarning(string.Format("Format of texture {0} is not supported by the exporter. Consider using a standard image format like jpg or png.", Path.GetFileName(sourcePath)), 3);
                 return null;
             }
             var textureID = texture.GetGuid().ToString();
@@ -738,7 +738,7 @@ namespace Max2Babylon
                 {
                     name = Path.GetFileNameWithoutExtension(texture.MapName) + "." + validImageFormat
                 };
-                RaiseMessage($"texture id = {babylonTexture.Id}", 2);
+               logger?.RaiseMessage($"texture id = {babylonTexture.Id}", 2);
 
                 // Level
                 babylonTexture.level = amount;
@@ -773,7 +773,7 @@ namespace Max2Babylon
                 if (isBabylonExported)
                 {
                     var destPath = Path.Combine(babylonScene.OutputPath, babylonTexture.name);
-                    TextureUtilities.CopyTexture(sourcePath, destPath, exportParameters.txtQuality, this);
+                    TextureUtilities.CopyTexture(sourcePath, destPath, exportParameters.txtQuality, logger);
 
                     // Is cube
                     _exportIsCube(Path.Combine(babylonScene.OutputPath, babylonTexture.name), babylonTexture, allowCube);
@@ -795,7 +795,7 @@ namespace Max2Babylon
             // Fallout
             if (texMap.ClassName == "Falloff") // This is the only way I found to detect it. This is crappy but it works
             {
-                RaiseMessage("fresnelParameters", 3);
+               logger?.RaiseMessage("fresnelParameters", 3);
                 fresnelParameters = new BabylonFresnelParameters();
 
                 var paramBlock = texMap.GetParamBlock(0);
@@ -827,7 +827,7 @@ namespace Max2Babylon
 
                     if (texMap2 != null && texMap2On != 0)
                     {
-                        RaiseWarning(string.Format("You cannot specify two textures for falloff. Only one is supported"), 3);
+                        logger?.RaiseWarning(string.Format("You cannot specify two textures for falloff. Only one is supported"), 3);
                     }
                 }
                 else if (texMap2 != null && texMap2On != 0)
@@ -862,7 +862,7 @@ namespace Max2Babylon
             babylonTexture.coordinatesIndex = uvGen.MapChannel - 1;
             if (uvGen.MapChannel > 2)
             {
-                RaiseWarning(string.Format("Unsupported map channel, Only channel 1 and 2 are supported."), 3);
+                logger?.RaiseWarning(string.Format("Unsupported map channel, Only channel 1 and 2 are supported."), 3);
             }
 
             babylonTexture.uOffset = uvGen.GetUOffs(0);
@@ -901,7 +901,7 @@ namespace Max2Babylon
                 && (babylonTexture.uScale != 1f || babylonTexture.vScale != 1f) 
                 && (Math.Abs(babylonTexture.uScale) - Math.Abs(babylonTexture.vScale)) > float.Epsilon)
             {
-                RaiseWarning("Rotation and non-uniform tiling (scale) on a texture is not supported as it will cause texture shearing. You can use the map UV of the mesh for those transformations.", 3);
+                logger?.RaiseWarning("Rotation and non-uniform tiling (scale) on a texture is not supported as it will cause texture shearing. You can use the map UV of the mesh for those transformations.", 3);
             }
 
 
@@ -944,7 +944,7 @@ namespace Max2Babylon
                     }
                     else
                     {
-                        RaiseWarning(string.Format("Texture {0} not found.", absolutePath), 3);
+                        logger?.RaiseWarning(string.Format("Texture {0} not found.", absolutePath), 3);
                     }
 
                 }
@@ -955,7 +955,7 @@ namespace Max2Babylon
 
                 if (babylonTexture.isCube && !allowCube)
                 {
-                    RaiseWarning(string.Format("Cube texture are only supported for reflection channel"), 3);
+                    logger?.RaiseWarning(string.Format("Cube texture are only supported for reflection channel"), 3);
                 }
             }
         }
@@ -985,9 +985,9 @@ namespace Max2Babylon
                         expected++;
                     }
 
-                    RaiseWarning(string.Format("Mipmaps chain is not complete: {0} maps instead of {1} (based on texture max size: {2})", mipmapsCount, expected, width), 3);
-                    RaiseWarning(string.Format("You must generate a complete mipmaps chain for .dds)"), 3);
-                    RaiseWarning(string.Format("Mipmaps will be disabled for this texture. If you want automatic texture generation you cannot use a .dds)"), 3);
+                    logger?.RaiseWarning(string.Format("Mipmaps chain is not complete: {0} maps instead of {1} (based on texture max size: {2})", mipmapsCount, expected, width), 3);
+                    logger?.RaiseWarning(string.Format("You must generate a complete mipmaps chain for .dds)"), 3);
+                    logger?.RaiseWarning(string.Format("Mipmaps will be disabled for this texture. If you want automatic texture generation you cannot use a .dds)"), 3);
                 }
 
                 bool isCube = (intArray[28] & 0x200) == 0x200;
@@ -1014,7 +1014,7 @@ namespace Max2Babylon
             var texture = texMap.GetParamBlock(0).Owner as IBitmapTex;
             if (texture == null && raiseError)
             {
-                RaiseError($"Texture type is not supported. Use a Bitmap instead.", 2);
+                logger?.RaiseError($"Texture type is not supported. Use a Bitmap instead.", 2);
             }
 
             return texture;
@@ -1087,7 +1087,7 @@ namespace Max2Babylon
                 return null;
             }
 
-            return TextureUtilities.LoadTexture(texture.Map.FullFilePath, this);
+            return TextureUtilities.LoadTexture(texture.Map.FullFilePath, logger);
         }
     }
 }

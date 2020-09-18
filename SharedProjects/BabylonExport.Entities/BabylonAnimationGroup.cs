@@ -12,7 +12,7 @@ namespace BabylonExport.Entities
         public BabylonAnimation animation { get; set; }
 
         [DataMember]
-        public string targetId { get; set; }              // the id of the target. It can be a node or a bone.
+        public string targetId { get; set; }              // the id of the target. It can be a node or a bone or a material.
     }
 
     [DataContract]

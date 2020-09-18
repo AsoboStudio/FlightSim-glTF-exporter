@@ -16,6 +16,7 @@ ECHO %source_dir%
 
 IF %1=="Debug" GOTO OnDebug
 IF %1=="Release" GOTO OnRelease
+IF %1=="Master" GOTO OnMaster
 
 :OnDebug
 
@@ -28,8 +29,11 @@ SET dest_dir="%max_location%bin\assemblies"
 GOTO CopyFiles
 
 :OnRelease
-SET dest_dir="%FLIGHT_SIM%\ASSETS\KittyHawk_Data\Tools\3DSMAX\FlightSimPackage\src\plugins\glTF_Exporter\%max_version%"
+SET dest_dir="%~dp0\..\..\..\..\..\..\ASSETS\KittyHawk_Data\Tools\3DSMAX\FlightSimPackage\src\plugins\glTF_Exporter\%max_version%"
 GOTO CopyFiles
+
+:OnMaster
+GOTO Close
 
 :CopyFiles
 ECHO :: Copying plug-in files
@@ -77,7 +81,6 @@ GOTO Close
 
 :DebugOnMax
 START /d "%max_location%" 3dsmax.exe
-GOTO Close
 
 :Close
 PAUSE

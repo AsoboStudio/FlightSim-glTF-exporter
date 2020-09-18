@@ -44,43 +44,43 @@ namespace Max2Babylon
 
         #region IIGameProperty
 
-        public static string GetStringProperty(this IIGameProperty property)
+        public static string GetStringProperty(this IIGameProperty property,int t=0)
         {
             string value = "";
-            property.GetPropertyValue(ref value, 0);
+            property.GetPropertyValue(ref value, t);
             return value;
         }
 
-        public static int GetIntValue(this IIGameProperty property)
+        public static int GetIntValue(this IIGameProperty property,int t=0)
         {
             int value = 0;
-            property.GetPropertyValue(ref value, 0);
+            property.GetPropertyValue(ref value, t);
             return value;
         }
 
-        public static bool GetBoolValue(this IIGameProperty property)
+        public static bool GetBoolValue(this IIGameProperty property,int t=0)
         {
-            return property.GetIntValue() == 1;
+            return property.GetIntValue(t) == 1;
         }
 
-        public static float GetFloatValue(this IIGameProperty property)
+        public static float GetFloatValue(this IIGameProperty property,int t=0)
         {
             float value = 0.0f;
-            property.GetPropertyValue(ref value, 0, true);
+            property.GetPropertyValue(ref value, t, true);
             return value;
         }
 
-        public static IPoint3 GetPoint3Property(this IIGameProperty property)
+        public static IPoint3 GetPoint3Property(this IIGameProperty property,int t=0)
         {
             IPoint3 value = Loader.Global.Point3.Create(0, 0, 0);
-            property.GetPropertyValue(value, 0);
+            property.GetPropertyValue(value, t);
             return value;
         }
 
-        public static IPoint4 GetPoint4Property(this IIGameProperty property)
+        public static IPoint4 GetPoint4Property(this IIGameProperty property,int t=0)
         {
             IPoint4 value = Loader.Global.Point4.Create(0, 0, 0, 0);
-            property.GetPropertyValue(value, 0);
+            property.GetPropertyValue(value, t);
             return value;
         }
 
@@ -88,40 +88,40 @@ namespace Max2Babylon
 
         #region IIPropertyContainer
 
-        public static string GetStringProperty(this IIPropertyContainer propertyContainer, string propName, string defaultValue = null)
+        public static string GetStringProperty(this IIPropertyContainer propertyContainer, string propName, int t=0,string defaultValue = null)
         {
             IIGameProperty gameProperty = propertyContainer.QueryProperty(propName);
-            return gameProperty != null ? gameProperty.GetStringProperty() : defaultValue;
+            return gameProperty != null ? gameProperty.GetStringProperty(t) : defaultValue;
         }
 
-        public static int GetIntProperty(this IIPropertyContainer propertyContainer, string propName, int defaultValue = 0)
+        public static int GetIntProperty(this IIPropertyContainer propertyContainer, string propName,int t=0, int defaultValue = 0)
         {
             IIGameProperty gameProperty = propertyContainer.QueryProperty(propName);
-            return gameProperty != null ? gameProperty.GetIntValue() : defaultValue;
+            return gameProperty != null ? gameProperty.GetIntValue(t) : defaultValue;
         }
 
-        public static bool GetBoolProperty(this IIPropertyContainer propertyContainer, string propName, bool defaultValue = false)
+        public static bool GetBoolProperty(this IIPropertyContainer propertyContainer, string propName,int t=0, bool defaultValue = false)
         {
             IIGameProperty gameProperty = propertyContainer.QueryProperty(propName);
-            return gameProperty != null ? gameProperty.GetBoolValue() : defaultValue;
+            return gameProperty != null ? gameProperty.GetBoolValue(t) : defaultValue;
         }
 
-        public static float GetFloatProperty(this IIPropertyContainer propertyContainer, string propName, float defaultValue = 0f)
+        public static float GetFloatProperty(this IIPropertyContainer propertyContainer, string propName,int t=0, float defaultValue = 0f)
         {
             IIGameProperty gameProperty = propertyContainer.QueryProperty(propName);
-            return gameProperty != null ? gameProperty.GetFloatValue() : defaultValue;
+            return gameProperty != null ? gameProperty.GetFloatValue(t) : defaultValue;
         }
 
-        public static IPoint3 GetPoint3Property(this IIPropertyContainer propertyContainer, string propName, IPoint3 defaultValue = null)
+        public static IPoint3 GetPoint3Property(this IIPropertyContainer propertyContainer, string propName,int t=0, IPoint3 defaultValue = null)
         {
             IIGameProperty gameProperty = propertyContainer.QueryProperty(propName);
-            return gameProperty != null ? gameProperty.GetPoint3Property() : defaultValue;
+            return gameProperty != null ? gameProperty.GetPoint3Property(t) : defaultValue;
         }
 
-        public static IPoint4 GetPoint4Property(this IIPropertyContainer propertyContainer, string propName, IPoint4 defaultValue = null)
+        public static IPoint4 GetPoint4Property(this IIPropertyContainer propertyContainer, string propName, int t=0,IPoint4 defaultValue = null)
         {
             IIGameProperty gameProperty = propertyContainer.QueryProperty(propName);
-            return gameProperty != null ? gameProperty.GetPoint4Property() : defaultValue;
+            return gameProperty != null ? gameProperty.GetPoint4Property(t) : defaultValue;
         }
 
         // ---
@@ -226,6 +226,7 @@ namespace Max2Babylon
         }
 
         public const float Epsilon = 0.001f;
+        public const float KeyEpsilon = 1.0e-6f;
 
         public static IPoint3 XAxis { get { return Loader.Global.Point3.Create(1, 0, 0); } }
         public static IPoint3 YAxis { get { return Loader.Global.Point3.Create(0, 1, 0); } }
@@ -418,8 +419,12 @@ namespace Max2Babylon
             {
                 return false;
             }
+            return !value.Where((t, i) => Math.Abs(t - other[i]) > KeyEpsilon).Any();
+        }
 
-            return !value.Where((t, i) => Math.Abs(t - other[i]) > Epsilon).Any();
+        public static bool IsEqualTo(this float value, float other)
+        {
+            return Math.Abs(value - other) <= KeyEpsilon;
         }
 
         public static float[] ToArray(this IMatrix3 value)
@@ -602,7 +607,7 @@ namespace Max2Babylon
         /// </summary>
         /// <param name="fov">horizontal FOV</param>
         /// <returns></returns>
-        public static float ConvertFov(float fov)
+        public static float ConvertFovToVertical(float fov)
         {
             return (float)(2.0f * Math.Atan(Math.Tan(fov / 2.0f) / Loader.Core.ImageAspRatio));
         }
@@ -815,7 +820,7 @@ namespace Max2Babylon
             IPolyObject polyObject = result.GetPolyObjectFromNode();
             IEPoly nodeEPoly = (IEPoly)polyObject.GetInterface(Loader.EditablePoly);
 
-#if MAX2020
+#if MAX2020 || MAX2021
             IINodeTab toflatten = Loader.Global.INodeTab.Create();
             IINodeTab resultTarget = Loader.Global.INodeTab.Create();
 #else
@@ -887,7 +892,7 @@ namespace Max2Babylon
 
         public static bool IsNodeSelected(this IINode node)
         {
-#if MAX2020
+#if MAX2020 || MAX2021
             IINodeTab selection = Loader.Global.INodeTab.Create();
 #else
             IINodeTab selection = Loader.Global.INodeTabNS.Create();
@@ -937,7 +942,7 @@ namespace Max2Babylon
 
         public static List<IIContainerObject> GetContainerInSelection()
         {
-#if MAX2020
+#if MAX2020 || MAX2021
             IINodeTab selection = Loader.Global.INodeTab.Create();
 #else
             IINodeTab selection = Loader.Global.INodeTabNS.Create();
@@ -1156,12 +1161,40 @@ namespace Max2Babylon
             return result as IINode;
         }
 
-        public static void InitializeGuidNodesMap()
+        public static IGenCamera GetICameraByGuid(Guid guid)
         {
+            if (guid.Equals(Guid.Empty)) return null;
+            IAnimatable result = null;
+            guids.TryGetValue(guid, out result);
+            
+            return result as IGenCamera;
+        }
+
+        public static IMtl GetIMtlByGuid(Guid guid)
+        {
+            if (guid.Equals(Guid.Empty)) return null;
+            IAnimatable result = null;
+            guids.TryGetValue(guid,out result);
+            return result as IMtl;
+        }
+
+        public static void InitializeGuidsMap()
+        {
+
             IINode root = Loader.Core.RootNode;
             foreach (IINode iNode in root.NodeTree())
             {
                 iNode.GetGuid();
+            }
+
+            for (int i = 0; i < Loader.Core.SceneMtls.Count; i++)
+            {
+#if MAX2016
+                Loader.Core.SceneMtls[new IntPtr(i)].GetGuid();
+#else
+                Loader.Core.SceneMtls[i].GetGuid();
+#endif
+                
             }
         }
 
@@ -1228,6 +1261,31 @@ namespace Max2Babylon
             var uidData = animatable.GetAppDataChunk(Loader.Class_ID, SClass_ID.Basenode, 0);
             Guid uid;
 
+            if (animatable is IMtl)
+            {
+                IMtl mtl = (IMtl)animatable;
+                if (FlightSim.FlightSimMaterialUtilities.IsFlightSimMaterial(mtl))
+                {
+                    string g = Tools.GetStringMaterialProperty(mtl, "guid").ToString();
+                    if (g == string.Empty || g == Guid.Empty.ToString())
+                    {
+                        uid = Guid.NewGuid();
+                        Tools.SetMaterialProperty(mtl, "guid", uid.ToString());
+                    }
+                    else
+                    {
+                        uid = new Guid(g);
+                    }
+
+                    if(!guids.ContainsKey(uid))
+                    {
+                        guids.Add(uid, animatable);
+                    }
+                    
+                    return uid;                    
+                }
+            }
+
             // If current node already has a uid
             if (uidData != null)
             {
@@ -1269,6 +1327,9 @@ namespace Max2Babylon
                 guids.Add(uid, animatable);
                 animatable.AddAppDataChunk(Loader.Class_ID, SClass_ID.Basenode, 0, uid.ToByteArray());
             }
+
+            
+
             return uid;
         }
 #endregion
@@ -1728,7 +1789,31 @@ namespace Max2Babylon
             }
         }
 
-        public static int GetMaterialProperty(IMtl mat, string propName)
+        public static void SetMaterialProperty(IMtl mat, string propName, string propValue)
+        {
+            for (int j = 0; j < mat.NumParamBlocks; j++)
+            {
+                IIParamBlock2 pBlock = mat.GetParamBlock(j);
+
+                for (short k = 0; k < pBlock.NumParams; k++)
+                {
+#if MAX2016
+
+                    IParamDef p = pBlock.GetParamDef(k);
+#else
+                    
+                    IParamDef p =  pBlock.GetParamDefByIndex(Convert.ToUInt16(k));
+#endif
+                    if (p.IntName == propName)
+                    {
+                        int v = 0;
+                        pBlock.SetValue(k, Loader.Core.Time, propValue, 0);
+                    }
+                }
+            }
+        }
+
+        public static int GetIntMaterialProperty(IMtl mat, string propName)
         {
             for (int j = 0; j < mat.NumParamBlocks; j++)
             {
@@ -1755,8 +1840,35 @@ namespace Max2Babylon
             return 0;
         }
 
+        public static string GetStringMaterialProperty(IMtl mat, string propName)
+        {
+            for (int j = 0; j < mat.NumParamBlocks; j++)
+            {
+                IIParamBlock2 pBlock = mat.GetParamBlock(j);
 
-#endregion
+                for (short k = 0; k < pBlock.NumParams; k++)
+                {
+#if MAX2015 || MAX2016
+
+                    IParamDef p = pBlock.GetParamDef(k);
+#else
+
+                    IParamDef p = pBlock.GetParamDefByIndex(Convert.ToUInt16(k));
+#endif
+                    if (p.IntName == propName)
+                    {
+                        string v = String.Empty;
+                        pBlock.GetValue(k, Loader.Core.Time, ref v, Tools.Forever, 0);
+                        return v;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+
+        #endregion
 
         /// <summary>
         /// Converts the ITab to a more convenient IEnumerable.

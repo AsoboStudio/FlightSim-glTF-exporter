@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using Autodesk.Max;
 using Autodesk.Max.Plugins;
 using ManagedServices;
-using Max2Babylon.FlightSimExtension;
+using Max2Babylon.FlightSim;
 using Newtonsoft.Json;
 using Utilities;
 
@@ -38,9 +38,26 @@ namespace Max2Babylon
     }
 
     [DataContract]
+    public class AnimationGroupMaterial
+    {
+        [DataMember]
+        public Guid Guid { get; set; } 
+        [DataMember]
+        public string Name { get; set; }
+
+        public AnimationGroupMaterial(Guid _guid, string _name)
+        {
+            Guid = _guid;
+            Name = _name;
+        }
+
+    }
+
+    [DataContract]
     public class AnimationGroup
     {
         public bool IsDirty { get; private set; } = true;
+        public bool IsOldType { get; private set; } = false;
 
         [DataMember]
         public Guid SerializedId
@@ -92,6 +109,9 @@ namespace Max2Babylon
         [DataMember]
         public List<AnimationGroupNode> AnimationGroupNodes {get; set;}
 
+        [DataMember]
+        public List<AnimationGroupMaterial> AnimationGroupMaterials {get; set;}
+
         public IList<Guid> NodeGuids
         {
             get { return nodeGuids.AsReadOnly(); }
@@ -121,6 +141,35 @@ namespace Max2Babylon
             }
         }
 
+        public IList<Guid> MaterialGuids
+        {
+            get { return materialsGuids.AsReadOnly(); }
+            set
+            {
+                // if the lists are equal, return early so isdirty is not touched
+                if (materialsGuids.Count == value.Count)
+                {
+                    bool equal = true;
+                    int i = 0;
+                    foreach (Guid newMaterialGuid in value)
+                    {
+                        if (!newMaterialGuid.Equals(materialsGuids[i]))
+                        {
+                            equal = false;
+                            break;
+                        }
+                        ++i;
+                    }
+                    if (equal)
+                        return;
+                }
+
+                IsDirty = true;
+                materialsGuids.Clear();
+                materialsGuids.AddRange(value);
+            }
+        }
+
         private int ticksStart = Loader.Core.AnimRange.Start;
         private int ticksEnd = Loader.Core.AnimRange.End;
 
@@ -141,6 +190,7 @@ namespace Max2Babylon
 
         public const string s_DisplayNameFormat = "{0} ({1:d}, {2:d})";
         public const char s_PropertySeparator = ';';
+        public const char s_GUIDTypeSeparator = '~';
         public const string s_PropertyFormat = "{0};{1};{2};{3}";
 
         private Guid serializedId = Guid.NewGuid();
@@ -148,6 +198,7 @@ namespace Max2Babylon
         // use current timeline frame range by default
 
         private List<Guid> nodeGuids = new List<Guid>();
+        private List<Guid> materialsGuids = new List<Guid>();
 
         public AnimationGroup() { }
         public AnimationGroup(AnimationGroup other)
@@ -162,12 +213,15 @@ namespace Max2Babylon
             TicksEnd = other.TicksEnd;
             nodeGuids.Clear();
             nodeGuids.AddRange(other.nodeGuids);
+            materialsGuids.Clear();
+            materialsGuids.AddRange(other.materialsGuids);
             IsDirty = true;
         }
 
         public void MergeFrom(AnimationGroup other)
         {
             nodeGuids.AddRange(other.nodeGuids);
+            materialsGuids.AddRange(other.materialsGuids);
             IsDirty = true;
         }
 
@@ -199,50 +253,42 @@ namespace Max2Babylon
             }
 
             
+            int indexOfguidPart = propertiesString
+                .Select((c, i) => new {c, i})
+                .Where(x => x.c == s_PropertySeparator)
+                .Skip(2)
+                .FirstOrDefault().i;
+            string[] baseProperties = propertiesString.Substring(0, indexOfguidPart)?.Split(s_PropertySeparator);
+            string guidPart = propertiesString.Substring(indexOfguidPart+1);
 
-            string[] properties = propertiesString.Split(s_PropertySeparator);
-
-            if (properties.Length < 4)
+            if (baseProperties.Length != 3)
                 throw new Exception("Invalid number of properties, can't deserialize.");
 
             // set dirty explicitly just before we start loading, set to false when loading is done
             // if any exception is thrown, it will have a correct value
             IsDirty = true;
 
-            name = properties[0];
-            if (!int.TryParse(properties[1], out ticksStart))
+            name = baseProperties[0];
+            if (!int.TryParse(baseProperties[1], out ticksStart))
                 throw new Exception("Failed to parse FrameStart property.");
-            if (!int.TryParse(properties[2], out ticksEnd))
+            if (!int.TryParse(baseProperties[2], out ticksEnd))
                 throw new Exception("Failed to parse FrameEnd property.");
 
-            if (string.IsNullOrEmpty(properties[3]))
-                return;
+            if (string.IsNullOrEmpty(guidPart) || guidPart==s_GUIDTypeSeparator.ToString()) return;
 
-            int numNodeIDs = properties.Length - 3;
-            if (nodeGuids.Capacity < numNodeIDs) nodeGuids.Capacity = numNodeIDs;
             int numFailed = 0;
 
-            for (int i = 0; i < numNodeIDs; ++i)
+            if (!guidPart.Contains(s_GUIDTypeSeparator))
             {
-                Guid guid;
-                if (!Guid.TryParse(properties[3 + i], out guid))
-                {
-                    uint id;
-                    if (!uint.TryParse(properties[3 + i], out id))
-                    {
-                        ++numFailed;
-                        continue;
-                    }
-                    //node is serialized in the old way ,force the reassignation of a new Guid on
-                    IINode node = Loader.Core.GetINodeByHandle(id);
-                    if (node != null)
-                    {
-                        guid= node.GetGuid();
-                    }
-                }
-                nodeGuids.Add(guid);
-                
+                // to grant retro-compatiblity
+               numFailed = ParseOldProperties(guidPart);
             }
+            else
+            {
+                //new format with nodes and node materials guid
+                numFailed = ParseNewProperties(guidPart);
+            }
+            
 
             AnimationGroupNodes = new List<AnimationGroupNode>();
             foreach (Guid nodeGuid in nodeGuids)
@@ -258,10 +304,112 @@ namespace Max2Babylon
                 }
             }
 
+            AnimationGroupMaterials = new List<AnimationGroupMaterial>();
+            foreach (Guid materialGUID in materialsGuids)
+            {
+                IMtl mat = Tools.GetIMtlByGuid(materialGUID);
+
+                if (mat != null)
+                {
+                    string name = mat.Name;
+                    AnimationGroupMaterial matData = new AnimationGroupMaterial(materialGUID, name);
+                    AnimationGroupMaterials.Add(matData);
+                }
+            }
+
             if (numFailed > 0)
                 throw new Exception(string.Format("Failed to parse {0} node ids.", numFailed));
             
             IsDirty = false;
+        }
+
+        private int ParseOldProperties(string guidPropPart)
+        {
+            IsOldType = true; //force it to be saved in the new format
+            string[] properties = guidPropPart.Split(s_PropertySeparator);
+
+            int numFailed = 0;
+
+            int numNodeIDs = properties.Length;
+            if (nodeGuids.Capacity < numNodeIDs) nodeGuids.Capacity = numNodeIDs;
+
+
+            for (int i = 0; i < numNodeIDs; ++i)
+            {
+                Guid guid;
+                if (!Guid.TryParse(properties[ i], out guid))
+                {
+                    uint id;
+                    if (!uint.TryParse(properties[i], out id))
+                    {
+                        ++numFailed;
+                        continue;
+                    }
+                    //node is serialized in the old way ,force the reassignation of a new Guid on
+                    IINode node = Loader.Core.GetINodeByHandle(id);
+                    if (node != null)
+                    {
+                        guid= node.GetGuid();
+                    }
+                }
+                nodeGuids.Add(guid);
+                
+            }
+
+            return numFailed;
+        }
+
+        private int ParseNewProperties(string guidPropPart)
+        {
+            int numFailed = 0;
+            string[] guidProperties = guidPropPart.Split(s_GUIDTypeSeparator);
+            string[] nodes = new string[0];
+            string[] materials = new string[0];
+            if (!string.IsNullOrWhiteSpace(guidProperties[0]))
+            {
+                nodes = guidProperties[0].Split(s_PropertySeparator);
+            }
+
+            if (!string.IsNullOrWhiteSpace(guidProperties[1]))
+            {
+                materials = guidProperties[1].Split(s_PropertySeparator);
+            }
+            
+            int numNodeGUIDs = nodes.Length;
+            int numMatGUIDs = materials.Length;
+
+
+            for (int i = 0; i < numNodeGUIDs; ++i)
+            {
+                Guid guid;
+                if (!Guid.TryParse(nodes[i], out guid))
+                {
+                    uint id;
+                    if (!uint.TryParse(nodes[i], out id))
+                    {
+                        ++numFailed;
+                        continue;
+                    }
+                    //node is serialized in the old way ,force the reassignation of a new Guid on
+                    IINode node = Loader.Core.GetINodeByHandle(id);
+                    if (node != null)
+                    {
+                            guid= node.GetGuid();
+                    }
+                }
+                nodeGuids.Add(guid);
+            }
+
+            for (int i = 0; i < numMatGUIDs; ++i)
+            {
+                Guid guid;
+                if (Guid.TryParse(materials[i], out guid))
+                {
+                    materialsGuids.Add(guid);
+                }
+            }
+            
+            return numFailed;
         }
 
         public void SaveToData(IINode dataNode = null)
@@ -272,8 +420,11 @@ namespace Max2Babylon
                 throw new FormatException("Invalid character(s) in animation Name: " + name + ". Spaces, equal signs and the separator '" + s_PropertySeparator + "' are not allowed.");
 
             string nodes = string.Join(s_PropertySeparator.ToString(), nodeGuids);
+            string materials = string.Join(s_PropertySeparator.ToString(), materialsGuids);
+            string guids = string.Join(s_GUIDTypeSeparator.ToString(), nodes, materials);
+
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.AppendFormat(s_PropertyFormat, name, TicksStart, TicksEnd, nodes);
+            stringBuilder.AppendFormat(s_PropertyFormat, name, TicksStart, TicksEnd, guids);
 
             dataNode.SetStringProperty(GetPropertyName(), stringBuilder.ToString());
 
@@ -384,10 +535,10 @@ namespace Max2Babylon
                     // Nothing printed otherwise
                     if (warnings.Count > 0)
                     {
-                        logger.RaiseWarning(animGroup.Name, 1);
+                        logger?.RaiseWarning(animGroup.Name, 1);
                         foreach (string warning in warnings)
                         {
-                            logger.RaiseWarning(warning, 2);
+                            logger?.RaiseWarning(warning, 2);
                         }
                     }
                 }
@@ -402,7 +553,7 @@ namespace Max2Babylon
             List<string> animationPropertyNameList = new List<string>();
             for(int i = 0; i < Count; ++i)
             {
-                if(this[i].IsDirty)
+                if(this[i].IsDirty )
                     this[i].SaveToData(dataNode);
                 animationPropertyNameList.Add(this[i].GetPropertyName());
             }
@@ -427,9 +578,11 @@ namespace Max2Babylon
             
             List<AnimationGroup> animationGroupsData = JsonConvert.DeserializeObject<List<AnimationGroup>>(jsonContent);
 
+            List<Guid> nodeGuids = new List<Guid>();
+            List<Guid> materialsGuids = new List<Guid>();
             foreach (AnimationGroup animData in animationGroupsData)
             {
-                List<Guid> nodeGuids = new List<Guid>();
+                nodeGuids.Clear();
                 
                 if (animData.AnimationGroupNodes != null)
                 {
@@ -474,18 +627,45 @@ namespace Max2Babylon
                     }
                 }
 
+                if (animData.AnimationGroupMaterials != null)
+                {
+                    string missingMaterials= "";
+                    foreach (AnimationGroupMaterial matData in animData.AnimationGroupMaterials)
+                    {
+                        //check here if something changed between export\import
+                        // a material handle is reassigned the moment the node is created
+                        // it is no possible to have consistency at 100% sure between two file
+                        // we need to prevent artists
+                        IMtl mtl = Tools.GetIMtlByGuid(matData.Guid);
+                        if (mtl == null)
+                        {
+                            //material is missing
+                            missingMaterials += matData.Name + "\n";
+                            continue;
+                        }
+                        materialsGuids.Add(mtl.GetGuid());
+                    }
+
+                    if (!string.IsNullOrEmpty(missingMaterials))
+                    {
+                        //skip restoration of evaluated animation group
+                        materialsGuids = new List<Guid>();
+                        MessageBox.Show(string.Format("{0} does not exist,{1} import skipped", missingMaterials, animData.Name));
+                    }
+                }
+
+
                 animData.NodeGuids = nodeGuids;
+                animData.MaterialGuids = materialsGuids;
                 string nodes = string.Join(AnimationGroup.s_PropertySeparator.ToString(), animData.NodeGuids);
-                
+                string materials = string.Join(AnimationGroup.s_PropertySeparator.ToString(), animData.MaterialGuids);
+                string guids = string.Join(AnimationGroup.s_GUIDTypeSeparator.ToString(), nodes, materials);
+
                 StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.AppendFormat(AnimationGroup.s_PropertyFormat, animData.Name, animData.TicksStart, animData.TicksEnd, nodes);
+                stringBuilder.AppendFormat(AnimationGroup.s_PropertyFormat, animData.Name, animData.TicksStart, animData.TicksEnd, guids);
 
                 Loader.Core.RootNode.SetStringProperty(animData.SerializedId.ToString(), stringBuilder.ToString());
 
-            }
-            
-            foreach (AnimationGroup animData in animationGroupsData)
-            {
                 string id = animData.SerializedId.ToString();
 
                 if (merge)
@@ -591,7 +771,6 @@ namespace Max2Babylon
             sceneAnimationGroupList.SaveToData();
             Loader.Global.SetSaveRequiredFlag(true, false);
         }
-
 
         public static void LoadDataFromAllContainers()
         {
@@ -724,8 +903,6 @@ namespace Max2Babylon
             }
             container.ContainerNode.SetUserPropBool("flightsim_resolved", true);
         }
-
-
 
         public static void RemoveDataOnContainer(IIContainerObject containerObject)
         {

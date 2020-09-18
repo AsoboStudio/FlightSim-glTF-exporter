@@ -1,3 +1,4 @@
+using Autodesk.Max;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,6 +37,11 @@ namespace Max2Babylon
                 string maxScriptCmd = File.ReadAllText(filePath);
                 ExecuteMaxScriptCommand(maxScriptCmd);
             }
+        }
+
+        public static string ExecuteMaxScriptQuery(string mxsCode)
+        {
+             return ManagedServices.MaxscriptSDK.ExecuteStringMaxscriptQuery(mxsCode);           
         }
     }
 }

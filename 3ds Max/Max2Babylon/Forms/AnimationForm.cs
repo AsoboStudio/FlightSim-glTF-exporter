@@ -21,7 +21,7 @@ namespace Max2Babylon
         public AnimationForm(BabylonAnimationActionItem babylonAnimationAction)
         {
             InitializeComponent();
-            Tools.InitializeGuidNodesMap();
+            Tools.InitializeGuidsMap();
             this.babylonAnimationAction = babylonAnimationAction;
         }
 
@@ -151,6 +151,13 @@ namespace Max2Babylon
 
         private void AnimationForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            foreach (AnimationGroup animationGroup in animationGroups)
+            {
+                if (animationGroup.IsOldType)
+                {
+                    animationGroup.SaveToData();
+                }
+            }
             babylonAnimationAction.Close();
         }
 

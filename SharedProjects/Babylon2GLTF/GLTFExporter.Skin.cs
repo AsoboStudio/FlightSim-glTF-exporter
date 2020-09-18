@@ -16,7 +16,7 @@ namespace Babylon2GLTF
 
         private GLTFSkin ExportSkin(BabylonSkeleton babylonSkeleton, GLTF gltf, GLTFNode gltfNode, GLTFMesh gltfMesh)
         {
-            logger.RaiseMessage("GLTFExporter.Skin | Export skin of node '" + gltfNode.name + "' based on skeleton '" + babylonSkeleton.name + "'", 2);
+            logger?.RaiseMessage("GLTFExporter.Skin | Export skin of node '" + gltfNode.name + "' based on skeleton '" + babylonSkeleton.name + "'", 2);
 
             // Retreive gltf skeleton data if babylon skeleton has already been exported
             if (!alreadyExportedSkeletons.ContainsKey(babylonSkeleton))
@@ -50,7 +50,7 @@ namespace Babylon2GLTF
             var sharedSkinnedMeshesByOriginalPair = sharedSkinnedMeshesByOriginal.Where(skinSharingMeshPair => skinSharingMeshPair.Value.Contains(gltfMesh)).Select(kvp => (KeyValuePair<GLTFMesh, List<GLTFMesh>>?) kvp).FirstOrDefault();
             if (sharedSkinnedMeshesByOriginalPair != null)
             {
-                logger.RaiseMessage("GLTFExporter.Skin | Sharing skinning information from mesh '" + sharedSkinnedMeshesByOriginalPair.Value.Key.name + "'", 3);
+                logger?.RaiseMessage("GLTFExporter.Skin | Sharing skinning information from mesh '" + sharedSkinnedMeshesByOriginalPair.Value.Key.name + "'", 3);
                 var skeletonExportData = alreadyExportedSkeletons[babylonSkeleton];
                 gltfNode.skin = skeletonExportData.skinIndex;
                 return gltf.SkinsList[(int)gltfNode.skin];
@@ -260,9 +260,9 @@ namespace Babylon2GLTF
             rotation *= (float)(180 / Math.PI);
 
             var lvl = 3;
-            logger.RaiseWarning(name + ".translation=[" + translation.X + ", " + translation.Y + ", " + translation.Z + "]", lvl);
-            logger.RaiseWarning(name + ".rotation=[" + rotation.X + ", " + rotation.Y + ", " + rotation.Z + "]", lvl);
-            logger.RaiseWarning(name + ".scale=[" + scale.X + ", " + scale.Y + ", " + scale.Z + "]", lvl);
+            logger?.RaiseWarning(name + ".translation=[" + translation.X + ", " + translation.Y + ", " + translation.Z + "]", lvl);
+            logger?.RaiseWarning(name + ".rotation=[" + rotation.X + ", " + rotation.Y + ", " + rotation.Z + "]", lvl);
+            logger?.RaiseWarning(name + ".scale=[" + scale.X + ", " + scale.Y + ", " + scale.Z + "]", lvl);
         }
     }
 }

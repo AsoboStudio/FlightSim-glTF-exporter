@@ -13,19 +13,33 @@ namespace Max2Babylon
 {
     public class MaxScriptManager
     {
+        //deprecated
         public static void Export( bool logInListener)
         {
+            Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf("WARNING - This method is DEPRECATED use "+ "\n"+"Export(MaxExportParameters exportParameters, BabylonLogger _logger)" + "\n");
             string storedModelPath = Loader.Core.RootNode.GetStringProperty(MaxExportParameters.ModelFilePathProperty, string.Empty);
             string userRelativePath = Tools.ResolveRelativePath(storedModelPath);
-            Export(InitParameters(userRelativePath),logInListener);
+            var logger = new MaxScriptLogger(logInListener);
+            Export(InitParameters(userRelativePath),logger);
         }
 
+        //deprecated
         public static void Export(string outputPath, bool logInListener)
         {
-            Export(InitParameters(outputPath),logInListener);
+            Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf("WARNING - This method is DEPRECATED use " + "\n" + "Export(MaxExportParameters exportParameters, BabylonLogger _logger)" + "\n");
+            var logger = new MaxScriptLogger(logInListener);
+            Export(InitParameters(outputPath),logger);
         }
 
-        public static void Export(MaxExportParameters exportParameters, bool logInListener )
+        //deprecated
+        public static void Export(MaxExportParameters exportParameters, bool logInListener)
+        {
+            Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf("WARNING - This method is DEPRECATED use "+ "\n"+"Export(MaxExportParameters exportParameters, BabylonLogger _logger)" + "\n");
+            var logger = new MaxScriptLogger(logInListener);
+            Export(exportParameters, logger);
+        }
+
+        public static void Export(MaxExportParameters exportParameters, ILoggingProvider _logger)
         {
             if (Loader.Class_ID == null)
             {
@@ -38,36 +52,20 @@ namespace Max2Babylon
                 Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf("ERROR - Valid output formats are: "+ validFormats.ToArray().ToString(true) + "\n");
                 return;
             }
-
+           
             BabylonExporter exporter = new BabylonExporter();
-
-            if (logInListener)
-            {
-                // Init log system
-                exporter.OnWarning += (warning, rank) =>
-                {
-                    Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(warning+"\n");
-                };
-                exporter.OnError += (error, rank) =>
-                {
-                    Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(error + "\n");
-                };
-                exporter.OnMessage += (message, color, rank, emphasis) =>
-                {
-                    Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(message + "\n");
-                };
-                exporter.OnVerbose += (message, color, rank, emphasis) =>
-                {
-                    Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(message + "\n");
-                };
-            }
+            if(_logger!=null) exporter.logger = _logger;
 
             // Start export
             exporter.Export(exportParameters);
         }
 
+        public static void InitializeGuidTable()
+        {
+            Tools.InitializeGuidsMap();
+        }
 
-        //leave the possibility to do get the outputh path from the babylon exporter with all the settings as presaved
+        //leave the possibility to get the output path from the babylon exporter with all the settings previously-saved
         public static MaxExportParameters InitParameters(string outputPath)
         {
             long txtQuality = 100;
@@ -94,14 +92,12 @@ namespace Max2Babylon
             exportParameters.animgroupExportNonAnimated = Loader.Core.RootNode.GetBoolProperty("babylonjs_animgroupexportnonanimated");
             exportParameters.optimizeAnimations = !Loader.Core.RootNode.GetBoolProperty("babylonjs_donotoptimizeanimations");
             exportParameters.exportMaterials = Loader.Core.RootNode.GetBoolProperty("babylonjs_export_materials");
-            
 
             exportParameters.exportMorphTangents = Loader.Core.RootNode.GetBoolProperty("babylonjs_export_Morph_Tangents");
             exportParameters.exportMorphNormals = Loader.Core.RootNode.GetBoolProperty("babylonjs_export_Morph_Normals");
             exportParameters.usePreExportProcess = Loader.Core.RootNode.GetBoolProperty("babylonjs_preproces");
-            exportParameters.flattenScene = Loader.Core.RootNode.GetBoolProperty("babylonjs_flattenScene");
             exportParameters.mergeContainersAndXRef = Loader.Core.RootNode.GetBoolProperty("babylonjs_mergecontainersandxref");
-            
+            exportParameters.applyPreprocessToScene = Loader.Core.RootNode.GetBoolProperty("babylonjs_applyPreprocess");
 
             exportParameters.pbrFull = Loader.Core.RootNode.GetBoolProperty(ExportParameters.PBRFullPropertyName);
             exportParameters.pbrNoLight = Loader.Core.RootNode.GetBoolProperty(ExportParameters.PBRNoLightPropertyName);
@@ -114,6 +110,8 @@ namespace Max2Babylon
             exportParameters.removeLodPrefix = Loader.Core.RootNode.GetBoolProperty("flightsim_removelodprefix");
             exportParameters.removeNamespaces = Loader.Core.RootNode.GetBoolProperty("flightsim_removenamespaces");
             exportParameters.tangentSpaceConvention =(TangentSpaceConvention)Loader.Core.RootNode.GetFloatProperty("flightsim_tangent_space_convention", 0);
+            exportParameters.bakeAnimationType = (BakeAnimationType)Loader.Core.RootNode.GetFloatProperty("babylonjs_bakeAnimationsType", 0);
+            exportParameters.keepInstances = Loader.Core.RootNode.GetBoolProperty("flightsim_keepInstances",0);
 
             exportParameters.logLevel = (LogLevel) Loader.Core.RootNode.GetFloatProperty("babylonjs_logLevel", 1);
 
@@ -268,7 +266,7 @@ namespace Max2Babylon
             info.SaveToData();
         }
 
-        public int GeTimeRange(AnimationGroup info)
+        public int GetTimeRange(AnimationGroup info)
         {
             return Tools.CalculateEndFrameFromAnimationGroupNodes(info);
         }
@@ -307,6 +305,12 @@ namespace Max2Babylon
             newGuids.Remove(node.GetGuid());
             info.NodeGuids = newGuids;
             info.SaveToData();
+        }
+
+        public void ExecuteLoadAnimationAction()
+        {
+            var loadAnimationAction = new BabylonLoadAnimations();
+            loadAnimationAction.ExecuteAction();
         }
     }
 }

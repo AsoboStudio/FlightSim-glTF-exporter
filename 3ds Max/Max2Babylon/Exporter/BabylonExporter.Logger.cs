@@ -1,6 +1,8 @@
 using Autodesk.Max;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using Utilities;
 
 namespace Max2Babylon
 {
@@ -11,10 +13,158 @@ namespace Max2Babylon
         MESSAGE,
         VERBOSE
     }
-    internal partial class BabylonExporter
+
+    public class MaxScriptLogger : ILoggingProvider
     {
+        public struct LogEntry
+        {
+            public LogLevel level;
+            public string message;
+            public int rank;
+            public bool emphasys;
+            public Color color;
+            public bool progress;
+        }
+
+        private List<LogEntry> logMessages;
+        private bool logInListener;
+
+        public MaxScriptLogger(bool logInListener)
+        {
+            this.logInListener = logInListener;
+            this.logMessages = new List<LogEntry>();
+        }
+
+        public LogLevel logLevel = LogLevel.WARNING;
+
+        LogLevel ILoggingProvider.LoggerLevel 
+        { 
+            get => this.logLevel;
+            set => this.logLevel = value; 
+        }
+
+        public LogEntry[] GetLogEntries()
+        {
+            return logMessages.ToArray();
+        }
+
+        void ILoggingProvider.CheckCancelled(BabylonExporter exporter)
+        {
+            if (exporter.IsCancelled)
+            {
+                throw new OperationCanceledException();
+            }
+        }       
+
+        void ILoggingProvider.Print(string message, Color color, int rank, bool emphasis)
+        {
+            if(logInListener) Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(message + "\n");
+            LogEntry logEntry = new LogEntry();
+            logEntry.message =  message;
+            logEntry.rank = rank;
+            logEntry.emphasys = emphasis;
+            logEntry.color = color;
+            logMessages.Add(logEntry);
+        }
+
+        void ILoggingProvider.RaiseError(string error, int rank)
+        {
+            if (logLevel >= LogLevel.ERROR)
+            {
+                if (logInListener) Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(error + "\n");
+                LogEntry logEntry = new LogEntry();
+                logEntry.message = error;
+                logEntry.rank = rank;
+                logEntry.color = Color.Red;
+                logEntry.level = LogLevel.ERROR;
+                logMessages.Add(logEntry);
+            }
+            throw new Exception(error);
+        }
+
+        void ILoggingProvider.RaiseMessage(string message, int rank, bool emphasis)
+        {
+            if (logLevel >= LogLevel.MESSAGE)
+            {
+                if (logInListener) Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(message + "\n");
+                LogEntry logEntry = new LogEntry();
+                logEntry.message = message;
+                logEntry.rank = rank;
+                logEntry.emphasys = emphasis;
+                logEntry.level = LogLevel.MESSAGE;
+                logMessages.Add(logEntry);
+            }            
+        }
+
+        void ILoggingProvider.RaiseMessage(string message, Color color, int rank, bool emphasis)
+        {
+            if (logLevel >= LogLevel.MESSAGE)
+            {
+                if (logInListener) Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(message + "\n");
+                LogEntry logEntry = new LogEntry();
+                logEntry.message = message;
+                logEntry.rank = rank;
+                logEntry.emphasys = emphasis;
+                logEntry.color = color;
+                logEntry.level = LogLevel.MESSAGE;
+                logMessages.Add(logEntry);
+            }
+        }
+
+        void ILoggingProvider.RaiseVerbose(string message, int rank, bool emphasis)
+        {
+            if (logLevel >= LogLevel.VERBOSE)
+            {
+                if (logInListener) Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(message + "\n");
+                LogEntry logEntry = new LogEntry();
+                logEntry.message = message;
+                logEntry.rank = rank;
+                logEntry.emphasys = emphasis;
+                logEntry.level = LogLevel.VERBOSE;
+                logMessages.Add(logEntry);
+            }           
+        }
+
+        void ILoggingProvider.RaiseWarning(string warning, int rank)
+        {
+            if (logLevel >= LogLevel.WARNING)
+            {
+                if (logInListener) Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(warning + "\n");
+                LogEntry logEntry = new LogEntry();
+                logEntry.message = warning;
+                logEntry.rank = rank;
+                logEntry.level = LogLevel.WARNING;
+                logMessages.Add(logEntry);
+            }            
+        }
+
+        void ILoggingProvider.ReportProgressChanged(int progress)
+        {
+            if(logInListener)Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf("progress : " +  progress.ToString() + "\n");
+            LogEntry logEntry = new LogEntry();
+            logEntry.message = progress.ToString();
+            logEntry.progress = true;
+            logMessages.Add(logEntry);
+        }
+
+        
+    }
+    public class BabylonLogger: ILoggingProvider
+    {
+        private bool logInListener;
+
+        public BabylonLogger(bool logInListener)
+        {
+            this.logInListener = logInListener;
+        }
         // TODO - Update log level for release
-        public LogLevel logLevel = LogLevel.VERBOSE;
+        public LogLevel logLevel = LogLevel.WARNING;
+
+        LogLevel ILoggingProvider.LoggerLevel
+        {
+            get => this.logLevel;
+            set => this.logLevel = value;
+        }
 
         public event Action<int> OnExportProgressChanged;
         public event Action<string, int> OnError;
@@ -22,6 +172,7 @@ namespace Max2Babylon
         public event Action<string, Color, int, bool> OnMessage;
         public event Action<string, Color, int, bool> OnVerbose;
         public event Action<string, Color, int, bool> OnPrint;
+
 
         public void ReportProgressChanged(int progress)
         {
@@ -36,12 +187,22 @@ namespace Max2Babylon
             ReportProgressChanged((int)progress);
         }
 
+        public void CheckCancelled(BabylonExporter exporter)
+        {
+            //Application.DoEvents();
+            if (exporter.IsCancelled)
+            {
+                throw new OperationCanceledException();
+            }
+        }
+
         public void RaiseError(string error, int rank = 0)
         {
             if (OnError != null && logLevel >= LogLevel.ERROR)
             {
                 OnError(error, rank);
             }
+            throw new Exception(error);
         }
 
         public void RaiseWarning(string warning, int rank = 0)
@@ -54,7 +215,10 @@ namespace Max2Babylon
 
         public void RaiseMessage(string message, int rank = 0, bool emphasis = false)
         {
+            if (OnMessage != null && logLevel >= LogLevel.MESSAGE)
+            {
             RaiseMessage(message, Color.Black, rank, emphasis);
+        }
         }
 
         public void RaiseMessage(string message, Color color, int rank = 0, bool emphasis = false)
@@ -67,7 +231,10 @@ namespace Max2Babylon
 
         public void RaiseVerbose(string message, int rank = 0, bool emphasis = false)
         {
+            if (OnVerbose != null && logLevel >= LogLevel.VERBOSE)
+            {
             RaiseVerbose(message, Color.FromArgb(100, 100, 100), rank, emphasis);
+        }
         }
 
         public void RaiseVerbose(string message, Color color, int rank = 0, bool emphasis = false)
@@ -204,5 +371,7 @@ namespace Max2Babylon
 
             return "{ x=" + point.X + ", y=" + point.Y + ", z=" + point.Z + ", w=" + point.W + " }";
         }
+
+        
     }
 }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Max2Babylon
 {
-    partial class BabylonExporter
+    public partial class BabylonExporter
     {
         private bool IsCameraExportable(IIGameNode cameraNode)
         {
@@ -24,7 +24,7 @@ namespace Max2Babylon
             var initialized = gameCamera.InitializeData;
             var babylonCamera = new BabylonCamera();
 
-            RaiseMessage(cameraNode.Name, 1);
+           logger?.RaiseMessage(cameraNode.Name, 1);
             babylonCamera.name = cameraNode.Name;
             babylonCamera.id = cameraNode.MaxNode.GetGuid().ToString();
             if (cameraNode.NodeParent != null)
@@ -35,7 +35,7 @@ namespace Max2Babylon
             // Export the custom attributes of this camera
             babylonCamera.metadata = ExportExtraAttributes(cameraNode, babylonScene);
 
-            babylonCamera.fov = Tools.ConvertFov(maxCamera.GetFOV(0, Tools.Forever));
+            babylonCamera.fov = Tools.ConvertFovToVertical(maxCamera.GetFOV(0, Tools.Forever));
 
             if (maxCamera.ManualClip == 1)
             {
@@ -95,7 +95,7 @@ namespace Max2Babylon
                 babylonCamera.extraAnimations = extraAnimations;
             }
 
-            ExportFloatAnimation("fov", animations, key => new[] { Tools.ConvertFov((gameCamera.MaxObject as ICameraObject).GetFOV(key, Tools.Forever)) });
+            ExportFloatAnimation("fov", animations, key => new[] { Tools.ConvertFovToVertical((gameCamera.MaxObject as ICameraObject).GetFOV(key, Tools.Forever)) });
 
             babylonCamera.animations = animations.ToArray();
 
@@ -127,7 +127,7 @@ namespace Max2Babylon
             string id = camera.id;
             IList<BabylonMesh> meshes = babylonScene.MeshesList.FindAll(mesh => mesh.parentId == null ? false : mesh.parentId.Equals(id));
 
-            RaiseMessage($"{camera.name}", 2);
+           logger?.RaiseMessage($"{camera.name}", 2);
 
             if (camera.target == null)
             {
@@ -177,7 +177,7 @@ namespace Max2Babylon
                 angle = -Math.PI / 2;
                 foreach (var mesh in meshes)
                 {
-                    RaiseVerbose($"{mesh.name}", 3);
+                    logger?.RaiseVerbose($"{mesh.name}", 3);
                     mesh.position = new float[] { mesh.position[0], mesh.position[2], -mesh.position[1] };
 
                     // Add a rotation of PI/2 axis X in direct direction

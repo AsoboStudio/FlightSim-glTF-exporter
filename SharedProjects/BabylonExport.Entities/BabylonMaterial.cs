@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace BabylonExport.Entities
 {
     [DataContract]
-    public partial class BabylonMaterial
+    public partial class BabylonMaterial:BabylonIAnimatable
     {
         [DataMember]
         public string name { get; set; }
@@ -30,6 +30,17 @@ namespace BabylonExport.Entities
         [DataMember]
         public Dictionary<string, object> metadata { get; set; }
 
+        [DataMember]
+        public BabylonAnimation[] animations { get; set; }
+        [DataMember]
+        public bool autoAnimate { get; set; }
+        [DataMember]
+        public int autoAnimateFrom { get; set; }
+        [DataMember]
+        public int autoAnimateTo { get; set; }
+        [DataMember]
+        public bool autoAnimateLoop { get; set; }
+
         public bool isUnlit = false;
 
         public BabylonMaterial(string id)
@@ -53,5 +64,7 @@ namespace BabylonExport.Entities
             isUnlit = original.isUnlit;
             metadata = original.metadata != null ? new Dictionary<string, object>(original.metadata) : null;
         }
+
+        
     }
 }

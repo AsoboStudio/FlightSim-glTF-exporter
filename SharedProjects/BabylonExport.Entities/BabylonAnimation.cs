@@ -41,6 +41,7 @@ namespace BabylonExport.Entities
             Quaternion = 2,
             Matrix = 3,
             Color3 = 4,
+            Color4 = 5
         }
 
         public enum LoopBehavior

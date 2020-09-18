@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Autodesk.Max;
 
-namespace Max2Babylon.FlightSimExtension
+namespace Max2Babylon.FlightSim
 {
     static class FlightSimUtilities
     {
@@ -36,6 +36,11 @@ namespace Max2Babylon.FlightSimExtension
 
             return false;
         }
+    }
+
+    public static class FlightSimCameraUtilities
+    {
+        public static readonly MaterialUtilities.ClassIDWrapper class_ID = new MaterialUtilities.ClassIDWrapper(4098, 0);
     }
 
     public static class FlightSimMaterialUtilities
@@ -80,7 +85,7 @@ namespace Max2Babylon.FlightSimExtension
                     {
                         if (class_ID.Equals(childMat.ClassID))
                         {
-                            int p =Tools.GetMaterialProperty(childMat, "uniqueInContainer");
+                            int p =Tools.GetIntMaterialProperty(childMat, "uniqueInContainer");
                             if (Convert.ToBoolean(p))
                             {
                                 return true;
@@ -91,7 +96,7 @@ namespace Max2Babylon.FlightSimExtension
             }
             else if (class_ID.Equals(mat.ClassID))
             { 
-                int p =Tools.GetMaterialProperty(mat, "uniqueInContainer");
+                int p =Tools.GetIntMaterialProperty(mat, "uniqueInContainer");
                 if (Convert.ToBoolean(p))
                 {
                     return true;

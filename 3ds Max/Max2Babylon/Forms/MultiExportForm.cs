@@ -205,6 +205,8 @@ namespace Max2Babylon
 
         private void ExportItemGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
+            if (e.RowIndex < 0)
+                return;
             // double-clicked node column cell, select a node!
             if(e.ColumnIndex == ColumnNode.Index)
             {

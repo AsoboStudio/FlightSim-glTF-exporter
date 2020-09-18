@@ -194,7 +194,7 @@
       <Link>Exporter\BabylonExporter.Light.cs</Link>
     </Compile>
     <Compile Include="..\Exporter\BabylonExporter.Logger.cs">
-      <Link>Exporter\BabylonExporter.Logger.cs</Link>
+      <Link>Logger\BabylonExporter.Logger.cs</Link>
     </Compile>
     <Compile Include="..\Exporter\BabylonExporter.Material.cs">
       <Link>Exporter\BabylonExporter.Material.cs</Link>
@@ -238,11 +238,17 @@
     <Compile Include="..\FlightSim\FlightSimLightExtension.cs">
       <Link>FlightSim\FlightSimLightExtension.cs</Link>
     </Compile>
+    <Compile Include="..\FlightSim\FlightSimMaterialAnimationExporter.cs">
+      <Link>FlightSim\FlightSimMaterialAnimationExporter.cs</Link>
+    </Compile>
     <Compile Include="..\FlightSim\FlightSimMaterialExporter.cs">
       <Link>FlightSim\FlightSimMaterialExporter.cs</Link>
     </Compile>
     <Compile Include="..\FlightSim\FlightSimNormalMapConvention.cs">
       <Link>FlightSim\FlightSimNormalMapConvention.cs</Link>
+    </Compile>
+    <Compile Include="..\FlightSim\FlightSimPropertyExtension.cs">
+      <Link>FlightSim\FlightSimPropertyExtension.cs</Link>
     </Compile>
     <Compile Include="..\FlightSim\FlightSimUtilities.cs">
       <Link>FlightSim\FlightSimUtilities.cs</Link>
@@ -295,6 +301,14 @@
       <Link>Forms\LightPropertiesForm.Designer.cs</Link>
       <DependentUpon>LightPropertiesForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="..\Forms\MaxMaterialView.cs">
+      <Link>Forms\MaxMaterialView.cs</Link>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="..\Forms\MaxMaterialView.designer.cs">
+      <Link>Forms\MaxMaterialView.designer.cs</Link>
+      <DependentUpon>MaxMaterialView.cs</DependentUpon>
+    </Compile>
     <Compile Include="..\Forms\MaxNodeTreeView.cs">
       <Link>Forms\MaxNodeTreeView.cs</Link>
       <SubType>Component</SubType>
@@ -343,6 +357,12 @@
     </Compile>
     <Compile Include="..\MaxScriptManager.cs">
       <Link>MaxScriptManager.cs</Link>
+    </Compile>
+    <Compile Include="..\PreExport\PreExportProcess.cs">
+      <Link>PreExport\PreExportProcess.cs</Link>
+    </Compile>
+    <Compile Include="..\Tools\CameraUtilities.cs">
+      <Link>Tools\CameraUtilities.cs</Link>
     </Compile>
     <Compile Include="..\Tools\LayerUtilities.cs">
       <Link>Tools\LayerUtilities.cs</Link>
@@ -412,6 +432,10 @@
       <Link>Forms\LightPropertiesForm.resx</Link>
       <DependentUpon>LightPropertiesForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\Forms\MaxMaterialView.resx">
+      <Link>Forms\MaxMaterialView.resx</Link>
+      <DependentUpon>MaxMaterialView.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\Forms\MultiExportForm.resx">
       <Link>Forms\MultiExportForm.resx</Link>
       <DependentUpon>MultiExportForm.cs</DependentUpon>
@@ -480,12 +504,10 @@
   <Import Project="..\..\..\SharedProjects\Utilities\Extensions.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>call "$(SolutionDir)Max2Babylon\OnPostBuild.bat" "$(ConfigurationName)" 2016</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PreBuildEvent>call "$(SolutionDir)Max2Babylon\OnPreBuild.bat" "$(ConfigurationName)"</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

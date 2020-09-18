@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Babylon2GLTF
 {
-    partial class GLTFExporter
+    public partial class GLTFExporter
     {
         /// <summary>
         /// Store the number of nodes with a specific name
@@ -14,7 +14,7 @@ namespace Babylon2GLTF
 
         private GLTFNode ExportAbstractMesh(ref GLTFNode gltfNode, BabylonAbstractMesh babylonAbstractMesh, GLTF gltf, GLTFNode gltfParentNode, BabylonScene babylonScene)
         {
-            logger.RaiseMessage("GLTFExporter.AbstractMesh | Export abstract mesh named: " + babylonAbstractMesh.name, 2);
+            logger?.RaiseMessage("GLTFExporter.AbstractMesh | Export abstract mesh named: " + babylonAbstractMesh.name, 2);
 
             // Mesh
             var gltfMesh = gltf.MeshesList.Find(_gltfMesh => _gltfMesh.idGroupInstance == babylonAbstractMesh.idGroupInstance);

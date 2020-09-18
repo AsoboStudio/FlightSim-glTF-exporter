@@ -7,8 +7,25 @@ using Autodesk.Max;
 
 namespace Max2Babylon
 {
+    // todo: MaterialUtilities class should be splitted as the warpper contains more idwrapper then the materials one
+
     public static class MaterialUtilities
     {
+        public static bool IsMaterialAssignedInScene(IMtl mtl)
+        {
+            for (int i = 0; i < Loader.Core.SceneMtls.Count; i++)
+            {
+                IMtl sceneMtl = null;
+#if MAX2016
+                sceneMtl = (IMtl)Loader.Core.SceneMtls[new IntPtr(i)];
+#else
+                sceneMtl = (IMtl)Loader.Core.SceneMtls[i];
+#endif
+                if (sceneMtl != null && mtl.GetNativeHandle() == sceneMtl.GetNativeHandle()) return true;
+            }
+            return false;
+        }
+
         public static IntPtr SlateMtlEditorHwnd
         {
             get
@@ -50,11 +67,12 @@ namespace Max2Babylon
         {
             string mxs = "viewNode = sme.GetView (sme.activeView)";
             mxs += "\r\n" + "smeSelMats = #()";
+            mxs += "\r\n" + "if (trackViewNodes[#sme][(sme.activeView)] != undefined) then(";
             mxs += "\r\n" + "for n = 1 to trackViewNodes[#sme][(sme.activeView)].numSubs do (";
             mxs += "\r\n" + "m = trackViewNodes[#sme][(sme.activeView)][n].reference";
             mxs += "\r\n" + "b = viewNode.GetNodeByRef m";
             mxs += "\r\n" + "if b.selected do append smeSelMats m)";
-            mxs += "\r\n" + "smeSelMats[1]";
+            mxs += "\r\n" + "smeSelMats[1])";
             
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
 #if MAX2015 || MAX2016|| MAX2017 || MAX2018
@@ -62,7 +80,40 @@ namespace Max2Babylon
 #else
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
 #endif
-            return mxsRetVal.Mtl;
+            IMtl result = null;
+            try
+            {
+                result = mxsRetVal.Mtl;
+            }
+            catch (Exception e)
+            {
+                //do nothing ,just retun a null material
+            }
+
+            return result;
+        }
+
+        public static float GetFloatMaterialProperty(this IIGameMaterial material, string propName, int key, IInterval interval )
+        {
+            float result = 0;
+            for (int i = 0; i < material.IPropertyContainer.NumberOfProperties; ++i)
+            {
+                IIGameProperty property = material.IPropertyContainer.GetProperty(i);
+
+                if (property == null)
+                    continue;
+
+                
+                string propertyName = property.Name.ToUpperInvariant();
+                string targetProp = propName.ToUpperInvariant();
+                if (propertyName == targetProp)
+                {
+                    
+                    property.GetPropertyValue(ref result, key, true);
+                }
+            }
+
+            return result;
         }
 
         // We require a separate struct, because the IClass_ID does not implement GetHashCode etc. to work with dictionaries
@@ -108,6 +159,7 @@ namespace Max2Babylon
 
         public static readonly ClassIDWrapper Editable_Poly = new ClassIDWrapper(469250957, 422535320);
         public static readonly ClassIDWrapper Sphere = new ClassIDWrapper(17,0);
+        public static readonly ClassIDWrapper TargetCamera = new ClassIDWrapper(4098, 0);
 
         private uint partA, partB;
         public ClassIDWrapper(IClass_ID classID) { partA = classID.PartA; partB = classID.PartB; }

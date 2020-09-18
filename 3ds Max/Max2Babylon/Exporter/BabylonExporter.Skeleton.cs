@@ -5,7 +5,7 @@ using BabylonExport.Entities;
 
 namespace Max2Babylon
 {
-    partial class BabylonExporter
+    public partial class BabylonExporter
     {
         readonly List<IIGameSkin> skins = new List<IIGameSkin>();
 
@@ -71,14 +71,14 @@ namespace Max2Babylon
 
             if (bones.Count == 0)
             {
-                RaiseWarning("Skin has no bones.", logRank);
+                logger?.RaiseWarning("Skin has no bones.", logRank);
                 return new List<IIGameNode>();
             }
 
             if (bones.Contains(null))
             {
-                RaiseError("Skin has bones that are outside of the exported hierarchy.", logRank);
-                RaiseError("The skin cannot be exported", logRank);
+                logger?.RaiseError("Skin has bones that are outside of the exported hierarchy.", logRank);
+                logger?.RaiseError("The skin cannot be exported", logRank);
                 return new List<IIGameNode>();
             }
 
@@ -87,8 +87,8 @@ namespace Max2Babylon
 
             if (lowestCommonAncestor == null)
             {
-                RaiseError($"More than one root node for the skin. The skeleton bones need to be part of the same hierarchy.", logRank);
-                RaiseError($"The skin cannot be exported", logRank);
+                logger?.RaiseError($"More than one root node for the skin. The skeleton bones need to be part of the same hierarchy.", logRank);
+                logger?.RaiseError($"The skin cannot be exported", logRank);
 
                 return new List<IIGameNode>();
             }
@@ -284,7 +284,7 @@ namespace Max2Babylon
             int logRank = 1;
             int skinIndex = skins.IndexOf(skin);
             string name = "skeleton #" + skinIndex;
-            RaiseMessage(name, logRank);
+           logger?.RaiseMessage(name, logRank);
 
             BabylonSkeleton babylonSkeleton = new BabylonSkeleton
             {
@@ -342,7 +342,7 @@ namespace Max2Babylon
                         }
                         return mat.ToArray();
                     },
-                    false,exportParameters.optimizeAnimations); // Do not remove linear animation keys for bones
+                    false,exportParameters.optimizeAnimations, node.Name); // Do not remove linear animation keys for bones
 
                 if (babylonAnimation != null)
                 {

@@ -25,6 +25,14 @@ namespace Max2Babylon
             }
         }
 
+        public static IClass_ID GenCamera
+        {
+            get
+            {
+                return Global.Class_ID.Create(4098, 0);
+            }
+        }
+
         /// <summary>
         /// Gets the NodeLayerProperties interface
         /// </summary>

@@ -8,6 +8,7 @@ using Utilities;
 
 namespace Max2Babylon.FlightSimExtension
 {
+
     [DataContract]
     class GLTFExtensionAsoboMacroLight : GLTFProperty
     {
@@ -16,7 +17,11 @@ namespace Max2Babylon.FlightSimExtension
         [DataMember(Name = "intensity", IsRequired = true)] public float intensity { get; set; }
         [DataMember(Name = "cone_angle", IsRequired = true)] public float coneAngle { get; set; }
         [DataMember(Name = "has_simmetry", IsRequired = true)] public bool hasSimmetry { get; set; }
-        [DataMember(Name = "is_beacon", IsRequired = true)] public bool isBeacon { get; set; }
+        [DataMember(Name = "flash_frequency", IsRequired = true)] public float flashFrequency { get; set; }
+        [DataMember(Name = "flash_duration", IsRequired = true)] public float flashDuration { get; set; }
+        [DataMember(Name = "flash_phase", IsRequired = true)] public float flashPhase { get; set; }
+        [DataMember(Name = "rotation_speed", IsRequired = true)] public float rotationSpeed { get; set; }
+        [DataMember(Name = "day_night_cycle", IsRequired = true)] public bool dayNightCycle { get; set; }
     }
 
 
@@ -24,15 +29,7 @@ namespace Max2Babylon.FlightSimExtension
     {
         readonly MaterialUtilities.ClassIDWrapper MacroLightOmniClassID = new MaterialUtilities.ClassIDWrapper(0x3eb36fbb, 0x36275949);
         readonly MaterialUtilities.ClassIDWrapper MacroLightSpotClassID = new MaterialUtilities.ClassIDWrapper(0x451a77a6, 0x232b0194);
-
-        //public static Dictionary<string, string> MacroLight = new Dictionary<string, string>()
-        //{
-        //    {"White light spot (car front)", "white_light_spot"},
-        //    {"Red light spot (car rear)", "red_light_spot"},
-        //    {"Orange beacon/flashing lights (security cars)", "orange_beacon"},
-        //    {"Red beacon / flashing lights (Fire trucks)", "red_beacon"},
-        //    {"Blue beacon / flashing lights (Fire trucks)", "blue_beacon"}
-        //};
+        readonly MaterialUtilities.ClassIDWrapper FlightSimLightClassID = new MaterialUtilities.ClassIDWrapper(0x18a3b84e, 0x63ec33ad);
         #region Implementation of IBabylonExtensionExporter
 
         public string GetGLTFExtensionName()
@@ -40,17 +37,17 @@ namespace Max2Babylon.FlightSimExtension
             return "ASOBO_macro_light";
         }
 
-        public BabylonExtendTypes GetExtendedType()
+        public ExtendedTypes GetExtendedType()
         {
-            return new BabylonExtendTypes(typeof(GLTFNode));
+            return new ExtendedTypes(typeof(GLTFNode));
         }
-        public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
+        public bool ExportBabylonExtension<T>(T babylonObject, ref BabylonScene babylonScene, BabylonExporter exporter)
         {
             // just skip this extension is ment only for GLTF
             return false;
         }
 
-        public object ExportGLTFExtension<T>(T babylonObject, ExportParameters parameters, ref GLTF gltf, ILoggingProvider logger)
+        public object ExportGLTFExtension<T1,T2>(T1 babylonObject, ref T2 gltfObject,  ref GLTF gltf, GLTFExporter exporter,ExtensionInfo extInfo)
         {
             var babylonLight = babylonObject as BabylonNode;
             if (babylonLight != null)
@@ -65,23 +62,25 @@ namespace Max2Babylon.FlightSimExtension
                     IObject obj = maxNode.ObjectRef;
                     if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(MacroLightOmniClassID))
                     {
-                        logger.RaiseError($"{maxNode.NodeName} is type of MacroLightOmni and it is DEPRECATED, use MACROLIGHT");
+                        exporter.logger?.RaiseError($"{maxNode.NodeName} is type of MacroLightOmni and it is DEPRECATED, use FlightSimLight");
                         return null;
                     }
                     else if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(MacroLightSpotClassID))
                     {
-
-                        //string macroLightValue = maxNode.GetStringProperty("flightsim_macro_light_type", FlightSimLightExtension.MacroLight.Keys.ElementAt(0));
-                        //string macroLightType = FlightSimLightExtension.MacroLight[macroLightValue];
-                        //macroLightExt.macroLightType = macroLightType;
-
-                        //return macroLightExt;
-
+                        exporter.logger?.RaiseError($"{maxNode.NodeName} is type of MacroLightSpot and it is DEPRECATED, use FlightSimLight");
+                        return null;
+                    }
+                    else if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(FlightSimLightClassID))
+                    {
                         macroLightExt.color = GetColor(maxNode);
                         macroLightExt.intensity = GetIntensity(maxNode);
                         macroLightExt.coneAngle = GetConeAngle(maxNode);
                         macroLightExt.hasSimmetry = GetHasSimmetry(maxNode);
-                        macroLightExt.isBeacon = GetIsBeacon(maxNode);
+                        macroLightExt.flashFrequency = GetFlashFrequency(maxNode);
+                        macroLightExt.dayNightCycle = GetDayNightCycle(maxNode);
+                        macroLightExt.flashDuration = GetFlashDuration(maxNode);
+                        macroLightExt.flashPhase = GetFlashPhase(maxNode);
+                        macroLightExt.rotationSpeed = GetRotationSpeed(maxNode);
                         return macroLightExt;
                     }
                 }
@@ -110,7 +109,7 @@ namespace Max2Babylon.FlightSimExtension
         private float GetIntensity(IINode node)
         {
             string mxs = String.Empty;
-            mxs = $"(maxOps.getNodeByHandle {node.Handle}).Intensity";
+            mxs = $"(maxOps.getNodeByHandle {node.Handle}).delegate.Intensity";
 
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
 #if MAX2015 ||MAX2016|| MAX2017 || MAX2018
@@ -152,10 +151,10 @@ namespace Max2Babylon.FlightSimExtension
             return r;
         }
 
-        private bool GetIsBeacon(IINode node)
+        private float GetFlashFrequency(IINode node)
         {
             string mxs = String.Empty;
-            mxs = $"(maxOps.getNodeByHandle {node.Handle}).IsBeacon";
+            mxs = $"(maxOps.getNodeByHandle {node.Handle}).FlashFrequency";
 
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
 #if MAX2015 || MAX2016|| MAX2017 || MAX2018
@@ -163,7 +162,70 @@ namespace Max2Babylon.FlightSimExtension
 #else
             Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
 #endif
-            var r = mxsRetVal.B;
+            var r = mxsRetVal.F;
+            return r;
+        }
+
+        private float GetFlashDuration(IINode node)
+        {
+            string mxs = String.Empty;
+            mxs = $"(maxOps.getNodeByHandle {node.Handle}).FlashDuration";
+
+            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
+#if MAX2015 || MAX2016|| MAX2017 || MAX2018
+            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
+#else
+            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
+#endif
+            var r = mxsRetVal.F;
+            return r;
+        }
+
+        private float GetRotationSpeed(IINode node)
+        {
+            string mxs = String.Empty;
+            mxs = $"(maxOps.getNodeByHandle {node.Handle}).RotationSpeed";
+
+            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
+#if MAX2015 || MAX2016|| MAX2017 || MAX2018
+            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
+#else
+            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
+#endif
+            var r = mxsRetVal.F;
+            return r;
+        }
+
+
+        private float GetFlashPhase(IINode node)
+        {
+            string mxs = String.Empty;
+            mxs = $"(maxOps.getNodeByHandle {node.Handle}).FlashPhase";
+
+            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
+#if MAX2015 || MAX2016|| MAX2017 || MAX2018
+            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
+#else
+            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
+#endif
+            var r = mxsRetVal.F;
+            return r;
+        }
+
+
+        private bool GetDayNightCycle(IINode node)
+        {
+            string mxs = String.Empty;
+            mxs = $"(maxOps.getNodeByHandle {node.Handle}).ActivationMode";
+
+            IFPValue mxsRetVal = Loader.Global.FPValue.Create();
+#if MAX2015 || MAX2016|| MAX2017 || MAX2018
+            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
+#else
+            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
+#endif
+
+            bool r = mxsRetVal.I == 1;
             return r;
         }
         #endregion
@@ -171,4 +233,5 @@ namespace Max2Babylon.FlightSimExtension
         #endregion
 
     }
+
 }

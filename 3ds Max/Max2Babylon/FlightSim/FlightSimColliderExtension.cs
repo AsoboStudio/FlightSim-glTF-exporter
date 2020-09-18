@@ -80,18 +80,18 @@ namespace Max2Babylon.FlightSimExtension
             return "ASOBO_gizmo_object";
         }
 
-        public BabylonExtendTypes GetExtendedType()
+        public ExtendedTypes GetExtendedType()
         {
-            return new BabylonExtendTypes(typeof(GLTFMesh));
+            return new ExtendedTypes(typeof(GLTFMesh));
         }
 
-        public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
+        public bool ExportBabylonExtension<T>(T babylonObject, ref BabylonScene babylonScene, BabylonExporter exporter)
         {
             // just skip this extension is ment only for GLTF
             return false;
         }
 
-        public object ExportGLTFExtension<T>(T babylonObject, ExportParameters parameters, ref GLTF gltf, ILoggingProvider logger)
+        public object ExportGLTFExtension<T1,T2>(T1 babylonObject, ref T2 gltfObject, ref GLTF gltf, GLTFExporter exporter,ExtensionInfo extInfo)
         {
             var babylonMesh = babylonObject as BabylonMesh;
             if (babylonMesh != null)

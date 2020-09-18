@@ -13,6 +13,8 @@ namespace Max2Babylon
     {
         MaterialUtilities.ClassIDWrapper MaterialClassID { get; }
     }
+    
+
 
     
 }

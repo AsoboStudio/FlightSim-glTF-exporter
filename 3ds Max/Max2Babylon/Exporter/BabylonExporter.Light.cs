@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Max2Babylon
 {
-    partial class BabylonExporter
+    public partial class BabylonExporter
     {
         void ExportDefaultLight(BabylonScene babylonScene)
         {
@@ -41,7 +41,7 @@ namespace Max2Babylon
             var initialized = gameLight.InitializeData;
             var babylonLight = new BabylonLight();
 
-            RaiseMessage(lightNode.Name, 1);
+           logger?.RaiseMessage(lightNode.Name, 1);
             babylonLight.name = lightNode.Name;
 
             // Export the custom attributes of this light
@@ -102,7 +102,7 @@ namespace Max2Babylon
                 }
                 else
                 {
-                    RaiseWarning("Shadows maps are only supported for point, directional and spot lights", 2);
+                    logger?.RaiseWarning("Shadows maps are only supported for point, directional and spot lights", 2);
                 }
             }
 
@@ -165,7 +165,7 @@ namespace Max2Babylon
 
                     foreach (var meshNode in maxScene.NodesListBySuperClass(SClass_ID.Geomobject))
                     {
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
                         if (meshNode.CastShadows)
 #else
                         if (meshNode.CastShadows == 1)
@@ -193,7 +193,7 @@ namespace Max2Babylon
             }
             catch (Exception e)
             {
-                RaiseMessage("Light exclusion not supported", 2);
+               logger?.RaiseMessage("Light exclusion not supported", 2);
             }
 
             // Other fields 

@@ -61,7 +61,7 @@ namespace Babylon2GLTF
 
     #endregion
 
-    internal partial class GLTFExporter
+    public partial class GLTFExporter
     {
         private const string AsoboAnimationRetargeting = "ASOBO_animation_retargeting";
 

@@ -53,7 +53,7 @@ namespace BabylonExport.Entities
 
         
         public bool useMultiExporter = false;
-
+        public bool keepInstances = false;
 		public bool removeLodPrefix = true;
         public bool removeNamespaces = true;
         public string srcTextureExtension;

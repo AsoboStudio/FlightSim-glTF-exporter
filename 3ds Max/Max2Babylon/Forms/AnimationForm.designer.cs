@@ -222,7 +222,7 @@ namespace Max2Babylon
             // 
             this.splitContainer1.Panel2.Controls.Add(this.animationGroupControl);
             this.splitContainer1.Panel2MinSize = 295;
-            this.splitContainer1.Size = new System.Drawing.Size(660, 385);
+            this.splitContainer1.Size = new System.Drawing.Size(956, 385);
             this.splitContainer1.SplitterDistance = 177;
             this.splitContainer1.TabIndex = 5;
             // 
@@ -236,7 +236,7 @@ namespace Max2Babylon
             this.animationGroupControl.Location = new System.Drawing.Point(0, 0);
             this.animationGroupControl.MinimumSize = new System.Drawing.Size(295, 256);
             this.animationGroupControl.Name = "animationGroupControl";
-            this.animationGroupControl.Size = new System.Drawing.Size(479, 385);
+            this.animationGroupControl.Size = new System.Drawing.Size(775, 385);
             this.animationGroupControl.TabIndex = 3;
             // 
             // AnimationForm
@@ -244,7 +244,7 @@ namespace Max2Babylon
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(684, 461);
+            this.ClientSize = new System.Drawing.Size(980, 461);
             this.Controls.Add(ExportPropertiesGroupBox);
             this.Controls.Add(this.splitContainer1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;

@@ -18,11 +18,14 @@ using Utilities;
 
 namespace Max2Babylon
 {
-    internal partial class BabylonExporter : ILoggingProvider
+    public partial class BabylonExporter
     {
+        public ILoggingProvider logger;
+        public BabylonExporter(){}
         public Form callerForm;
 
         public ExportParameters exportParameters;
+        
         public bool IsCancelled { get; set; }
 
         public string MaxSceneFileName { get; set; }
@@ -39,202 +42,8 @@ namespace Max2Babylon
         public const int MaxSceneTicksPerSecond = 4800; //https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2016/ENU/MAXScript-Help/files/GUID-141213A1-B5A8-457B-8838-E602022C8798-htm.html
 
 
-        
-
-        public void CheckCancelled()
-        {
-            //Application.DoEvents();
-            if (IsCancelled)
-            {
-                throw new OperationCanceledException();
-            }
-        }
-
-        private bool IsMeshFlattenable(IINode node, AnimationGroupList animationGroupList,ref List<IINode> flattenableNodes)
-        {
-            //a node can't be flatten if:
-            //- is marked as not flattenable
-            //- is hidden
-            //- is not selected when exportOnlyselected is checked
-            //- is part of animation group
-            //- is skinned
-            //- is linked to animated node
-
-            if (node.IsMarkedAsNotFlattenable()) return false;
-
-            if (node.IsRootNode)
-            {
-                for (int i = 0; i < node.NumChildren; i++)
-                {
-                    IINode n = node.GetChildNode(i);
-                    return IsMeshFlattenable(n,animationGroupList,ref flattenableNodes);
-                }
-                return false;
-            }
-
-            if (!exportParameters.exportHiddenObjects && node.IsNodeHidden(false)) return false;
-
-            if (exportParameters.exportOnlySelected && !node.IsNodeSelected()) return false;
-
-            if (node.IsSkinned())
-            {
-                string message = $"{node.Name} can't be flatten, because is skinned";
-                RaiseMessage(message, 0);
-                for (int i = 0; i < node.NumChildren; i++)
-                {
-                    IINode n = node.GetChildNode(i);
-                    return IsMeshFlattenable(n,animationGroupList,ref flattenableNodes);
-                }
-                return false;
-
-            }
-
-            if (node.IsNodeTreeAnimated())
-            {
-                string message = $"{node.Name} can't be flatten, his hierachy contains animated node";
-                RaiseMessage(message, 0);
-                for (int i = 0; i < node.NumChildren; i++)
-                {
-                    IINode n = node.GetChildNode(i);
-                    return IsMeshFlattenable(n,animationGroupList,ref flattenableNodes);
-                }
-                return false;
-            }
-
-            if (node.IsInAnimationGroups(animationGroupList))
-            {
-                string message = $"{node.Name} can't be flatten, because is part of an AnimationGroup";
-                RaiseMessage(message, 0);
-                for (int i = 0; i < node.NumChildren; i++)
-                {
-                    IINode n = node.GetChildNode(i);
-                    return IsMeshFlattenable(n, animationGroupList, ref flattenableNodes);
-                }
-                return false;
-            }
-
-            flattenableNodes.Add(node);
-            return true;
-        }
-
-        public void FlattenItem(ref IINode itemNode)
-        {
-            AnimationGroupList animationGroupList = new AnimationGroupList();
-            animationGroupList.LoadFromData(Loader.Core.RootNode);
-
-            if (itemNode == null)
-            {
-                string message = "Flattening nodes of scene not supported...";
-                RaiseMessage(message, 0);
-            }
-            else
-            {
-                string message = $"Flattening child nodes of {itemNode.Name}...";
-                RaiseMessage(message, 0);
-                List<IINode> flattenableNodes = new List<IINode>();
-                if(IsMeshFlattenable(itemNode, animationGroupList,ref flattenableNodes))
-                {
-                    itemNode = itemNode.FlattenHierarchy();
-                }
-
-                
-            }
-        }
-
-        public void BakeAnimationsFrame(IINode node,BakeAnimationType bakeAnimationType)
-        {
-            if (bakeAnimationType == BakeAnimationType.DoNotBakeAnimation) return;
-
-            IINode hierachyRoot = (node != null) ? node : Loader.Core.RootNode;
-
-#if MAX2020
-            var tobake = Loader.Global.INodeTab.Create();
-#else
-            var tobake = Loader.Global.NodeTab.Create();
-#endif
-            if (bakeAnimationType == BakeAnimationType.BakeSelective)
-            {
-                foreach (IINode iNode in hierachyRoot.NodeTree())
-                {
-                    if (iNode.IsMarkedAsObjectToBakeAnimation())
-                    {
-                        tobake.AppendNode(iNode,false,0);
-                    }
-                }
-            }
-
-            
-            if (!hierachyRoot.IsRootNode) tobake.AppendNode(hierachyRoot,false,0);
-
-            Loader.Core.SelectNodeTab(tobake,true,false);
-
-            if (bakeAnimationType == BakeAnimationType.BakeAllAnimations)
-            {
-                foreach (IINode n in Tools.ITabToIEnumerable(tobake))
-                {
-                    n.SetUserPropBool("babylonjs_BakeAnimation", true);
-                }
-            }
-
-            ScriptsUtilities.ExecuteMaxScriptCommand(@"
-                for obj in selection do 
-                (
-                    tag = getUserProp obj ""babylonjs_BakeAnimation""
-                    if tag!=true then continue
-
-                    tmp = Point()
-                    --store anim to a point
-                    for t = animationRange.start to animationRange.end do (
-                       with animate on at time t tmp.transform = obj.transform
-                       )
-
-                    --remove constraint on original object
-                    obj.transform.controller = Link_Constraint ()
-                    obj.transform.controller = prs ()
-                    obj.transform = tmp.transform
-
-                    --copy back anim from point
-                    for t = animationRange.start to animationRange.end do (
-                       with animate on at time t obj.transform = tmp.transform
-                       )
-                    delete tmp
-                )
-             ");
-
-        }
-
-        public void ExportClosedContainers()
-        {
-            List<IIContainerObject> sceneContainers = Tools.GetAllContainers();
-            foreach (IIContainerObject containerObject in sceneContainers)
-            {
-                if (!containerObject.IsInherited)continue;
-                ScriptsUtilities.ExecuteMaxScriptCommand($@"(getNodeByName(""{containerObject.ContainerNode.Name}"")).LoadContainer()");
-                ScriptsUtilities.ExecuteMaxScriptCommand($@"(getNodeByName(""{containerObject.ContainerNode.Name}"")).UpdateContainer()");
-                bool makeUnique = containerObject.MakeUnique;
-                Print($"Update and merge container {containerObject.ContainerNode.Name}...",Color.Green);
-            }
-            AnimationGroupList.LoadDataFromAllContainers();
-        }
-
-        public void MergeAllXrefRecords()
-        {
-            if (Loader.IIObjXRefManager.RecordCount <= 0) return;
-            while (Loader.IIObjXRefManager.RecordCount>0)
-            {
-                var record = Loader.IIObjXRefManager.GetRecord(0);
-                Print($"Merge XRef record {record.SrcFile.FileName}...",Color.Black);
-                Loader.IIObjXRefManager.MergeRecordIntoScene(record);
-                //todo: load data from animation helper of xref scene merged
-                //to prevent to load animations from helper created without intenction
-            }
-            AnimationGroupList.LoadDataFromAnimationHelpers();
-        }
-
         public void Export(ExportParameters exportParameters)
         {
-            
-            ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Unavailable""");
             var watch = new Stopwatch();
             watch.Start();
 
@@ -244,39 +53,14 @@ namespace Max2Babylon
             if (exportParameters is MaxExportParameters)
             {
                 MaxExportParameters maxExporterParameters = (exportParameters as MaxExportParameters);
-                logLevel = maxExporterParameters.logLevel;
+                if (logger!=null) logger.LoggerLevel = maxExporterParameters.logLevel;
                 exportNode = maxExporterParameters.exportNode;
-
-                if (maxExporterParameters.usePreExportProcess)
-                {
-                    if (maxExporterParameters.mergeContainersAndXRef)
-                    {
-                        string message = "Merging containers and Xref...";
-                        Print(message,  Color.Black,0);
-                        ExportClosedContainers();
-                        MergeAllXrefRecords();
-#if DEBUG
-                        var containersXrefMergeTime = watch.ElapsedMilliseconds / 1000.0;
-                        Print(string.Format("Containers and Xref  merged in {0:0.00}s", containersXrefMergeTime ), Color.Blue);
-#endif
-                    }
-                    BakeAnimationsFrame(exportNode,maxExporterParameters.bakeAnimationType);
-                }
-
-                if (maxExporterParameters.flattenScene && maxExporterParameters.useMultiExporter)
-                {
-                    FlattenItem(ref exportNode);
-#if DEBUG
-                    flattenTime = watch.ElapsedMilliseconds / 1000.0;
-                    Print(string.Format("Nodes flattened in {0:0.00}s", flattenTime ), Color.Blue);
-#endif
-                }
             }
 
-            Tools.InitializeGuidNodesMap();
+            Tools.InitializeGuidsMap();
 
             string fileExportString = exportNode != null? $"{exportNode.NodeName} | {exportParameters.outputPath}": exportParameters.outputPath;
-            Print($"Exportation started: {fileExportString}", Color.Blue);
+            logger?.Print($"Exportation started: {fileExportString}", Color.Blue);
 
 
             this.scaleFactor = Tools.GetScaleFactorToMeters();
@@ -291,9 +75,8 @@ namespace Max2Babylon
             }
             catch
             {
-                RaiseError("Quality is not a valid number. It should be an integer between 0 and 100.");
-                RaiseError("This parameter sets the quality of jpg compression.");
-                ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Available""");
+                logger?.RaiseError("Quality is not a valid number. It should be an integer between 0 and 100.");
+                logger?.RaiseError("This parameter sets the quality of jpg compression.");
                 return;
             }
 
@@ -317,7 +100,7 @@ namespace Max2Babylon
             IsCancelled = false;
 
             
-            ReportProgressChanged(0);
+            logger?.ReportProgressChanged(0);
 
             string tempOutputDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             string outputDirectory = Path.GetDirectoryName(exportParameters.outputPath);
@@ -327,9 +110,8 @@ namespace Max2Babylon
             // Check directory exists
             if (!Directory.Exists(outputDirectory))
             {
-                RaiseError("Exportation stopped: Output folder does not exist");
-                ReportProgressChanged(100);
-                ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Available""");
+                logger?.RaiseError("Exportation stopped: Output folder does not exist");
+                logger?.ReportProgressChanged(100);
                 return;
             }
             Directory.CreateDirectory(tempOutputDirectory);
@@ -350,14 +132,16 @@ namespace Max2Babylon
             isGltfExported = outputFormat == "gltf" || outputFormat == "glb";
 
             // Get scene parameters
-            optimizeAnimations = !Loader.Core.RootNode.GetBoolProperty("babylonjs_donotoptimizeanimations");
+            optimizeAnimations = true;
             exportNonAnimated = Loader.Core.RootNode.GetBoolProperty("babylonjs_animgroup_exportnonanimated");
 
             // Producer
             babylonScene.producer = new BabylonProducer
             {
                 name = "3dsmax",
-#if MAX2020
+#if MAX2021
+                version = "2021",
+#elif MAX2020
                 version = "2020",
 #elif MAX2019
                 version = "2019",
@@ -417,21 +201,11 @@ namespace Max2Babylon
                     IBabylonExtensionExporter exporter = Activator.CreateInstance(type) as IBabylonExtensionExporter;
 
                     if (exporter == null)
-                        RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
+                        logger?.RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
 
-                    BabylonExtendTypes t = exporter.GetExtendedType();
+                    ExtendedTypes t = exporter.GetExtendedType();
                     babylonScene.BabylonToGLTFExtensions.Add(exporter,t);
                 }
-
-                //if (typeof(IBabylonMaterialExtensionExporter).IsAssignableFrom(type))
-                //{
-                //    IBabylonMaterialExtensionExporter exporter = Activator.CreateInstance(type) as IBabylonMaterialExtensionExporter;
-
-                //    if (exporter == null)
-                //        RaiseWarning("Creating exporter instance failed: " + type.Name, 1);
-
-                //    materialExporters.Add(exporter.MaterialClassID, exporter);
-                //}
             }
 
             // Sounds
@@ -463,20 +237,20 @@ namespace Max2Babylon
             }
 
             // Root nodes
-            Print("Exporting nodes",Color.Black);
+            logger?.Print("Exporting nodes",Color.Black);
             HashSet<IIGameNode> maxRootNodes = getRootNodes(gameScene);
             var progressionStep = 80.0f / maxRootNodes.Count;
             var progression = 10.0f;
-            ReportProgressChanged((int)progression);
+            logger?.ReportProgressChanged((int)progression);
             referencedMaterials.Clear();
 
-            // Reseting is optionnal. It makes each morph target manager export starts from id = 0.
+            // Reseting is optional. It makes each morph target manager export starts from id = 0.
             BabylonMorphTargetManager.Reset();
             foreach (var maxRootNode in maxRootNodes)
             {
                 if (isGltfExported && exportParameters.animationExportType == AnimationExportType.ExportOnly)
                 {
-                    calculateSkeletonList(maxRootNode);
+                    calculateSkeletonList(maxRootNode,babylonScene, gameScene);
                 }
                 else
                 {
@@ -487,16 +261,16 @@ namespace Max2Babylon
                 }
 
                 progression += progressionStep;
-                ReportProgressChanged((int)progression);
-                CheckCancelled();
+                logger?.ReportProgressChanged((int)progression);
+                logger?.CheckCancelled(this);
             };
-            RaiseMessage(string.Format("Total meshes: {0}", babylonScene.MeshesList.Count), Color.Gray, 1);
+            logger?.RaiseMessage(string.Format("Total meshes: {0}", babylonScene.MeshesList.Count), Color.Gray, 1);
 
 
             // In 3DS Max the default camera look down (in the -z direction for the 3DS Max reference (+y for babylon))
             // In Babylon the default camera look to the horizon (in the +z direction for the babylon reference)
             // In glTF the default camera look to the horizon (in the +Z direction for glTF reference)
-            RaiseMessage("Update camera rotation and position", 1);
+            logger?.RaiseMessage("Update camera rotation and position", 1);
             for (int index = 0; index < babylonScene.CamerasList.Count; index++)
             {
                 BabylonCamera camera = babylonScene.CamerasList[index];
@@ -506,7 +280,7 @@ namespace Max2Babylon
             // Light for glTF
             if (isGltfExported)
             {
-                RaiseMessage("Update light rotation for glTF export", 1);
+                logger?.RaiseMessage("Update light rotation for glTF export", 1);
                 for (int index = 0; index < babylonScene.LightsList.Count; index++)
                 {
                     BabylonNode light = babylonScene.LightsList[index];
@@ -523,9 +297,9 @@ namespace Max2Babylon
                 // Set first camera as main one
                 babylonMainCamera = babylonScene.CamerasList[0];
                 babylonScene.activeCameraID = babylonMainCamera.id;
-                Print("Active camera set to " + babylonMainCamera.name, Color.Green, 1, true);
+                logger?.Print("Active camera set to " + babylonMainCamera.name, Color.Green, 1, true);
 
-                // Retreive camera node with same GUID
+                // Retrieve camera node with same GUID
                 var maxCameraNodesAsTab = gameScene.GetIGameNodeByType(Autodesk.Max.IGameObject.ObjectTypes.Camera);
                 var maxCameraNodes = TabToList(maxCameraNodesAsTab);
                 var maxMainCameraNode = maxCameraNodes.Find(_camera => _camera.MaxNode.GetGuid().ToString() == babylonMainCamera.id);
@@ -534,29 +308,29 @@ namespace Max2Babylon
 
             if (babylonMainCamera == null)
             {
-                RaiseWarning("No camera defined", 1);
+                logger?.RaiseWarning("No camera defined", 1);
             }
             else
             {
-                RaiseMessage(string.Format("Total cameras: {0}", babylonScene.CamerasList.Count), Color.Gray, 1);
+                logger?.RaiseMessage(string.Format("Total cameras: {0}", babylonScene.CamerasList.Count), Color.Gray, 1);
             }
 
             // Default light
             bool addDefaultLight = false; //rawScene.GetBoolProperty("babylonjs_addDefaultLight", 0); //on FLIGHTSIM we do not use default light at all
             if (!exportParameters.pbrNoLight && addDefaultLight && babylonScene.LightsList.Count == 0)
             {
-                RaiseWarning("No light defined", 1);
-                RaiseWarning("A default hemispheric light was added for your convenience", 1);
+                logger?.RaiseWarning("No light defined", 1);
+                logger?.RaiseWarning("A default hemispheric light was added for your convenience", 1);
                 ExportDefaultLight(babylonScene);
             }
             else
             {
-                RaiseMessage(string.Format("Total lights: {0}", babylonScene.LightsList.Count), Color.Gray, 1);
+                logger?.RaiseMessage(string.Format("Total lights: {0}", babylonScene.LightsList.Count), Color.Gray, 1);
             }
 
             if (exportParameters.scaleFactor != 1.0f)
             {
-                RaiseMessage(String.Format("A root node is added to globally scale the scene by {0}", exportParameters.scaleFactor), 1);
+                logger?.RaiseMessage(String.Format("A root node is added to globally scale the scene by {0}", exportParameters.scaleFactor), 1);
 
                 // Create root node for scaling
                 BabylonMesh rootNode = new BabylonMesh { name = "root", id = Guid.NewGuid().ToString() };
@@ -592,30 +366,30 @@ namespace Max2Babylon
 
 #if DEBUG
             var nodesExportTime = watch.ElapsedMilliseconds / 1000.0 - flattenTime;
-            Print($"Nodes exported in {nodesExportTime:0.00}s", Color.Blue);
+            logger?.Print($"Nodes exported in {nodesExportTime:0.00}s", Color.Blue);
 #endif
 
             // Materials
             if (exportParameters.exportMaterials)
             {
-                Print("Exporting materials",Color.Black);
+                logger?.Print("Exporting materials",Color.Black);
                 var matsToExport =
                     referencedMaterials.ToArray(); // Snapshot because multimaterials can export new materials
                 foreach (var mat in matsToExport)
                 {
                     ExportMaterial(mat, babylonScene);
-                    CheckCancelled();
+                    logger?.CheckCancelled(this);
                 }
 
-                RaiseMessage(string.Format("Total: {0}",babylonScene.MaterialsList.Count + babylonScene.MultiMaterialsList.Count), Color.Gray, 1);
+                logger?.RaiseMessage(string.Format("Total: {0}",babylonScene.MaterialsList.Count + babylonScene.MultiMaterialsList.Count), Color.Gray, 1);
             }
             else
             {
-                Print("Skipping material export.",Color.Black);
+                logger?.Print("Skipping material export.",Color.Black);
             }
 #if DEBUG
             var materialsExportTime = watch.ElapsedMilliseconds / 1000.0 - nodesExportTime;
-            Print($"Materials exported in {materialsExportTime:0.00}s", Color.Blue);
+            logger?.Print($"Materials exported in {materialsExportTime:0.00}s", Color.Blue);
 #endif
 
 
@@ -628,7 +402,7 @@ namespace Max2Babylon
                 {
                     var fog = atmospheric as IStdFog;
 
-                    RaiseMessage("Exporting fog");
+                   logger?.RaiseMessage("Exporting fog");
 
                     if (fog != null)
                     {
@@ -646,7 +420,7 @@ namespace Max2Babylon
             // Skeletons
             if (skins.Count > 0)
             {
-                Print("Exporting skeletons",Color.Black);
+                logger?.Print("Exporting skeletons",Color.Black);
                 foreach (var skin in skins)
                 {
                     ExportSkin(skin, babylonScene);
@@ -654,20 +428,26 @@ namespace Max2Babylon
             }
 #if DEBUG
             var skeletonsExportTime = watch.ElapsedMilliseconds / 1000.0 - materialsExportTime;
-            Print($"Skeletons exported in {skeletonsExportTime:0.00}s", Color.Blue);
+            logger?.Print($"Skeletons exported in {skeletonsExportTime:0.00}s", Color.Blue);
 #endif
 
 
             // ----------------------------
             // ----- Animation groups -----
             // ----------------------------
+
+            //Remove useless animations
+            if (optimizeAnimations)
+            {
+                RemoveStaticAnimations(ref babylonScene);
+            }
             
-            Print("Export animation groups",Color.Black);
+            logger?.Print("Export animation groups",Color.Black);
             // add animation groups to the scene
             babylonScene.animationGroups = ExportAnimationGroups(babylonScene);
 #if DEBUG
             var animationGroupExportTime = watch.ElapsedMilliseconds / 1000.0 -nodesExportTime;
-            Print(string.Format("Animation groups exported in {0:0.00}s", animationGroupExportTime), Color.Blue);
+            logger?.Print(string.Format("Animation groups exported in {0:0.00}s", animationGroupExportTime), Color.Blue);
 #endif
 
 
@@ -705,11 +485,11 @@ namespace Max2Babylon
                     // Allow only dds file format
                     if (!fileName.EndsWith(".dds"))
                     {
-                        RaiseWarning("Failed to export defauenvironment texture: only .dds format is supported.");
+                        logger?.RaiseWarning("Failed to export default environment texture: only .dds format is supported.");
                     }
                     else
                     {
-                        RaiseMessage($"texture id = Max_Babylon_Default_Environment");
+                        logger?.RaiseMessage($"texture id = Max_Babylon_Default_Environment");
                         babylonScene.environmentTexture = fileName;
 
                         if (exportParameters.writeTextures)
@@ -725,7 +505,7 @@ namespace Max2Babylon
                             catch
                             {
                                 // silently fails
-                                RaiseMessage($"Fail to export the default env texture", 3);
+                                logger?.RaiseMessage($"Fail to export the default env texture", 3);
                             }
                         }
                     }
@@ -736,7 +516,7 @@ namespace Max2Babylon
             babylonScene.Prepare(false, false);
             if (isBabylonExported)
             {
-                Print("Saving to output file",Color.Black);
+                logger?.Print("Saving to output file",Color.Black);
 
                 var outputFile = Path.Combine(outputBabylonDirectory, outputFileName);
 
@@ -759,14 +539,14 @@ namespace Max2Babylon
                 // Binary
                 if (outputFormat == "binary babylon")
                 {
-                    RaiseMessage("Generating binary files");
+                    logger?.RaiseMessage("Generating binary files");
                     BabylonFileConverter.BinaryConverter.Convert(outputFile, outputBabylonDirectory + "\\Binary",
-                        message => RaiseMessage(message, 1),
-                        error => RaiseError(error, 1));
+                        message => logger?.RaiseMessage(message, 1),
+                        error => logger?.RaiseError(error, 1));
                 }
             }
 
-            ReportProgressChanged(100);
+            logger?.ReportProgressChanged(100);
 
             // Export glTF
             if (isGltfExported)
@@ -775,7 +555,7 @@ namespace Max2Babylon
 
                 GLTFExporter gltfExporter = new GLTFExporter();
                 //exportParameters.customGLTFMaterialExporter = new MaxGLTFMaterialExporter(exportParameters, gltfExporter, this);
-                gltfExporter.ExportGltf(this.exportParameters, babylonScene, tempOutputDirectory, outputFileName, generateBinary, this);
+                gltfExporter.ExportGltf(this.exportParameters, babylonScene, tempOutputDirectory, outputFileName, generateBinary, logger);
             }
             // Move files to output directory
             var filePaths = Directory.GetFiles(tempOutputDirectory);
@@ -851,20 +631,10 @@ namespace Max2Babylon
             Directory.Delete(tempOutputDirectory, true);
             watch.Stop();
 
-            Print(string.Format("Exportation done in {0:0.00}s: {1}", watch.ElapsedMilliseconds / 1000.0, fileExportString), Color.Blue);
+            logger?.Print(string.Format("Exportation done in {0:0.00}s: {1}", watch.ElapsedMilliseconds / 1000.0, fileExportString), Color.Blue);
             IUTF8Str max_notification = Autodesk.Max.GlobalInterface.Instance.UTF8Str.Create("BabylonExportComplete");
             Loader.Global.BroadcastNotification(SystemNotificationCode.PostExport, max_notification);
-
-            if (exportParameters is MaxExportParameters)
-            {
-                MaxExportParameters maxExporterParameters = (exportParameters as MaxExportParameters);
-                if (maxExporterParameters.flattenScene)
-                {
-                    Tools.RemoveFlattenModification();
-                }
             }
-            ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Available""");
-        }
 
         private bool ExportBabylonExtension<T1>(T1 sceneObject,Type babylonType, ref BabylonScene babylonScene)
         {
@@ -872,7 +642,7 @@ namespace Max2Babylon
             {
                 if (extensionExporter.Value.babylonType == babylonType)
                 {
-                   if(extensionExporter.Key.ExportBabylonExtension(sceneObject,exportParameters,ref babylonScene,this)) return true;
+                   if(extensionExporter.Key.ExportBabylonExtension(sceneObject,ref babylonScene,this)) return true;
                 }
             }
 
@@ -894,13 +664,13 @@ namespace Max2Babylon
                         {
                             File.Delete(targetFilePath);
                             File.Move(sourceFilePath, targetFilePath);
-                            Print(sourceFilePath + " -> " + targetFilePath,Color.Green);
+                            logger?.Print(sourceFilePath + " -> " + targetFilePath,Color.Green);
                         }
                     }
                     else
                     {
                         File.Move(sourceFilePath, targetFilePath);
-                        Print(sourceFilePath + " -> " + targetFilePath,Color.Green);
+                        logger?.Print(sourceFilePath + " -> " + targetFilePath,Color.Green);
                     }
                 }
             }
@@ -913,7 +683,7 @@ namespace Max2Babylon
                     File.Delete(targetFilePath);
                 }
                 File.Move(sourceFilePath, targetFilePath);
-                Print(sourceFilePath + " -> " + targetFilePath, Color.Green);
+                logger?.Print(sourceFilePath + " -> " + targetFilePath, Color.Green);
             }
         }
 
@@ -945,10 +715,10 @@ namespace Max2Babylon
             }
             catch (Exception e)
             {
-                this.RaiseWarning(String.Format("Exception raised during export. Node will be exported as dummy node. \r\nMessage: \r\n{0} \r\n{1}", e.Message, e.InnerException), 2);
+                this.logger?.RaiseWarning(String.Format("Exception raised during export. Node will be exported as dummy node. \r\nMessage: \r\n{0} \r\n{1}", e.Message, e.InnerException), 2);
             }
 
-            CheckCancelled();
+            logger?.CheckCancelled(this);
 
             // If node is not exported successfully but is significant
             if (babylonNode == null &&
@@ -980,7 +750,7 @@ namespace Max2Babylon
             return babylonNode;
         }
 
-        private void calculateSkeletonList(IIGameNode maxGameNode )
+        private void calculateSkeletonList(IIGameNode maxGameNode, BabylonScene babylonScene, IIGameScene maxGameScene )
         {
             if (maxGameNode.IGameObject.IGameType is Autodesk.Max.IGameObject.ObjectTypes.Mesh)
             {
@@ -1001,11 +771,16 @@ namespace Max2Babylon
                     skin.GetInitSkinTM(skinInitPoseMatrix);
                 }
             }
+            else
+            {
+                BabylonNode babylonNode = ExportDummy(maxGameScene, maxGameNode, babylonScene);   
+                babylonScene.NodeMap[babylonNode.id] = babylonNode;
+            }
 
             for (int i = 0; i < maxGameNode.ChildCount; i++)
             {
                 var descendant = maxGameNode.GetNodeChild(i);
-                calculateSkeletonList(descendant);
+                calculateSkeletonList(descendant,babylonScene,maxGameScene);
             }
 
             
@@ -1112,7 +887,7 @@ namespace Max2Babylon
                 List<T> list = new List<T>();
                 for (int i = 0; i < tab.Count; i++)
                 {
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
                     var item = tab[i];
 #else
                     var item = tab[new IntPtr(i)];
@@ -1222,7 +997,7 @@ namespace Max2Babylon
             string id = node.id;
             IList<BabylonMesh> meshes = babylonScene.MeshesList.FindAll(mesh => mesh.parentId == null ? false : mesh.parentId.Equals(id));
 
-            RaiseMessage($"{node.name}", 2);
+            logger?.RaiseMessage($"{node.name}", 2);
 
             // fix the vue
             // Rotation around the axis X of PI / 2 in the indirect direction for camera
@@ -1272,7 +1047,7 @@ namespace Max2Babylon
             angle = -angle;
             foreach (var mesh in meshes)
             {
-                RaiseVerbose($"{mesh.name}", 3);
+                logger?.RaiseVerbose($"{mesh.name}", 3);
                 mesh.position = new float[] { mesh.position[0], mesh.position[2], -mesh.position[1] };
 
                 // Add a rotation of PI/2 axis X in direct direction

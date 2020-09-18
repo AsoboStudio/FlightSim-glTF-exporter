@@ -4,8 +4,9 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Autodesk.Max;
+#if DEBUG || RELEASE 
 using Excel = Microsoft.Office.Interop.Excel;
-
+#endif
 namespace Max2Babylon.Forms
 {
     public partial class SelectNameForm : Form
@@ -25,13 +26,17 @@ namespace Max2Babylon.Forms
 
         private void SelectNameForm_Load(object sender, EventArgs e)
         {
+
+#if DEBUG || RELEASE
             List<TreeNode> result =  GetExcelFile();
             foreach (TreeNode treeNode in result)
             {
                 preDefiniedNameList.Nodes.Add(treeNode);
             }
+#endif
         }
 
+#if DEBUG || RELEASE
         private List<TreeNode> GetExcelFile()
         {
             List<TreeNode> xmlElements = new List<TreeNode>();
@@ -100,6 +105,7 @@ namespace Max2Babylon.Forms
 
             return xmlElements;
         }
+#endif
 
         private void preDefName_DoubleClick(object sender, EventArgs e)
         {

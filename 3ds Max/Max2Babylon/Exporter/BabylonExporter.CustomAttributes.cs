@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Max2Babylon
 {
-    partial class BabylonExporter
+    public partial class BabylonExporter
     {
         /// <summary>
         /// Return the custom attributes of a material
@@ -44,7 +44,7 @@ namespace Max2Babylon
         /// <param name="excludeAttributes">Attribute names to not export</param>
         private Dictionary<string, object> _ExportExtraAttributes(IIPropertyContainer propertyContainer, BabylonScene babylonScene, List<string> excludeAttributes = null)
         {
-            RaiseMessage("ExportExtraAttributes", 2);
+           logger?.RaiseMessage("ExportExtraAttributes", 2);
 
             // Return a string encoded with 2 separators
             // Parameter separator: _$€PParam_
@@ -111,7 +111,7 @@ namespace Max2Babylon
             {
                 object obj = null;
 
-                RaiseMessage(entry.Key + "=" + entry.Value, 2);
+               logger?.RaiseMessage(entry.Key + "=" + entry.Value, 2);
 
                 switch (entry.Value.ToLowerInvariant())
                 {
@@ -151,7 +151,7 @@ namespace Max2Babylon
                         // Currently not exported
                         break;
                     default:
-                        RaiseWarning("Unknown type '" + entry.Value + "' for custom attribute named '" + entry.Key + "'", 2);
+                        logger?.RaiseWarning("Unknown type '" + entry.Value + "' for custom attribute named '" + entry.Key + "'", 2);
                         break;
                 }
 
@@ -164,7 +164,7 @@ namespace Max2Babylon
             // Print all extra attributes
             foreach (KeyValuePair<string, object> entry in metadata)
             {
-                RaiseVerbose(entry.Key + "=" + entry.Value, 2);
+                logger?.RaiseVerbose(entry.Key + "=" + entry.Value, 2);
             }
 
             return metadata;

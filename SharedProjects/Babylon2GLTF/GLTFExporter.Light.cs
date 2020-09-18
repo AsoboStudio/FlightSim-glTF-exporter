@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Babylon2GLTF
 {
-    internal partial class GLTFExporter
+    public partial class GLTFExporter
     {
         public const string KHR_lights_punctuals = "KHR_lights_punctual";  // Name of the extension
 
@@ -55,7 +55,7 @@ namespace Babylon2GLTF
                     };
                     break;
                 default:
-                    logger.RaiseError($"Unsupported light type {light.type} for glTF");
+                    logger?.RaiseError($"Unsupported light type {light.type} for glTF");
                     throw new System.Exception($"Unsupported light type {light.type} for glTF");
             }
 
@@ -99,11 +99,11 @@ namespace Babylon2GLTF
             { 
                 if (babylonLight.type == 3) // ambient light
                 {
-                    logger.RaiseMessage($"GLTFExporter.Light | Ambient light {babylonLight.name} is not supported in KHR_lights_punctual.");
+                    logger?.RaiseMessage($"GLTFExporter.Light | Ambient light {babylonLight.name} is not supported in KHR_lights_punctual.");
                 }
                 else
                 {
-                    logger.RaiseMessage("GLTFExporter.Light | Export light named: " + babylonLight.name, 2);
+                    logger?.RaiseMessage("GLTFExporter.Light | Export light named: " + babylonLight.name, 2);
 
                     // new light in the node extensions
                     GLTFLight light = new GLTFLight

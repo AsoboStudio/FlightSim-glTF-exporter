@@ -1,9 +1,11 @@
+using Max2Babylon;
 using System.Drawing;
 
 namespace Utilities
 {
     public interface ILoggingProvider
     {
+        LogLevel LoggerLevel { get; set; }
         void ReportProgressChanged(int progress);
 
         void RaiseError(string error, int rank = 0);
@@ -18,6 +20,6 @@ namespace Utilities
         
         void Print(string message, Color color, int rank = 0, bool emphasis = false);
 
-        void CheckCancelled();
+        void CheckCancelled(BabylonExporter exporter);
     }
 }

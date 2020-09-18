@@ -17,7 +17,7 @@ namespace Utilities
         {
             if (sourcePath == null || sourcePath == "")
             {
-                logger.RaiseWarning("Texture path is missing.", 3);
+                logger?.RaiseWarning("Texture path is missing.", 3);
                 return null;
             }
 
@@ -26,7 +26,7 @@ namespace Utilities
             if (validImageFormat == null)
             {
                 // Image format is not supported by the exporter
-                logger.RaiseWarning(string.Format("Format of texture {0} is not supported by the exporter. Consider using a standard image format like jpg or png.", Path.GetFileName(sourcePath)), 3);
+                logger?.RaiseWarning(string.Format("Format of texture {0} is not supported by the exporter. Consider using a standard image format like jpg or png.", Path.GetFileName(sourcePath)), 3);
                 return null;
             }
 
@@ -103,19 +103,19 @@ namespace Utilities
                         case ".tiff":
                             return new Bitmap(absolutePath);
                         default:
-                            logger.RaiseError(string.Format("Format of texture {0} is not supported by the exporter. Consider using a standard image format like jpg or png.", Path.GetFileName(absolutePath)), 3);
+                            logger?.RaiseError(string.Format("Format of texture {0} is not supported by the exporter. Consider using a standard image format like jpg or png.", Path.GetFileName(absolutePath)), 3);
                             return null;
                     }
                 }
                 catch (Exception e)
                 {
-                    logger.RaiseError(string.Format("Failed to load texture {0}: {1}", Path.GetFileName(absolutePath), e.Message), 3);
+                    logger?.RaiseError(string.Format("Failed to load texture {0}: {1}", Path.GetFileName(absolutePath), e.Message), 3);
                     return null;
                 }
             }
             else
             {
-                logger.RaiseError(string.Format("Texture {0} not found.", absolutePath), 3);
+                logger?.RaiseError(string.Format("Texture {0} not found.", absolutePath), 3);
                 return null;
             }
         }
@@ -210,14 +210,14 @@ namespace Utilities
                     }
                     else
                     {
-                        logger.RaiseError(string.Format("Format of texture {0} is not supported by the exporter. Consider using a standard image format like jpg or png.", Path.GetFileName(sourcePath)), 3);
+                        logger?.RaiseError(string.Format("Format of texture {0} is not supported by the exporter. Consider using a standard image format like jpg or png.", Path.GetFileName(sourcePath)), 3);
                     }
                 }
-                else logger.RaiseError(string.Format("Texture not found: {0}", sourcePath), 3);
+                else logger?.RaiseError(string.Format("Texture not found: {0}", sourcePath), 3);
             }
             catch (Exception c)
             {
-                logger.RaiseError(string.Format("Exporting texture {0} failed: {1}", sourcePath, c.ToString()), 3);
+                logger?.RaiseError(string.Format("Exporting texture {0} failed: {1}", sourcePath, c.ToString()), 3);
             }
         }
 
@@ -245,7 +245,7 @@ namespace Utilities
                     }
                     catch (Exception e)
                     {
-                        logger.RaiseError(string.Format("Failed to convert texture {0} to png: {1}", Path.GetFileName(sourcePath), e.Message), 3);
+                        logger?.RaiseError(string.Format("Failed to convert texture {0} to png: {1}", Path.GetFileName(sourcePath), e.Message), 3);
                     }
                     break;
                 case "tga":
@@ -257,7 +257,7 @@ namespace Utilities
                     }
                     catch (Exception e)
                     {
-                        logger.RaiseError(string.Format("Failed to convert texture {0} to png: {1}", Path.GetFileName(sourcePath), e.Message), 3);
+                        logger?.RaiseError(string.Format("Failed to convert texture {0} to png: {1}", Path.GetFileName(sourcePath), e.Message), 3);
                     }
                     break;
                 case "bmp":
@@ -275,7 +275,7 @@ namespace Utilities
                     File.Copy(sourcePath, destPath, true);
                     break;
                 default:
-                    logger.RaiseWarning(string.Format("Format of texture {0} is not supported by the exporter. Consider using a standard image format like jpg or png.", Path.GetFileName(sourcePath)), 3);
+                    logger?.RaiseWarning(string.Format("Format of texture {0} is not supported by the exporter. Consider using a standard image format like jpg or png.", Path.GetFileName(sourcePath)), 3);
                     break;
             }
         }
@@ -290,13 +290,13 @@ namespace Utilities
             List<char> invalidCharsInString = GetInvalidChars(directoryName, Path.GetInvalidPathChars());
             if (invalidCharsInString.Count > 0)
             {
-                logger.RaiseError($"Failed to save bitmap: directory name '{directoryName}' contains invalid character{(invalidCharsInString.Count > 1 ? "s" : "")} {invalidCharsInString.ToArray().ToString(false)}", 3);
+                logger?.RaiseError($"Failed to save bitmap: directory name '{directoryName}' contains invalid character{(invalidCharsInString.Count > 1 ? "s" : "")} {invalidCharsInString.ToArray().ToString(false)}", 3);
                 return;
             }
             invalidCharsInString = GetInvalidChars(fileName, Path.GetInvalidFileNameChars());
             if (invalidCharsInString.Count > 0)
             {
-                logger.RaiseError($"Failed to save bitmap: file name '{fileName}' contains invalid character{(invalidCharsInString.Count > 1 ? "s" : "")} {invalidCharsInString.ToArray().ToString(false)}", 3);
+                logger?.RaiseError($"Failed to save bitmap: file name '{fileName}' contains invalid character{(invalidCharsInString.Count > 1 ? "s" : "")} {invalidCharsInString.ToArray().ToString(false)}", 3);
                 return;
             }
 

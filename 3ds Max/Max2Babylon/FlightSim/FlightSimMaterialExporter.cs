@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using Babylon2GLTF;
 using BabylonExport.Entities;
+using Max2Babylon.FlightSim;
 using Max2Babylon.FlightSimExtension;
 using Utilities;
 
@@ -52,6 +53,28 @@ namespace Max2Babylon
         public static class Defaults
         {
             public static readonly int drawOrderOffset = 0;
+        }
+    }
+
+    [DataContract]
+    class GLTFExtensionAsoboDayNightCycle : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_day_night_switch";
+    }
+
+    [DataContract]
+    class GLTFExtensionAsoboPearlescent : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_pearlescent";
+        [DataMember(EmitDefaultValue = false)] public float? pearlShift { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float? pearlRange { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float? pearlBrightness { get; set; }
+
+        public static class Defaults
+        {
+            public static readonly float pearlShift = 0.0f;
+            public static readonly float pearlRange = 0.0f;
+            public static readonly float pearlBrightness = 0.0f;
         }
     }
 
@@ -182,7 +205,20 @@ namespace Max2Babylon
     class GLTFExtensionAsoboAnisotropic : GLTFProperty
     {
         public const string SerializedName = "ASOBO_material_anisotropic";
-        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo wetnessAOTexture;
+        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo anisotropicTexture;
+    }
+
+    [DataContract]
+    class GLTFExtensionAsoboWindshield : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_windshield";
+        [DataMember(EmitDefaultValue = false)] public float? rainDropScale { get; set; }
+        [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo wiperMaskTexture;
+
+        public static class Defaults
+        {
+            public static readonly float rainDropScale = 1;
+        }
     }
 
     [DataContract]
@@ -278,49 +314,34 @@ namespace Max2Babylon
         {
             return "ASOBO_flightsim_material";
         }
-
-        public BabylonExtendTypes GetExtendedType()
+        public ExtendedTypes GetExtendedType()
         {
-            BabylonExtendTypes extendType = new BabylonExtendTypes(typeof(BabylonMaterial),typeof(GLTFMaterial));
+            ExtendedTypes extendType = new ExtendedTypes(typeof(BabylonMaterial),typeof(GLTFMaterial));
             return extendType;
         }
 
-        public bool ExportBabylonExtension<T>(T babylonObject, ExportParameters parameters, ref BabylonScene babylonScene, ILoggingProvider logger)
+        public bool ExportBabylonExtension<T>(T babylonObject, ref BabylonScene babylonScene, BabylonExporter exporter)
         {
-            var materialNode = babylonObject as Autodesk.Max.IIGameMaterial;
-            if (FlightSimMaterialUtilities.class_ID.Equals(new MaterialUtilities.ClassIDWrapper(materialNode.MaxMaterial.ClassID)))
-            {
-                bool isGLTFExported = parameters.outputFormat == "gltf";
-                if (isGLTFExported )
-                {
-                    var id = materialNode.MaxMaterial.GetGuid().ToString();
-                    // add a basic babylon material to the list to forward the max material reference
-                    var babylonMaterial = new BabylonMaterial(id)
-                    {
-                        maxGameMaterial = materialNode,
-                        name = materialNode.MaterialName
-                    };
-                    babylonScene.MaterialsList.Add(babylonMaterial);
-                    return true;
-                }
-            }
-
             return false;
         }
 
-        public object ExportGLTFExtension<T1>(T1 babylonObject, ExportParameters parameters, ref GLTF gltf, ILoggingProvider logger)
+        public object ExportGLTFExtension<T1,T2>(T1 babylonObject, ref T2 gltfObject, ref GLTF gltf, GLTFExporter exporter,ExtensionInfo extInfo)
         {
             var babylonMaterial = babylonObject as BabylonMaterial;
-
+            var gltfMaterilal = gltfObject as GLTFMaterial;
             if (FlightSimMaterialUtilities.class_ID.Equals(new MaterialUtilities.ClassIDWrapper(babylonMaterial.maxGameMaterial.MaxMaterial.ClassID)))
             {
+                var logger = exporter.logger;
                 string outputFolder = gltf.OutputFolder;
-                GLTFMaterial gltfObject = ExportGLTFMaterial(parameters,gltf,babylonMaterial.maxGameMaterial,
+                gltfMaterilal = ExportGLTFMaterial(exporter.exportParameters,gltf,babylonMaterial.maxGameMaterial,
                         (string sourcePath, string textureName) => { return TextureUtilities.TryWriteImage(outputFolder, sourcePath, textureName,logger,exporterParameters); },
-                        (string message, Color color) => { logger.RaiseMessage(message, color, 2); },
-                        (string message) => { logger.RaiseWarning(message, 2); },
-                        (string message) => { logger.RaiseError(message, 2); });
-                gltf.MaterialsList.Add(gltfObject);
+                        (string message, Color color) => { logger?.RaiseMessage(message, color, 2); },
+                        (string message) => { logger?.RaiseWarning(message, 2); },
+                        (string message) => { logger?.RaiseError(message, 2); });
+               
+                gltfMaterilal.index = gltf.MaterialsList.Count;
+                gltf.MaterialsList.Add(gltfMaterilal);
+                gltfObject = (T2)Convert.ChangeType(gltfMaterilal, typeof(T2));
             }
 
             return null;
@@ -558,6 +579,8 @@ namespace Max2Babylon
 
             string dirtTexPath = null;
 
+            float rainDropScale = GLTFExtensionAsoboWindshield.Defaults.rainDropScale;
+
             float parallaxScale = GLTFExtensionAsoboParallaxWindow.Defaults.parallaxScale;
             float roomSizeXScale = GLTFExtensionAsoboParallaxWindow.Defaults.roomSizeXScale;
             float roomSizeYScale = GLTFExtensionAsoboParallaxWindow.Defaults.roomSizeYScale;
@@ -577,6 +600,11 @@ namespace Max2Babylon
             bool clampUVZ = GLTFExtensionAsoboMaterialUVOptions.Defaults.clampUVZ;
 
             int drawOrderOffset = GLTFExtensionAsoboMaterialDrawOrder.Defaults.drawOrderOffset;
+            bool dayNightCycle = false;
+            bool pearlescent = false;
+            float pearlShift = GLTFExtensionAsoboPearlescent.Defaults.pearlShift;
+            float pearlRange = GLTFExtensionAsoboPearlescent.Defaults.pearlRange;
+            float pearlBrightness = GLTFExtensionAsoboPearlescent.Defaults.pearlBrightness;
 
             #region Material Type (Standard, Decal, Windshield, ...)
             // - Standard
@@ -631,7 +659,6 @@ namespace Max2Babylon
                                     break;
                                 case 5:
                                     materialType = MaterialType.Glass;
-                                    //materialExtras.Add(FlightSimGLTFExtras.Name_ASOBO_material_code, FlightSimGLTFExtras.MaterialCode.Code.Glass.ToString());
                                     break;
                                 case 6:
                                     materialType = MaterialType.GeoDecalFrosted;
@@ -779,6 +806,16 @@ namespace Max2Babylon
                             wetnessAOTexPath = GetImagePath(paramDef, property, param_t, "WETNESSAOTEX");
                             break;
                         }
+                        case "RAINDROPSCALE":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve RAINDROPSCALE property.");
+                                    continue;
+                                }
+                                rainDropScale = float_out;
+                                break;
+                            }
                     }
                 }
             }
@@ -1459,6 +1496,63 @@ namespace Max2Babylon
 
             #endregion
 
+            #region Pearlescent
+
+            for (int i = 0; i < numProps; ++i)
+            {
+                IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                if (property == null)
+                    continue;
+
+                string propertyName = property.Name.ToUpperInvariant();
+                switch (propertyName)
+                {
+                    case "PEARLESCENT":
+                        {
+                            if (!property.GetPropertyValue(ref int_out, param_t))
+                            {
+                                RaiseError("Could not retrieve PEARLESCENT property.");
+                                continue;
+                            }
+                            pearlescent = int_out != 0;
+                            break;
+                        }
+                    case "PEARLSHIFT":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                            {
+                                RaiseError("Could not retrieve PEARLSHIFT property.");
+                                continue;
+                            }
+                            pearlShift = float_out;
+                            break;
+                        }
+                    case "PEARLRANGE":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                            {
+                                RaiseError("Could not retrieve PEARLRANGE property.");
+                                continue;
+                            }
+                            pearlRange = float_out;
+                            break;
+                        }
+                    case "PEARLBRIGHTNESS":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                            {
+                                RaiseError("Could not retrieve PEARLBRIGHTNESS property.");
+                                continue;
+                            }
+                            pearlBrightness = float_out;
+                            break;
+                        }
+                }
+            }
+
+            #endregion
+
             #region The Other Parameters
 
             for (int i = 0; i < numProps; ++i)
@@ -1507,6 +1601,7 @@ namespace Max2Babylon
                                 continue;
                             }
                             material.SetEmissiveFactor(point4_out.X, point4_out.Y, point4_out.Z);
+
                             break;
                         }
                     case "ROUGHNESS":
@@ -1584,16 +1679,42 @@ namespace Max2Babylon
                             material.SetDoubleSided(int_out != 0);
                             break;
                         }
+                    case "DAYNIGHTCYCLE":
+                        {
+                            if (!property.GetPropertyValue(ref int_out, param_t))
+                            {
+                                RaiseError("Could not retrieve DAYNIGHTCYCLE property.");
+                                continue;
+                            }
+                            dayNightCycle = int_out != 0;
+                            break;
                 }
+            }
             }
 
             #endregion
             
+
             #region Process Extension Objects
 
+            GLTFExtensionAsoboPearlescent pearlescentOptionsExtensionObject = null;
+            if(pearlescent)
+            {
+                pearlescentOptionsExtensionObject = new GLTFExtensionAsoboPearlescent();
+
+                pearlescentOptionsExtensionObject.pearlShift = pearlShift;
+                pearlescentOptionsExtensionObject.pearlRange = pearlRange;
+                pearlescentOptionsExtensionObject.pearlBrightness = pearlBrightness;
+            }
+
+            GLTFExtensionAsoboDayNightCycle dayNightOptionsExtensionObject = null;
+            if(materialType == MaterialType.Standard && dayNightCycle)
+            {
+                dayNightOptionsExtensionObject = new GLTFExtensionAsoboDayNightCycle();
+            }
             // Anisotropic map extension, only if we have a wetnessAO map (sampler name in engine) assigned and an HAIR or ANISOTROPIC or WINDSHIELD material
             GLTFExtensionAsoboAnisotropic anisotropicExtensionObject = null;
-            if( !string.IsNullOrWhiteSpace(wetnessAOTexPath) && (materialType == MaterialType.Anisotropic || materialType == MaterialType.Hair || materialType == MaterialType.Windshield))
+            if( !string.IsNullOrWhiteSpace(wetnessAOTexPath) && (materialType == MaterialType.Anisotropic || materialType == MaterialType.Hair))
             {
                 anisotropicExtensionObject = new GLTFExtensionAsoboAnisotropic();
 
@@ -1601,8 +1722,27 @@ namespace Max2Babylon
                 if (image != null)
                 {
                     info = CreateTextureInfo(image);
-                    anisotropicExtensionObject.wetnessAOTexture = info;
+                    anisotropicExtensionObject.anisotropicTexture = info;
                 }
+            }
+
+            //Windshield map extension, only if we have a wiper mask map (sampler name in engine) assigned and an HAIR or ANISOTROPIC material
+            GLTFExtensionAsoboWindshield windshiedlExtensionObject = null;
+            if (materialType == MaterialType.Windshield)
+            {
+                windshiedlExtensionObject = new GLTFExtensionAsoboWindshield();
+
+                windshiedlExtensionObject.rainDropScale = rainDropScale;
+
+                if (!string.IsNullOrWhiteSpace(wetnessAOTexPath))
+                {
+                    image = ExportImage(wetnessAOTexPath, true);
+                    if (image != null)
+                    {
+                        info = CreateTextureInfo(image);
+                        windshiedlExtensionObject.wiperMaskTexture = info;
+                    }
+                }                
             }
 
             // SSS extension, no Opacity map (sampler name in engine) assigned, just need the SSS material or the Hair Material
@@ -1762,6 +1902,12 @@ namespace Max2Babylon
 
             #region Post-processing
 
+            if (dayNightOptionsExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboDayNightCycle.SerializedName, dayNightOptionsExtensionObject);
+
+            if (pearlescentOptionsExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboPearlescent.SerializedName, pearlescentOptionsExtensionObject);
+
             // add used extensions to dictionaries
             if (decalExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialGeometryDecal.SerializedName, decalExtensionObject);
@@ -1774,6 +1920,9 @@ namespace Max2Babylon
 
             if (anisotropicExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboAnisotropic.SerializedName, anisotropicExtensionObject);
+
+            if (windshiedlExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboWindshield.SerializedName, windshiedlExtensionObject);
 
             if (clearCoatExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboClearCoat.SerializedName, clearCoatExtensionObject);
@@ -2169,6 +2318,7 @@ namespace Max2Babylon
        
     }
     
+
     static class FlightSimClassExtensions
     {
         public static class Defaults

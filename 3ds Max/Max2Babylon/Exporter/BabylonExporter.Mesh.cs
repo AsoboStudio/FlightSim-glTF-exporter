@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Max2Babylon
 {
-    partial class BabylonExporter
+    public partial class BabylonExporter
     {
         private bool isMaterialDoubleSided;
 
@@ -18,7 +18,7 @@ namespace Max2Babylon
 
         private BabylonNode ExportDummy(IIGameScene scene, IIGameNode meshNode, BabylonScene babylonScene)
         {
-            RaiseMessage(meshNode.Name, 1);
+           logger?.RaiseMessage(meshNode.Name, 1);
 
             var babylonMesh = new BabylonMesh { name = meshNode.Name, id = meshNode.MaxNode.GetGuid().ToString() };
             babylonMesh.isDummy = true;
@@ -41,75 +41,46 @@ namespace Max2Babylon
                 return null;
             }
 
-            RaiseMessage(meshNode.Name, 1);
+           logger?.RaiseMessage(meshNode.Name, 1);
 
-            // Instances
-#if MAX2020
-            var tabs = Loader.Global.INodeTab.Create();
-#else
-            var tabs = Loader.Global.NodeTab.Create();
-#endif
-            Loader.Global.IInstanceMgr.InstanceMgr.GetInstances(meshNode.MaxNode, tabs);
-            if (tabs.Count > 1)
+            if (!exportParameters.keepInstances)
             {
-                foreach (IINode instanceNode in Tools.ITabToIEnumerable(tabs))
+                 return ExportMasterMesh(scene, meshNode, babylonScene);
+            }
+            else
+            {
+                
+                // Instances
+    #if MAX2020 || MAX2021
+                var tabs = Loader.Global.INodeTab.Create();
+    #else
+                var tabs = Loader.Global.NodeTab.Create();
+    #endif
+                Loader.Global.IInstanceMgr.InstanceMgr.GetInstances(meshNode.MaxNode, tabs);
+                if (tabs.Count > 1)
                 {
-                    //this make sure every instance node is indexed in guid dictionary
-                    Tools.GetGuid(instanceNode);
-                }
-
-                // For a mesh with instances, we distinguish between master and instance meshes:
-                //      - a master mesh stores all the info of the mesh (transform, hierarchy, animations + vertices, indices, materials, bones...)
-                //      - an instance mesh only stores the info of the node (transform, hierarchy, animations)
-
-                // Check if this mesh has already been exported
-
-                List<BabylonMesh> babylonMasterMeshes = new List<BabylonMesh>();
-                var index = 0;
-                while (index < tabs.Count)
-                {
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020
-                    var tab = tabs[index];
-#else
-                    var tab = tabs[new IntPtr(index)];
-#endif
-                    Guid nodeGuid = Tools.guids.FirstOrDefault(x => x.Value == tab).Key;
-                    babylonMasterMeshes.AddRange(babylonScene.MeshesList.FindAll(_babylonMesh => {
-                        // Same id
-                        return _babylonMesh.id == nodeGuid.ToString() &&
-                               // Mesh is not a dummy
-                               _babylonMesh.isDummy == false;
-                    }));
-
-                    index++;
-                }
-
-                if (babylonMasterMeshes.Count > 0)
-                {
-                    // Mesh already exported
-                    // Export this node as instance
-
-                    // Check if we need to export this instance as an instance mesh.
-                    // If there is already an exported mesh in the scene that shares this mesh's material, then export it as an instance.
-                    BabylonMesh babylonMasterMesh = null;
-                    foreach (var mesh in babylonMasterMeshes)
+                    IINode Master = TabToList<IINode>(tabs)[tabs.Count - 1];
+                
+                    List<IINode> Instances = TabToList<IINode>(tabs).FindAll(x => x.Handle != Master.Handle);
+                    foreach (IINode instanceNode in Tools.ITabToIEnumerable(tabs))
                     {
-                        if (mesh.materialId == null|| (meshNode.NodeMaterial != null && meshNode.NodeMaterial.MaxMaterial.GetGuid().ToString().Equals(mesh.materialId)))
-                        {
-                            babylonMasterMesh = mesh;
-                        }
+                        //this make sure every instance node is indexed in guid dictionary
+                        Tools.GetGuid(instanceNode);
                     }
 
-                    if (babylonMasterMesh != null)
+                    BabylonMesh babylonMasterMesh = babylonScene.MeshesList.Find(mesh => mesh.id == Master.GetGuid().ToString());
+                    if(babylonMasterMesh==null)
                     {
+                         return ExportMasterMesh(scene, meshNode, babylonScene);
+                    }
+                    else
+                    {  
                         return ExportInstanceMesh(scene, meshNode, babylonScene, babylonMasterMesh);
                     }
-
-                    return ExportMasterMesh(scene, meshNode, babylonScene);
                 }
-            }
 
-            return ExportMasterMesh(scene, meshNode, babylonScene);
+                return ExportMasterMesh(scene, meshNode, babylonScene);
+            }
         }
 
         private BabylonNode ExportMasterMesh(IIGameScene scene, IIGameNode meshNode, BabylonScene babylonScene)
@@ -122,7 +93,7 @@ namespace Max2Babylon
             }
             catch (Exception e)
             {
-                RaiseWarning($"Mesh {meshNode.Name} failed to initialize. Mesh is exported as dummy.", 2);
+                logger?.RaiseWarning($"Mesh {meshNode.Name} failed to initialize. Mesh is exported as dummy.", 2);
                 return ExportDummy(scene, meshNode, babylonScene);
             }
 
@@ -181,7 +152,7 @@ namespace Max2Babylon
             }
 
             // Misc.
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
             babylonMesh.isVisible = meshNode.MaxNode.Renderable;
             babylonMesh.receiveShadows = meshNode.MaxNode.RcvShadows;
             babylonMesh.applyFog = meshNode.MaxNode.ApplyAtmospherics;
@@ -233,17 +204,17 @@ namespace Max2Babylon
             {
                 if (unskinnedMesh.NumberOfFaces < 1)
                 {
-                    RaiseError($"Mesh {babylonMesh.name} has no face", 2);
+                    logger?.RaiseError($"Mesh {babylonMesh.name} has no face", 2);
                 }
 
                 if (unskinnedMesh.NumberOfVerts < 3)
                 {
-                    RaiseError($"Mesh {babylonMesh.name} has not enough vertices", 2);
+                    logger?.RaiseError($"Mesh {babylonMesh.name} has not enough vertices", 2);
                 }
 
                 if (unskinnedMesh.NumberOfVerts >= 65536)
                 {
-                    RaiseWarning($"Mesh {babylonMesh.name} has tmore than 65536 vertices which means that it will require specific WebGL extension to be rendered. This may impact portability of your scene on low end devices.", 2);
+                    logger?.RaiseWarning($"Mesh {babylonMesh.name} has more than 65536 vertices which means that it will require specific WebGL extension to be rendered. This may impact portability of your scene on low end devices.", 2);
                 }
 
                 if (skin != null)
@@ -324,11 +295,11 @@ namespace Max2Babylon
                     {
                         if (mtl.SubMaterialCount == 0 || mtl == unsupportedMaterial)
                         {
-                            RaiseWarning("Unsupported material type '" + unsupportedMaterial.MaterialClass + "'. Material is ignored.", 2);
+                            logger?.RaiseWarning("Unsupported material type '" + unsupportedMaterial.MaterialClass + "'. Material is ignored.", 2);
                         }
                         else
                         {
-                            RaiseWarning("Unsupported sub-material type '" + unsupportedMaterial.MaterialClass + "'. Material is ignored.", 2);
+                            logger?.RaiseWarning("Unsupported sub-material type '" + unsupportedMaterial.MaterialClass + "'. Material is ignored.", 2);
                         }
                     }
                 }
@@ -342,7 +313,7 @@ namespace Max2Babylon
                 bool hasUV2 = false;
                 for (int i = 0; i < mappingChannels.Count; ++i)
                 {
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 
                     var channelNum = mappingChannels[i];
 #else
                     var channelNum = mappingChannels[new IntPtr(i)];
@@ -371,15 +342,15 @@ namespace Max2Babylon
 
                 if (vertices.Count >= 65536)
                 {
-                    RaiseWarning($"Mesh {babylonMesh.name} has {vertices.Count} vertices. This may prevent your scene to work on low end devices where 32 bits indice are not supported", 2);
+                    logger?.RaiseWarning($"Mesh {babylonMesh.name} has {vertices.Count} vertices. This may prevent your scene to work on low end devices where 32 bits indice are not supported", 2);
 
                     if (!optimizeVertices)
                     {
-                        RaiseError("You can try to optimize your object using [Try to optimize vertices] option", 2);
+                        logger?.RaiseWarning("You can try to optimize your object using [Try to optimize vertices] option", 2);
                     }
                 }
 
-                RaiseMessage($"{vertices.Count} vertices, {indices.Count / 3} faces", 2);
+               logger?.RaiseMessage($"{vertices.Count} vertices, {indices.Count / 3} faces", 2);
 
                 // Buffers
                 babylonMesh.positions = vertices.SelectMany(v => new[] { v.Position.X, v.Position.Y, v.Position.Z }).ToArray();
@@ -453,7 +424,7 @@ namespace Max2Babylon
 
                 if (hasMorphTarget)
                 {
-                    RaiseMessage("Export morph targets", 2);
+                   logger?.RaiseMessage("Export morph targets", 2);
 
                     // Morph Target Manager
                     var babylonMorphTargetManager = new BabylonMorphTargetManager(babylonMesh);
@@ -664,7 +635,7 @@ namespace Max2Babylon
                             if (storeFaceIndexes)
                             {
                                 // Retreive face
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
                                 face = materialFaces[j];
 #else
                                 face = materialFaces[new IntPtr(j)];
@@ -794,7 +765,7 @@ namespace Max2Babylon
 
 
             indexCount += 3;
-            CheckCancelled();
+            logger?.CheckCancelled(this);
         }
 
 
@@ -926,7 +897,7 @@ namespace Max2Babylon
 
                         if (isGltfExported)
                         {
-                            RaiseError("Too many bone influences per vertex for vertexIndex: " + vertexIndex + ". glTF only supports up to 4 bone influences per vertex.", 2);
+                            logger?.RaiseError("Too many bone influences per vertex for vertexIndex: " + vertexIndex + ". glTF only supports up to 4 bone influences per vertex.", 2);
                             break;
                         }
 
@@ -950,7 +921,7 @@ namespace Max2Babylon
                                 float boneWeight = skin.GetWeight(vertexIndex, currentSkinBone);
                                 if (boneWeight <= 0)
                                     continue;
-                                RaiseError("Too many bone influences per vertex for vertexIndex: " + vertexIndex + ". Babylon.js only supports up to 8 bone influences per vertex.", 2);
+                                logger?.RaiseError("Too many bone influences per vertex for vertexIndex: " + vertexIndex + ". Babylon.js only supports up to 8 bone influences per vertex.", 2);
                                 break;
                             }
                         }
@@ -958,7 +929,7 @@ namespace Max2Babylon
                 }
             }
 
-            // if we are optmizing our exported vertices, check that a hash-equivalent vertex was already exported.
+            // if we are optimizing our exported vertices, check that a hash-equivalent vertex was already exported.
             if (verticesAlreadyExported != null)
             {
                 if (verticesAlreadyExported.ContainsKey(vertex))

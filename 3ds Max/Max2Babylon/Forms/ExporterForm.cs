@@ -11,6 +11,7 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Collections.Generic;
 using System.Linq;
 using FlightSimExtension;
+using Max2Babylon.PreExport;
 
 namespace Max2Babylon
 {
@@ -24,7 +25,8 @@ namespace Max2Babylon
         int currentRank;
 
         private ExportItem singleExportItem;
-
+        private MaxExportParameters exportParameters;
+        private BabylonLogger logger;
 
         private  bool filePostOpenCallback = false;
         private GlobalDelegates.Delegate5 m_FilePostOpenDelegate;
@@ -79,6 +81,24 @@ namespace Max2Babylon
             }
 
             groupBox1.MouseMove += groupBox1_MouseMove;
+
+            logger = new BabylonLogger(false);
+
+            logger.OnExportProgressChanged += progress =>
+               {
+                   progressBar.Value = progress;
+                   Application.DoEvents();
+               };
+
+            logger.OnWarning += (warning, rank) => CreateWarningMessage(warning, rank);
+
+            logger.OnError += (error, rank) => CreateErrorMessage(error, rank);
+
+            logger.OnMessage += (message, color, rank, emphasis) => CreateMessage(message, color, rank, emphasis);
+
+            logger.OnVerbose += (message, color, rank, emphasis) => CreateMessage(message, color, rank, emphasis);
+
+            logger.OnPrint += (message, color, rank, emphasis) => CreateMessage(message, color, rank, emphasis);
         }
 
         private void LoadOptions()
@@ -108,7 +128,6 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkKHRLightsPunctual, Loader.Core.RootNode, "babylonjs_khrLightsPunctual");
             Tools.PrepareCheckBox(chkKHRTextureTransform, Loader.Core.RootNode, "babylonjs_khrTextureTransform");
             Tools.PrepareCheckBox(chkAnimgroupExportNonAnimated, Loader.Core.RootNode, "babylonjs_animgroupexportnonanimated",1);
-            Tools.PrepareCheckBox(chkDoNotOptimizeAnimations, Loader.Core.RootNode, "babylonjs_donotoptimizeanimations",1);
             Tools.PrepareCheckBox(chkKHRMaterialsUnlit, Loader.Core.RootNode, "babylonjs_khr_materials_unlit");
             Tools.PrepareCheckBox(chkExportMaterials, Loader.Core.RootNode, "babylonjs_export_materials", 1);
             Tools.PrepareComboBox(cmbExportAnimationType, Loader.Core.RootNode, "babylonjs_export_animations_type",AnimationExportType.Export.ToString());
@@ -122,7 +141,8 @@ namespace Max2Babylon
             Tools.PrepareCheckBox(chkRemoveNamespace, Loader.Core.RootNode, "flightsim_removenamespaces",1);
             Tools.PrepareTextBox(txtSrcTextureExt, Loader.Core.RootNode, "flightsim_texture_destination_extension",string.Empty);
             Tools.PrepareTextBox(txtDstTextureExt, Loader.Core.RootNode, "flightsim_texture_destination_extension",string.Empty);
-            Tools.PrepareComboBox(cmbNormalMapConvention, Loader.Core.RootNode, "flightsim_tangent_space_convention",TangentSpaceConvention.DirectX.ToString());
+            Tools.PrepareComboBox(cmbNormalMapConvention, Loader.Core.RootNode, "flightsim_tangent_space_convention",(int)TangentSpaceConvention.DirectX);
+            Tools.PrepareCheckBox(chkKeepInstances, Loader.Core.RootNode, "flightsim_keepInstances",0);
 
             Tools.PrepareComboBox(logLevelcmb, Loader.Core.RootNode, "babylonjs_logLevel",(int)LogLevel.WARNING);
 
@@ -139,7 +159,6 @@ namespace Max2Babylon
             txtEnvironmentName.MaxPath(absoluteEnvironmentPath);
 
             Tools.PrepareCheckBox(chkUsePreExportProces, Loader.Core.RootNode, "babylonjs_preproces", 0);
-            Tools.PrepareCheckBox(chkFlatten, Loader.Core.RootNode, "babylonjs_flattenScene", 0);
             Tools.PrepareCheckBox(chkMrgContainersAndXref, Loader.Core.RootNode, "babylonjs_mergecontainersandxref", 0);
         }
 
@@ -264,95 +283,105 @@ namespace Max2Babylon
 
         public async void butExport_Click(object sender, EventArgs e)
         {
+            treeView.Nodes.Clear();
+            exportParameters = GetExportParameters();           
+
+            PreExportProcess preExportProcess = new PreExportProcess(exportParameters);
+            preExportProcess.logger = logger;
             bool abort = false;
             try
             {
                 abort = AutosaveWarning();
-                if (abort)return;
+                if (abort) return;
+
+                preExportProcess.ApplyPreExport();
                 await DoExport(singleExportItem);
             }
             catch{}
             finally
             {
-                if (!abort)
-                {
-                    if (chkUsePreExportProces.Checked && !chkApplyPreprocessToScene.Checked)
-                    {
-                        Loader.Core.SetQuietMode(true);
-                        Loader.Core.LoadFromFile( Loader.Core.CurFilePath,true);
-                        Loader.Core.SetQuietMode(false);
-                    }
-                }
+                preExportProcess.RevertScene();
             }
+        }
+
+        private MaxExportParameters GetExportParameters()
+                {
+            var scaleFactorParsed = 1.0f;
+            var textureQualityParsed = 100L;
+            try
+                    {
+                scaleFactorParsed = float.Parse(txtScaleFactor.Text);
+            }
+            catch (Exception e)
+            {
+                throw new InvalidDataException(String.Format("Invalid Scale Factor value: {0}", txtScaleFactor.Text));
+                    }
+            try
+            {
+                textureQualityParsed = long.Parse(txtQuality.Text);
+                }
+            catch (Exception e)
+            {
+                throw new InvalidDataException(String.Format("Invalid Texture Quality value: {0}", txtScaleFactor.Text));
+            }
+
+            MaxExportParameters exportParameters = new MaxExportParameters
+            {               
+                outputFormat = comboOutputFormat.SelectedItem.ToString(),
+                scaleFactor = scaleFactorParsed,
+                writeTextures = chkWriteTextures.Enabled && chkWriteTextures.Checked,
+                overwriteTextures = chkOverwriteTextures.Enabled && chkOverwriteTextures.Checked,
+                exportHiddenObjects = chkHidden.Checked,
+                exportOnlySelected = chkOnlySelected.Checked,
+                generateManifest = chkManifest.Checked,
+                autoSaveSceneFile = chkAutoSave.Checked,
+                exportTangents = chkExportTangents.Checked,
+                exportMorphTangents = chkExportMorphTangents.Checked,
+                exportMorphNormals = chkExportMorphNormals.Checked,
+                txtQuality = textureQualityParsed,
+                mergeAOwithMR = chkMergeAOwithMR.Enabled && chkMergeAOwithMR.Checked,
+                bakeAnimationType = (BakeAnimationType)cmbBakeAnimationOptions.SelectedIndex,
+                logLevel = (LogLevel)logLevelcmb.SelectedIndex,
+                dracoCompression = chkDracoCompression.Enabled && chkDracoCompression.Checked,
+                enableKHRLightsPunctual = chkKHRLightsPunctual.Checked,
+                enableKHRTextureTransform = chkKHRTextureTransform.Checked,
+                enableKHRMaterialsUnlit = chkKHRMaterialsUnlit.Checked,
+                exportMaterials = chkExportMaterials.Enabled && chkExportMaterials.Checked,
+                animationExportType = (AnimationExportType)cmbExportAnimationType.SelectedIndex,
+                enableASBAnimationRetargeting = chkASBAnimationRetargeting.Checked,
+                optimizeAnimations = true,
+                animgroupExportNonAnimated = chkAnimgroupExportNonAnimated.Checked,                
+                pbrNoLight = chkNoAutoLight.Checked,
+                pbrFull = chkFullPBR.Checked,
+                pbrEnvironment = txtEnvironmentName.Text,
+                usePreExportProcess = chkUsePreExportProces.Checked,
+                mergeContainersAndXRef = chkMrgContainersAndXref.Checked,                
+                tangentSpaceConvention = (TangentSpaceConvention)cmbNormalMapConvention.SelectedIndex,
+                keepInstances = chkKeepInstances.Checked,
+                removeLodPrefix = chk_RemoveLodPrefix.Checked,
+                removeNamespaces = chkRemoveNamespace.Checked,
+                srcTextureExtension = txtSrcTextureExt.Text,
+                dstTextureExtension = txtDstTextureExt.Text
+            };
+
+            return exportParameters;
         }
 
         private async Task<bool> DoExport(ExportItemList exportItemList)
         {
-            treeView.Nodes.Clear();
 
             bool allSucceeded = true;
             foreach (ExportItem item in exportItemList)
             {
                 if (!item.Selected) continue;
 
-                allSucceeded = allSucceeded && await DoExport(item, true, false);
+                allSucceeded = allSucceeded && await DoExport(item, true);
 
                 if (exporter.IsCancelled)
                     break;
             }
 
             return allSucceeded;
-        }
-
-        private void saveOptionBtn_Click(object sender, EventArgs e)
-        {
-            SaveOptions();
-        }
-
-        private void SaveOptions()
-        {
-            Tools.UpdateCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
-            Tools.UpdateCheckBox(chkWriteTextures, Loader.Core.RootNode, "babylonjs_writetextures");
-            Tools.UpdateCheckBox(chkOverwriteTextures, Loader.Core.RootNode, "babylonjs_overwritetextures");
-            Tools.UpdateCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
-            Tools.UpdateCheckBox(chkAutoSave, Loader.Core.RootNode, "babylonjs_autosave");
-            Tools.UpdateCheckBox(chkOnlySelected, Loader.Core.RootNode, "babylonjs_onlySelected");
-            Tools.UpdateCheckBox(chkExportTangents, Loader.Core.RootNode, "babylonjs_exporttangents");
-            Tools.UpdateComboBox(comboOutputFormat, Loader.Core.RootNode, "babylonjs_outputFormat");
-            Tools.UpdateTextBox(txtScaleFactor, Loader.Core.RootNode, "babylonjs_txtScaleFactor");
-            Tools.UpdateTextBox(txtQuality, Loader.Core.RootNode, "babylonjs_txtCompression");
-            Tools.UpdateCheckBox(chkMergeAOwithMR, Loader.Core.RootNode, "babylonjs_mergeAOwithMR");
-            Tools.UpdateCheckBox(chkDracoCompression, Loader.Core.RootNode, "babylonjs_dracoCompression");
-            Tools.UpdateCheckBox(chkKHRTextureTransform, Loader.Core.RootNode, "babylonjs_khrTextureTransform");
-            Tools.UpdateCheckBox(chkKHRLightsPunctual, Loader.Core.RootNode, "babylonjs_khrLightsPunctual");
-            Tools.UpdateCheckBox(chkKHRMaterialsUnlit, Loader.Core.RootNode, "babylonjs_khr_materials_unlit");
-            Tools.UpdateCheckBox(chkExportMaterials, Loader.Core.RootNode, "babylonjs_export_materials");
-            Tools.UpdateComboBox(cmbExportAnimationType, Loader.Core.RootNode, "babylonjs_export_animations_type");
-            Tools.UpdateCheckBox(chkASBAnimationRetargeting, Loader.Core.RootNode, "babylonjs_asb_animation_retargeting");
-            Tools.UpdateCheckBox(chkAnimgroupExportNonAnimated, Loader.Core.RootNode, "babylonjs_animgroupexportnonanimated");
-            Tools.UpdateCheckBox(chkDoNotOptimizeAnimations, Loader.Core.RootNode, "babylonjs_donotoptimizeanimations");
-            Tools.UpdateCheckBox(chkExportMorphTangents, Loader.Core.RootNode, "babylonjs_export_Morph_Tangents");
-            Tools.UpdateCheckBox(chkExportMorphNormals, Loader.Core.RootNode, "babylonjs_export_Morph_Normals");
-            Tools.UpdateComboBoxByIndex(cmbBakeAnimationOptions, Loader.Core.RootNode, "babylonjs_bakeAnimationsType");
-            Tools.UpdateCheckBox(chkApplyPreprocessToScene,Loader.Core.RootNode, "babylonjs_applyPreprocess");
-            Tools.UpdateComboBoxByIndex(logLevelcmb, Loader.Core.RootNode, "babylonjs_logLevel");
-
-			Tools.UpdateCheckBox(chk_RemoveLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix");
-            Tools.UpdateCheckBox(chkRemoveNamespace, Loader.Core.RootNode, "flightsim_removenamespaces");
-            Tools.UpdateTextBox(txtSrcTextureExt, Loader.Core.RootNode, "flightsim_texture_destination_extension");
-            Tools.UpdateTextBox(txtDstTextureExt, Loader.Core.RootNode, "flightsim_texture_destination_extension");
-
-            Loader.Core.RootNode.SetStringProperty(ExportParameters.ModelFilePathProperty, Tools.RelativePathStore(txtModelPath.Text));
-            Loader.Core.RootNode.SetStringProperty(ExportParameters.TextureFolderPathProperty, Tools.RelativePathStore(txtTexturesPath.Text));
-
-            Tools.UpdateCheckBox(chkFullPBR, Loader.Core.RootNode, ExportParameters.PBRFullPropertyName);
-            Tools.UpdateCheckBox(chkNoAutoLight, Loader.Core.RootNode, ExportParameters.PBRNoLightPropertyName);
-            Loader.Core.RootNode.SetStringProperty(ExportParameters.PBREnvironmentPathPropertyName, Tools.RelativePathStore(txtEnvironmentName.Text));
-
-            Tools.UpdateCheckBox(chkUsePreExportProces, Loader.Core.RootNode, "babylonjs_preproces");
-            Tools.UpdateCheckBox(chkFlatten, Loader.Core.RootNode, "babylonjs_flattenScene");
-            Tools.UpdateCheckBox(chkMrgContainersAndXref, Loader.Core.RootNode, "babylonjs_mergecontainersandxref");
-            Tools.UpdateComboBoxByIndex(cmbNormalMapConvention, Loader.Core.RootNode, "flightsim_tangent_space_convention");
         }
 
         private void ShowExportItemLayers(IList<IILayer> exportedLayers)
@@ -380,33 +409,13 @@ namespace Max2Babylon
             }
         }
 
-        private async Task<bool> DoExport(ExportItem exportItem, bool multiExport = false, bool clearLogs = true)
+        private async Task<bool> DoExport(ExportItem exportItem, bool multiExport = false)
         {
             new BabylonAnimationActionItem().Close(); 
-            SaveOptions();
 
             if (multiExport)  ShowExportItemLayers(exportItem.Layers);
-
             exporter = new BabylonExporter();
-
-            if (clearLogs)
-                treeView.Nodes.Clear();
-
-            exporter.OnExportProgressChanged += progress =>
-            {
-                progressBar.Value = progress;
-                Application.DoEvents();
-            };
-
-            exporter.OnWarning += (warning, rank) => CreateWarningMessage(warning, rank);
-
-            exporter.OnError += (error, rank) => CreateErrorMessage(error, rank);
-
-            exporter.OnMessage += (message, color, rank, emphasis) => CreateMessage(message, color, rank, emphasis);
-
-            exporter.OnVerbose += (message, color, rank, emphasis) => CreateMessage(message, color, rank, emphasis);
-
-            exporter.OnPrint += (message, color, rank, emphasis) => CreateMessage(message, color, rank, emphasis);
+            exporter.logger = logger;
 
             butExport.Enabled = false;
             butExportAndRun.Enabled = false;
@@ -419,68 +428,11 @@ namespace Max2Babylon
                 string modelAbsolutePath = multiExport ? exportItem.ExportFilePathAbsolute : txtModelPath.Text;
                 string textureExportPath = multiExport ? exportItem.ExportTexturesesFolderAbsolute : txtTexturesPath.Text;
 
-                var scaleFactorParsed = 1.0f;
-                var textureQualityParsed = 100L;
-                try
-            {
-                    scaleFactorParsed = float.Parse(txtScaleFactor.Text);
-                }
-                catch (Exception e)
-                {
-                    throw new InvalidDataException(String.Format("Invalid Scale Factor value: {0}", txtScaleFactor.Text));
-                }
-                try
-                {
-                    textureQualityParsed = long.Parse(txtQuality.Text);
-                }
-                catch (Exception e)
-                {
-                    throw new InvalidDataException(String.Format("Invalid Texture Quality value: {0}", txtScaleFactor.Text));
-                }
-
-                MaxExportParameters exportParameters = new MaxExportParameters
-                {
-                    outputPath = modelAbsolutePath,
-                    textureFolder = textureExportPath,
-                    outputFormat = comboOutputFormat.SelectedItem.ToString(),
-                    scaleFactor = scaleFactorParsed,
-                    writeTextures = chkWriteTextures.Enabled && chkWriteTextures.Checked,
-                    overwriteTextures = chkOverwriteTextures.Enabled && chkOverwriteTextures.Checked,
-                    exportHiddenObjects = chkHidden.Checked,
-                    exportOnlySelected = chkOnlySelected.Checked,
-                    generateManifest = chkManifest.Checked,
-                    autoSaveSceneFile = chkAutoSave.Checked,
-                    exportTangents = chkExportTangents.Checked,
-                    exportMorphTangents = chkExportMorphTangents.Checked,
-                    exportMorphNormals = chkExportMorphNormals.Checked,
-                    txtQuality = textureQualityParsed,
-                    mergeAOwithMR = chkMergeAOwithMR.Enabled && chkMergeAOwithMR.Checked,
-                    bakeAnimationType = (BakeAnimationType)cmbBakeAnimationOptions.SelectedIndex,
-                    logLevel = (LogLevel)logLevelcmb.SelectedIndex,
-                    dracoCompression = chkDracoCompression.Enabled && chkDracoCompression.Checked,
-                    enableKHRLightsPunctual = chkKHRLightsPunctual.Checked,
-                    enableKHRTextureTransform = chkKHRTextureTransform.Checked,
-                    enableKHRMaterialsUnlit = chkKHRMaterialsUnlit.Checked,
-                    exportMaterials = chkExportMaterials.Enabled && chkExportMaterials.Checked,
-                    animationExportType = (AnimationExportType)cmbExportAnimationType.SelectedIndex,
-                    enableASBAnimationRetargeting = chkASBAnimationRetargeting.Checked,
-                    optimizeAnimations = !chkDoNotOptimizeAnimations.Checked,
-                    animgroupExportNonAnimated = chkAnimgroupExportNonAnimated.Checked,
-                    exportNode = exportItem?.Node,
-                    exportLayers = exportItem?.Layers,
-                    pbrNoLight = chkNoAutoLight.Checked,
-                    pbrFull = chkFullPBR.Checked,
-                    pbrEnvironment = txtEnvironmentName.Text,
-                    usePreExportProcess = chkUsePreExportProces.Checked,
-                    flattenScene = chkFlatten.Enabled && chkFlatten.Checked,
-                    mergeContainersAndXRef = chkMrgContainersAndXref.Checked,
-                    useMultiExporter = multiExport,
-                    tangentSpaceConvention = (TangentSpaceConvention)cmbNormalMapConvention.SelectedIndex,
-                    removeLodPrefix = chk_RemoveLodPrefix.Checked,
-                    removeNamespaces = chkRemoveNamespace.Checked,
-                    srcTextureExtension = txtSrcTextureExt.Text,
-                    dstTextureExtension = txtDstTextureExt.Text
-                };
+                exportParameters.outputPath = modelAbsolutePath;
+                exportParameters.textureFolder = textureExportPath;
+                exportParameters.exportNode = exportItem?.Node;
+                exportParameters.exportLayers = exportItem?.Layers;
+                exportParameters.useMultiExporter = multiExport;
 
                 exporter.callerForm = this;
 
@@ -489,8 +441,7 @@ namespace Max2Babylon
             catch (OperationCanceledException)
             {
                 progressBar.Value = 0;
-                success = false;
-                ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = ""Available""");
+                success = false;;
             }
             catch (Exception ex)
             {
@@ -503,7 +454,6 @@ namespace Max2Babylon
 
                 progressBar.Value = 0;
                 success = false;
-                ScriptsUtilities.ExecuteMaxScriptCommand(@"global BabylonExporterStatus = Available");
             }
 
             butCancel.Enabled = false;
@@ -573,7 +523,7 @@ namespace Max2Babylon
                 {
                     rank = 0;
 #if DEBUG
-                    treeView.Nodes.Add(new TreeNode("Invalid rank passed to CreateTreeNode (through RaiseMessage, RaiseWarning or RaiseError)!") { ForeColor = Color.DarkOrange });
+                    treeView.Nodes.Add(new TreeNode("Invalid rank passed to CreateTreeNode (throughlogger.RaiseMessage, RaiseWarning or RaiseError)!") { ForeColor = Color.DarkOrange });
 #endif
                 }
                 if (rank == 0)
@@ -614,6 +564,7 @@ namespace Max2Babylon
         {
             butExport.Enabled = !string.IsNullOrEmpty(txtModelPath.Text.Trim());
             butExportAndRun.Enabled = butExport.Enabled && WebServer.IsSupported;
+            Loader.Core.RootNode.SetStringProperty(ExportParameters.ModelFilePathProperty, Tools.RelativePathStore(txtModelPath.Text));
         }
 
         private void butCancel_Click(object sender, EventArgs e)
@@ -744,6 +695,7 @@ namespace Max2Babylon
 
             string newModelPath = Path.ChangeExtension(txtModelPath.Text, this.saveFileDialog.DefaultExt);
             this.txtModelPath.MaxPath(newModelPath);
+            Tools.UpdateComboBox(comboOutputFormat, Loader.Core.RootNode, "babylonjs_outputFormat");
         }
 
         /// <summary>
@@ -790,20 +742,21 @@ namespace Max2Babylon
 
         private bool AutosaveWarning()
         {
-            //raise a warnign to the user if he is using pre-export processes and he the save is not saved before export
+            // true in case of abort
+            //raise a warning to the user that is going to save the scene
             if (chkAutoSave.Checked)
             {
-                if (!Loader.Core.FileSave) return true; //file save locked
-                BringToFront();
-            }
-            else if (!chkAutoSave.Checked && chkUsePreExportProces.Checked)
-            {
                 MessageBoxButtons buttons = MessageBoxButtons.OKCancel;
-                DialogResult result = MessageBox.Show("You are exporting a scene that will be modified during export time,\nsave your scene or use autosave to not loose you work.\nDo you want to continue anyway?","Waring",buttons);
+                DialogResult result = MessageBox.Show("You are about to save your scene, are you sure?", "Warning", buttons);
                 if (result == DialogResult.Cancel)
                 {
                     return true; //in case of abort
                 }
+                else
+                {
+                    return !Loader.Core.FileSave; //true if something went wrong
+                }
+                BringToFront();
             }
 
             return false;
@@ -811,10 +764,9 @@ namespace Max2Babylon
 
         private async void butMultiExport_Click(object sender, EventArgs e)
         {
-            string outputFileExt;
-            outputFileExt = comboOutputFormat.SelectedItem.ToString();
-            if (outputFileExt.Contains("binary babylon"))
-                outputFileExt = "babylon";
+            treeView.Nodes.Clear();
+            string outputFileExt = comboOutputFormat.SelectedItem.ToString();
+            if (outputFileExt.Contains("binary babylon")) outputFileExt = "babylon";
 
             ExportItemList exportItemList = new ExportItemList(outputFileExt);
 
@@ -829,29 +781,26 @@ namespace Max2Babylon
             }
             else if (numLoadedItems > 0)
             {
+                exportParameters = GetExportParameters();
+                PreExportProcess preExportProcess = new PreExportProcess(exportParameters);
+                if(logger!= null) preExportProcess.logger = logger;
                 bool abort = false;
                 try
                 {
                     abort = AutosaveWarning();
                     if (abort) return;
+                    preExportProcess.ApplyPreExport();
                     await DoExport(exportItemList);
                 }
                 catch{}
                 finally
                 {
-                    if (!abort)
-                    {
-                        if (chkUsePreExportProces.Checked && !chkApplyPreprocessToScene.Checked)
-                        {
-                            Loader.Core.SetQuietMode(true);
-                            Loader.Core.LoadFromFile( Loader.Core.CurFilePath,true);
-                            Loader.Core.SetQuietMode(false);
-                        }
-                    }
+                    preExportProcess.RevertScene(); 
                 }
             }
         }
 
+        #region Parameters 
         private void chkUsePreExportProces_CheckedChanged(object sender, EventArgs e)
         {
             if (!chkUsePreExportProces.Checked)
@@ -868,6 +817,7 @@ namespace Max2Babylon
                 lblBakeAnimation.Enabled = true;
                 chkApplyPreprocessToScene.Enabled = true;
             }
+            Tools.UpdateCheckBox(chkUsePreExportProces, Loader.Core.RootNode, "babylonjs_preproces");
         }
 
         private void cmbExportAnimationType_SelectedIndexChanged(object sender, EventArgs e)
@@ -875,7 +825,6 @@ namespace Max2Babylon
             switch ((AnimationExportType)cmbExportAnimationType.SelectedIndex)
             {
                 case AnimationExportType.NotExport:
-                    chkDoNotOptimizeAnimations.Enabled = false;
                     chkAnimgroupExportNonAnimated.Enabled = false;
                     chkExportMorphTangents.Enabled = false;
                     chkExportMorphNormals.Enabled = false;
@@ -885,7 +834,6 @@ namespace Max2Babylon
                     chkMergeAOwithMR.Enabled = true;
                     chkDracoCompression.Enabled = true;
                     chkExportTangents.Enabled = true;
-                    chkFlatten.Enabled = true;
                     break;
                 case AnimationExportType.Export:
                     chkWriteTextures.Enabled = true;
@@ -894,14 +842,11 @@ namespace Max2Babylon
                     chkMergeAOwithMR.Enabled = true;
                     chkDracoCompression.Enabled = true;
                     chkExportTangents.Enabled = true;
-                    chkDoNotOptimizeAnimations.Enabled = true;
                     chkAnimgroupExportNonAnimated.Enabled = true;
                     chkExportMorphTangents.Enabled = true;
                     chkExportMorphNormals.Enabled = true;
-                    chkFlatten.Enabled = true;
                     break;
                 case AnimationExportType.ExportOnly:
-                    chkDoNotOptimizeAnimations.Enabled = true;
                     chkAnimgroupExportNonAnimated.Enabled = true;
                     chkExportMorphTangents.Enabled = true;
                     chkExportMorphNormals.Enabled = true;
@@ -911,11 +856,178 @@ namespace Max2Babylon
                     chkMergeAOwithMR.Enabled = false;
                     chkDracoCompression.Enabled = false;
                     chkExportTangents.Enabled = false;
-                    chkFlatten.Enabled = false;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            Tools.UpdateComboBox(cmbExportAnimationType, Loader.Core.RootNode, "babylonjs_export_animations_type");
         }
+
+        private void txtScaleFactor_TextChanged(object sender, EventArgs e)
+        {
+             Tools.UpdateTextBox(txtScaleFactor, Loader.Core.RootNode, "babylonjs_txtScaleFactor");
+        }
+
+        private void txtQuality_TextChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateTextBox(txtQuality, Loader.Core.RootNode, "babylonjs_txtCompression");
+        }
+
+        private void txtTexturesPath_TextChanged(object sender, EventArgs e)
+        {
+            Loader.Core.RootNode.SetStringProperty(ExportParameters.TextureFolderPathProperty, Tools.RelativePathStore(txtTexturesPath.Text));
+        }
+
+        private void chkAutoSave_CheckedChanged(object sender, EventArgs e)
+        {
+             Tools.UpdateCheckBox(chkAutoSave, Loader.Core.RootNode, "babylonjs_autosave");
+        }
+
+        private void chkHidden_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkHidden, Loader.Core.RootNode, "babylonjs_exporthidden");
+        }
+
+        private void chkOnlySelected_CheckedChanged(object sender, EventArgs e)
+        {
+                Tools.UpdateCheckBox(chkOnlySelected, Loader.Core.RootNode, "babylonjs_onlySelected");
+        }
+
+        private void chkManifest_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkManifest, Loader.Core.RootNode, "babylonjs_generatemanifest");
+        }
+
+        private void chkWriteTextures_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkWriteTextures, Loader.Core.RootNode, "babylonjs_writetextures");
+        }
+
+        private void chkOverwriteTextures_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkOverwriteTextures, Loader.Core.RootNode, "babylonjs_overwritetextures");
+        }
+
+        private void chkExportMaterials_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkExportMaterials, Loader.Core.RootNode, "babylonjs_export_materials");
+        }
+
+        private void chkKeepInstances_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkKeepInstances, Loader.Core.RootNode, "flightsim_keepInstances");
+        }
+
+        private void chkMergeAOwithMR_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkMergeAOwithMR, Loader.Core.RootNode, "babylonjs_mergeAOwithMR");
+        }
+
+        private void chkDracoCompression_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkDracoCompression, Loader.Core.RootNode, "babylonjs_dracoCompression");
+        }
+
+        private void chkAnimgroupExportNonAnimated_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkAnimgroupExportNonAnimated, Loader.Core.RootNode, "babylonjs_animgroupexportnonanimated");
+        }
+
+        private void chkExportMorphTangents_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkExportMorphTangents, Loader.Core.RootNode, "babylonjs_export_Morph_Tangents");
+        }
+
+        private void chkExportMorphNormals_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkExportMorphNormals, Loader.Core.RootNode, "babylonjs_export_Morph_Normals");
+        }
+
+        private void chkApplyPreprocessToScene_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkApplyPreprocessToScene,Loader.Core.RootNode, "babylonjs_applyPreprocess");
+        }
+
+        private void chkMrgContainersAndXref_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkMrgContainersAndXref, Loader.Core.RootNode, "babylonjs_mergecontainersandxref");
+        }
+
+        private void cmbBakeAnimationOptions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateComboBoxByIndex(cmbBakeAnimationOptions, Loader.Core.RootNode, "babylonjs_bakeAnimationsType");
+        }
+
+        private void chkNoAutoLight_CheckedChanged(object sender, EventArgs e)
+        {
+             Tools.UpdateCheckBox(chkNoAutoLight, Loader.Core.RootNode, ExportParameters.PBRNoLightPropertyName);
+        }
+
+        private void chkFullPBR_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkFullPBR, Loader.Core.RootNode, ExportParameters.PBRFullPropertyName);
+        }
+
+        private void chkKHRLightsPunctual_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkKHRLightsPunctual, Loader.Core.RootNode, "babylonjs_khrLightsPunctual");
+        }
+
+        private void chkKHRTextureTransform_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkKHRTextureTransform, Loader.Core.RootNode, "babylonjs_khrTextureTransform");
+        }
+
+        private void chkKHRMaterialsUnlit_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkKHRMaterialsUnlit, Loader.Core.RootNode, "babylonjs_khr_materials_unlit");
+        }
+
+        private void chkASBAnimationRetargeting_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkASBAnimationRetargeting, Loader.Core.RootNode, "babylonjs_asb_animation_retargeting");
+        }
+
+        private void chk_RemoveLodPrefix_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chk_RemoveLodPrefix, Loader.Core.RootNode, "flightsim_removelodprefix");
+        }
+
+        private void chkRemoveNamespace_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkRemoveNamespace, Loader.Core.RootNode, "flightsim_removenamespaces");
+        }
+
+        private void cmbNormalMapConvention_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateComboBoxByIndex(cmbNormalMapConvention, Loader.Core.RootNode, "flightsim_tangent_space_convention");
+        }
+
+        private void txtEnvironmentName_TextChanged(object sender, EventArgs e)
+        {
+            Loader.Core.RootNode.SetStringProperty(ExportParameters.PBREnvironmentPathPropertyName, Tools.RelativePathStore(txtEnvironmentName.Text));
+        }
+
+        private void logLevelcmb_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateComboBoxByIndex(logLevelcmb, Loader.Core.RootNode, "babylonjs_logLevel");
+        }
+
+        private void txtDstTextureExt_TextChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateTextBox(txtDstTextureExt, Loader.Core.RootNode, "flightsim_texture_destination_extension");
+        }
+
+        private void txtSrcTextureExt_TextChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateTextBox(txtSrcTextureExt, Loader.Core.RootNode, "flightsim_texture_destination_extension");
+        }
+
+        private void chkExportTangents_CheckedChanged(object sender, EventArgs e)
+        {
+            Tools.UpdateCheckBox(chkExportTangents, Loader.Core.RootNode, "babylonjs_exporttangents"); 
+        }
+        #endregion
+
     }
 }

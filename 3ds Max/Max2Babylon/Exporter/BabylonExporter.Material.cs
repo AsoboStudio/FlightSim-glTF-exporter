@@ -19,7 +19,7 @@ namespace BabylonExport.Entities
 
 namespace Max2Babylon
 {
-    partial class BabylonExporter
+    public partial class BabylonExporter
     {
         readonly List<IIGameMaterial> referencedMaterials = new List<IIGameMaterial>();
 
@@ -37,18 +37,23 @@ namespace Max2Babylon
                 return;
             }
 
-            RaiseMessage(name, 1);
+           logger?.RaiseMessage(name, 1);
 
             // --- prints ---
             #region prints
             {
-                RaiseVerbose("materialNode.MaterialClass=" + materialNode.MaterialClass, 2);
-                RaiseVerbose("materialNode.NumberOfTextureMaps=" + materialNode.NumberOfTextureMaps, 2);
+                logger?.RaiseVerbose("materialNode.MaterialClass=" + materialNode.MaterialClass, 2);
+                logger?.RaiseVerbose("materialNode.NumberOfTextureMaps=" + materialNode.NumberOfTextureMaps, 2);
 
-                Print(materialNode.IPropertyContainer, 2);
+                if (logger is BabylonLogger)
+                {
+                    BabylonLogger l = (BabylonLogger) logger;
+                    l.Print(materialNode.IPropertyContainer, 2);
+                }
+                
                 for (int i = 0; i < materialNode.MaxMaterial.NumSubTexmaps; i++)
                 {
-                    RaiseVerbose("Texture[" + i + "] is named '" + materialNode.MaxMaterial.GetSubTexmapSlotName(i) + "'", 2);
+                    logger?.RaiseVerbose("Texture[" + i + "] is named '" + materialNode.MaxMaterial.GetSubTexmapSlotName(i) + "'", 2);
                 }
             }
             #endregion
@@ -67,7 +72,7 @@ namespace Max2Babylon
                     {
                         if (subMat.SubMaterialCount > 0)
                         {
-                            RaiseError("MultiMaterials as inputs to other MultiMaterials are not supported!");
+                            logger?.RaiseError("MultiMaterials as inputs to other MultiMaterials are not supported!");
                         }
                         else
                         {
@@ -98,17 +103,8 @@ namespace Max2Babylon
             bool isUnlit = false;
             if (babylonAttributesContainer != null)
             {
-                isUnlit = babylonAttributesContainer.GetBoolProperty("babylonUnlit", false);
+                isUnlit = babylonAttributesContainer.GetBoolProperty("babylonUnlit",0, false);
             }
-
-            // check custom exporters first, to allow custom exporters of supported material classes
-            //IBabylonMaterialExtensionExporter materialExporter;
-            //materialExporters.TryGetValue(new ClassIDWrapper(materialNode.MaxMaterial.ClassID), out materialExporter);
-            //IEnumerable<IBabylonMaterialExtensionExporter> materialExporters = babylonScene.BabylonToGLTFExtensions
-            //    .Where(x => x.Key is IBabylonMaterialExtensionExporter)
-            //    .Select(x => x.Key as IBabylonMaterialExtensionExporter);
-            //IBabylonMaterialExtensionExporter materialExporter = materialExporters.First(x =>
-            //    x.MaterialClassID.Equals(new ClassIDWrapper(materialNode.MaxMaterial.ClassID)));
 
             IStdMat2 stdMat = null;
             if (materialNode.MaxMaterial != null && materialNode.MaxMaterial.NumParamBlocks > 0)
@@ -122,30 +118,8 @@ namespace Max2Babylon
 
             if (ExportBabylonExtension(materialNode,typeof(BabylonMaterial), ref babylonScene))
             {
-                RaiseMessage("Exporting custom material type", 2);
+               logger?.RaiseMessage("Exporting custom material type", 2);
             }
-            //if (isBabylonExported && materialExporter != null && materialExporter is IMaxBabylonMaterialExporter)
-            //{
-            //    IMaxBabylonMaterialExporter babylonMaterialExporter = materialExporter as IMaxBabylonMaterialExporter;
-            //    BabylonMaterial babylonMaterial = babylonMaterialExporter.ExportBabylonMaterial(materialNode);
-            //    if (babylonMaterial == null)
-            //    {
-            //        string message = string.Format("Custom Babylon material exporter failed to export | Exporter: '{0}' | Material Name: '{1}' | Material Class: '{2}'",
-            //            babylonMaterialExporter.GetType().ToString(), materialNode.MaterialName, materialNode.MaterialClass);
-            //        RaiseWarning(message, 2);
-            //    }
-            //    else babylonScene.MaterialsList.Add(babylonMaterial);
-            //}
-            //else if (isGltfExported && materialExporter != null && materialExporter is IMaxGLTFMaterialExporter)
-            //{
-            //    // add a basic babylon material to the list to forward the max material reference
-            //    var babylonMaterial = new BabylonMaterial(id)
-            //    {
-            //        maxGameMaterial = materialNode,
-            //        name = name
-            //    };
-            //    babylonScene.MaterialsList.Add(babylonMaterial);
-            //}
             else if (stdMat != null)
             {
                 var babylonMaterial = new BabylonStandardMaterial(id)
@@ -216,8 +190,8 @@ namespace Max2Babylon
                     (babylonMaterial.diffuseTexture.originalPath.EndsWith(".tif") || babylonMaterial.diffuseTexture.originalPath.EndsWith(".tiff")) &&
                     babylonMaterial.diffuseTexture.hasAlpha)
                 {
-                    RaiseWarning($"Diffuse texture named {babylonMaterial.diffuseTexture.originalPath} is a .tif file and its Alpha Source is 'Image Alpha' by default.", 2);
-                    RaiseWarning($"If you don't want material to be in BLEND mode, set diffuse texture Alpha Source to 'None (Opaque)'", 2);
+                    logger?.RaiseWarning($"Diffuse texture named {babylonMaterial.diffuseTexture.originalPath} is a .tif file and its Alpha Source is 'Image Alpha' by default.", 2);
+                    logger?.RaiseWarning($"If you don't want material to be in BLEND mode, set diffuse texture Alpha Source to 'None (Opaque)'", 2);
                 }
                 
                 if (isTransparencyModeFromBabylonAttributes == false || babylonMaterial.transparencyMode != 0)
@@ -261,7 +235,7 @@ namespace Max2Babylon
                     {
                         if (babylonMaterial.reflectionTexture == null)
                         {
-                            RaiseWarning("Fallout cannot be used with reflection channel without a texture", 2);
+                            logger?.RaiseWarning("Fallout cannot be used with reflection channel without a texture", 2);
                         }
                         else
                         {
@@ -293,14 +267,14 @@ namespace Max2Babylon
                     // This is a alpha testing purpose
                     babylonMaterial.opacityTexture = null;
                     babylonMaterial.diffuseTexture.hasAlpha = true;
-                    RaiseWarning("Opacity texture was removed because alpha from diffuse texture can be use instead", 2);
-                    RaiseWarning("If you do not want this behavior, just set Alpha Source = None on your diffuse texture", 2);
+                    logger?.RaiseWarning("Opacity texture was removed because alpha from diffuse texture can be use instead", 2);
+                    logger?.RaiseWarning("If you do not want this behavior, just set Alpha Source = None on your diffuse texture", 2);
                 }
 
 
                 if (babylonMaterial.transparencyMode == (int)BabylonPBRMetallicRoughnessMaterial.TransparencyMode.ALPHATEST)
                 {
-                    // Set the alphaCutOff value explicitely to avoid different interpretations on different engines
+                    // Set the alphaCutOff value explicitly to avoid different interpretations on different engines
                     // Use the glTF default value rather than the babylon one
                     babylonMaterial.alphaCutOff = 0.5f;
                 }
@@ -310,7 +284,7 @@ namespace Max2Babylon
 
                 if (babylonAttributesContainer != null)
                 {
-                    RaiseVerbose("Babylon Attributes of " + materialNode.MaterialName, 2);
+                    logger?.RaiseVerbose("Babylon Attributes of " + materialNode.MaterialName, 2);
 
                     // Common attributes
                     ExportCommonBabylonAttributes(babylonAttributesContainer, babylonMaterial);
@@ -322,7 +296,7 @@ namespace Max2Babylon
                             || (babylonMaterial.emissiveTexture != null)
                             || (babylonMaterial.emissiveFresnelParameters != null))
                         {
-                            RaiseWarning("Material is unlit. Emission is discarded and replaced by diffuse.", 2);
+                            logger?.RaiseWarning("Material is unlit. Emission is discarded and replaced by diffuse.", 2);
                         }
                         // Copy diffuse to emissive
                         babylonMaterial.emissive = babylonMaterial.diffuse;
@@ -447,7 +421,7 @@ namespace Max2Babylon
                                 if (sourcePathMetallic == sourcePathAmbientOcclusion)
                                 {
                                     // Metallic, roughness and ambient occlusion are already merged
-                                    RaiseVerbose("Metallic, roughness and ambient occlusion are already merged", 2);
+                                    logger?.RaiseVerbose("Metallic, roughness and ambient occlusion are already merged", 2);
                                     BabylonTexture ormTexture = ExportTexture(metallicTexmap, babylonScene);
                                     babylonMaterial.metallicRoughnessTexture = ormTexture;
                                     babylonMaterial.occlusionTexture = ormTexture;
@@ -457,7 +431,7 @@ namespace Max2Babylon
                             else
                             {
                                 // Metallic and roughness are already merged
-                                RaiseVerbose("Metallic and roughness are already merged", 2);
+                                logger?.RaiseVerbose("Metallic and roughness are already merged", 2);
                                 BabylonTexture ormTexture = ExportTexture(metallicTexmap, babylonScene);
                                 babylonMaterial.metallicRoughnessTexture = ormTexture;
                                 areTexturesAlreadyMerged = true;
@@ -469,7 +443,7 @@ namespace Max2Babylon
                         if (metallicTexmap != null || roughnessTexmap != null)
                         {
                             // Merge metallic, roughness and ambient occlusion
-                            RaiseVerbose("Merge metallic and roughness (and ambient occlusion if `mergeAOwithMR` is enabled)", 2);
+                            logger?.RaiseVerbose("Merge metallic and roughness (and ambient occlusion if `mergeAOwithMR` is enabled)", 2);
                             BabylonTexture ormTexture = ExportORMTexture(exportParameters.mergeAOwithMR ? ambientOcclusionTexmap : null, roughnessTexmap, metallicTexmap, babylonMaterial.metallic, babylonMaterial.roughness, babylonScene, invertRoughness);
                             babylonMaterial.metallicRoughnessTexture = ormTexture;
 
@@ -503,13 +477,13 @@ namespace Max2Babylon
                         else if (ambientOcclusionTexmap != null)
                         {
                             // Simply export occlusion texture
-                            RaiseVerbose("Simply export occlusion texture", 2);
+                            logger?.RaiseVerbose("Simply export occlusion texture", 2);
                             babylonMaterial.occlusionTexture = ExportTexture(ambientOcclusionTexmap, babylonScene);
                         }
                     }
                     if (ambientOcclusionTexmap != null && !exportParameters.mergeAOwithMR && babylonMaterial.occlusionTexture == null)
                     {
-                        RaiseVerbose("Exporting occlusion texture without merging with metallic roughness", 2);
+                        logger?.RaiseVerbose("Exporting occlusion texture without merging with metallic roughness", 2);
                         babylonMaterial.occlusionTexture = ExportTexture(ambientOcclusionTexmap, babylonScene);
                     }
 
@@ -547,15 +521,15 @@ namespace Max2Babylon
 
                 if (babylonAttributesContainer != null)
                 {
-                    RaiseVerbose("Babylon Attributes of " + materialNode.MaterialName, 2);
+                    logger?.RaiseVerbose("Babylon Attributes of " + materialNode.MaterialName, 2);
 
                     // Common attributes
                     ExportCommonBabylonAttributes(babylonAttributesContainer, babylonMaterial);
                     babylonMaterial._unlit = babylonMaterial.isUnlit;
 
-                    // Backface culling
+                    // Back face culling
                     bool backFaceCulling = babylonAttributesContainer.GetBoolProperty("babylonBackfaceCulling");
-                    RaiseVerbose("backFaceCulling=" + backFaceCulling, 3);
+                    logger?.RaiseVerbose("backFaceCulling=" + backFaceCulling, 3);
                     babylonMaterial.backFaceCulling = backFaceCulling;
                     babylonMaterial.doubleSided = !backFaceCulling;
                 }
@@ -690,7 +664,7 @@ namespace Max2Babylon
                         if (sourcePathMetallic == sourcePathRoughness)
                         {
                             // Metallic and roughness are already merged
-                            RaiseVerbose("Metallic and roughness are already merged", 2);
+                            logger?.RaiseVerbose("Metallic and roughness are already merged", 2);
                             BabylonTexture ormTexture = ExportTexture(metallicTexmap, babylonScene);
                             babylonMaterial.metallicRoughnessTexture = ormTexture;
                             // The already merged map is assumed to contain Ambient Occlusion in R channel
@@ -727,7 +701,7 @@ namespace Max2Babylon
                         if (metallicTexmap != null || roughnessTexmap != null)
                         {
                             // Merge metallic, roughness
-                            RaiseVerbose("Merge metallic and roughness", 2);
+                            logger?.RaiseVerbose("Merge metallic and roughness", 2);
                             BabylonTexture ormTexture = ExportORMTexture(null, roughnessTexmap, metallicTexmap, babylonMaterial.metallic, babylonMaterial.roughness, babylonScene, invertRoughness);
                             babylonMaterial.metallicRoughnessTexture = ormTexture;
                         }
@@ -779,7 +753,7 @@ namespace Max2Babylon
 
                 if (babylonAttributesContainer != null)
                 {
-                    RaiseVerbose("Babylon Attributes of " + materialNode.MaterialName, 2);
+                    logger?.RaiseVerbose("Babylon Attributes of " + materialNode.MaterialName, 2);
 
                     // Common attributes
                     ExportCommonBabylonAttributes(babylonAttributesContainer, babylonMaterial);
@@ -787,7 +761,7 @@ namespace Max2Babylon
 
                     // Backface culling
                     bool backFaceCulling = babylonAttributesContainer.GetBoolProperty("babylonBackfaceCulling");
-                    RaiseVerbose("backFaceCulling=" + backFaceCulling, 3);
+                    logger?.RaiseVerbose("backFaceCulling=" + backFaceCulling, 3);
                     babylonMaterial.backFaceCulling = backFaceCulling;
                     babylonMaterial.doubleSided = !backFaceCulling;
                 }
@@ -819,10 +793,10 @@ namespace Max2Babylon
             else
             {
                 // isMaterialExportable check should prevent this to happen
-                RaiseError("Unsupported material type: " + materialNode.MaterialClass, 2);
+                logger?.RaiseError("Unsupported material type: " + materialNode.MaterialClass, 2);
             }
         }
-
+        
         public bool isPhysicalMaterial(IIGameMaterial materialNode)
         {
             return MaterialUtilities.ClassIDWrapper.Physical_Material.Equals(materialNode.MaxMaterial.ClassID);
@@ -964,7 +938,7 @@ namespace Max2Babylon
                 }
                 else
                 {
-                    RaiseWarning($"DirectX material property for {materialNode.MaterialName} is null...", 2);
+                    logger?.RaiseWarning($"DirectX material property for {materialNode.MaterialName} is null...", 2);
                 }
 
             }
@@ -1117,11 +1091,11 @@ namespace Max2Babylon
         private void ExportCommonBabylonAttributes(IIPropertyContainer babylonAttributesContainer, BabylonMaterial babylonMaterial)
         {
             int maxSimultaneousLights = babylonAttributesContainer.GetIntProperty("babylonMaxSimultaneousLights", 4);
-            RaiseVerbose("maxSimultaneousLights=" + maxSimultaneousLights, 3);
+            logger?.RaiseVerbose("maxSimultaneousLights=" + maxSimultaneousLights, 3);
             babylonMaterial.maxSimultaneousLights = maxSimultaneousLights;
 
             bool unlit = babylonAttributesContainer.GetBoolProperty("babylonUnlit");
-            RaiseVerbose("unlit=" + unlit, 3);
+            logger?.RaiseVerbose("unlit=" + unlit, 3);
             babylonMaterial.isUnlit = unlit;
         }
     }

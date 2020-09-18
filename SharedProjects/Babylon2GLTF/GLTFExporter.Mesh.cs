@@ -17,7 +17,7 @@ namespace Babylon2GLTF
 
         private GLTFMesh ExportMesh(BabylonMesh babylonMesh, GLTF gltf, BabylonScene babylonScene)
         {
-            logger.RaiseMessage("GLTFExporter.Mesh | Export mesh named: " + babylonMesh.name, 1);
+            logger?.RaiseMessage("GLTFExporter.Mesh | Export mesh named: " + babylonMesh.name, 1);
 
             // --------------------------
             // --- Mesh from babylon ----
@@ -25,11 +25,11 @@ namespace Babylon2GLTF
 
             if (babylonMesh.positions == null || babylonMesh.positions.Length == 0)
             {
-                logger.RaiseMessage("GLTFExporter.Mesh | Mesh is a dummy", 2);
+                logger?.RaiseMessage("GLTFExporter.Mesh | Mesh is a dummy", 2);
                 return null;
             }
 
-            logger.RaiseMessage("GLTFExporter.Mesh | Mesh from babylon", 2);
+            logger?.RaiseMessage("GLTFExporter.Mesh | Mesh from babylon", 2);
             // Retreive general data from babylon mesh
             int nbVertices = babylonMesh.positions.Length / 3;
             bool hasUV = babylonMesh.uvs != null && babylonMesh.uvs.Length > 0;
@@ -40,13 +40,13 @@ namespace Babylon2GLTF
             bool hasTangents = babylonMesh.tangents != null && babylonMesh.tangents.Length > 0;
             bool hasMetadata = babylonMesh.metadata != null && babylonMesh.metadata.Count > 0;
 
-            logger.RaiseMessage("GLTFExporter.Mesh | nbVertices=" + nbVertices, 3);
-            logger.RaiseMessage("GLTFExporter.Mesh | hasUV=" + hasUV, 3);
-            logger.RaiseMessage("GLTFExporter.Mesh | hasUV2=" + hasUV2, 3);
-            logger.RaiseMessage("GLTFExporter.Mesh | hasColor=" + hasColor, 3);
-            logger.RaiseMessage("GLTFExporter.Mesh | hasBones=" + hasBones, 3);
-            logger.RaiseMessage("GLTFExporter.Mesh | hasBonesExtra=" + hasBonesExtra, 3);
-            logger.RaiseMessage("GLTFExporter.Mesh | hasMetadata=" + hasMetadata, 3);
+            logger?.RaiseMessage("GLTFExporter.Mesh | nbVertices=" + nbVertices, 3);
+            logger?.RaiseMessage("GLTFExporter.Mesh | hasUV=" + hasUV, 3);
+            logger?.RaiseMessage("GLTFExporter.Mesh | hasUV2=" + hasUV2, 3);
+            logger?.RaiseMessage("GLTFExporter.Mesh | hasColor=" + hasColor, 3);
+            logger?.RaiseMessage("GLTFExporter.Mesh | hasBones=" + hasBones, 3);
+            logger?.RaiseMessage("GLTFExporter.Mesh | hasBonesExtra=" + hasBonesExtra, 3);
+            logger?.RaiseMessage("GLTFExporter.Mesh | hasMetadata=" + hasMetadata, 3);
 
             // Retreive vertices data from babylon mesh
             List<GLTFGlobalVertex> globalVertices = new List<GLTFGlobalVertex>();
@@ -121,7 +121,7 @@ namespace Babylon2GLTF
             // ------- Init glTF --------
             // --------------------------
 
-            logger.RaiseMessage("GLTFExporter.Mesh | Init glTF", 2);
+            logger?.RaiseMessage("GLTFExporter.Mesh | Init glTF", 2);
             // Mesh
             var gltfMesh = new GLTFMesh { name = babylonMesh.name };
             gltfMesh.index = gltf.MeshesList.Count;
@@ -136,7 +136,7 @@ namespace Babylon2GLTF
             // ---- glTF primitives -----
             // --------------------------
 
-            logger.RaiseMessage("GLTFExporter.Mesh | glTF primitives", 2);
+            logger?.RaiseMessage("GLTFExporter.Mesh | glTF primitives", 2);
             var meshPrimitives = new List<GLTFMeshPrimitive>();
             foreach (BabylonSubMesh babylonSubMesh in babylonMesh.subMeshes)
             {
@@ -171,7 +171,7 @@ namespace Babylon2GLTF
                 // Material
                 if (babylonMesh.materialId != null)
                 {
-                    logger.RaiseMessage("GLTFExporter.Mesh | Material", 3);
+                    logger?.RaiseMessage("GLTFExporter.Mesh | Material", 3);
                     // Retreive the babylon material
                     BabylonMaterial babylonMaterial;
                     var babylonMaterialId = babylonMesh.materialId;
@@ -196,12 +196,12 @@ namespace Babylon2GLTF
                     if (babylonMaterial != null)
                     {
                         // Update primitive material index
-                        var indexMaterial = babylonMaterialsToExport.FindIndex(_babylonMaterial => _babylonMaterial == babylonMaterial);
+                        var indexMaterial = this.babylonMaterials.FindIndex(_babylonMaterial => _babylonMaterial == babylonMaterial);
                         if (indexMaterial == -1)
                         {
                             // Store material for exportation
-                            indexMaterial = babylonMaterialsToExport.Count;
-                            babylonMaterialsToExport.Add(babylonMaterial);
+                            indexMaterial = this.babylonMaterials.Count;
+                            this.babylonMaterials.Add(babylonMaterial);
                         }
                         meshPrimitive.material = indexMaterial;
                     }
@@ -214,7 +214,7 @@ namespace Babylon2GLTF
                 // ------- Accessors --------
                 // --------------------------
 
-                logger.RaiseMessage("GLTFExporter.Mesh | Geometry", 3);
+                logger?.RaiseMessage("GLTFExporter.Mesh | Geometry", 3);
 
                 // Buffer
                 var buffer = GLTFBufferService.Instance.GetBuffer(gltf);
@@ -356,7 +356,7 @@ namespace Babylon2GLTF
                 // --- Bones ---
                 if (hasBones)
                 {
-                    logger.RaiseMessage("GLTFExporter.Mesh | Bones", 3);
+                    logger?.RaiseMessage("GLTFExporter.Mesh | Bones", 3);
 
                     // if we've already exported this mesh's skeleton, check if the skins match,
                     // if so then export this mesh primitive to share joint and weight accessors.
@@ -407,7 +407,7 @@ namespace Babylon2GLTF
                 // Morph targets positions and normals
                 if (babylonMorphTargetManager != null)
                 {
-                    logger.RaiseMessage("GLTFExporter.Mesh | Morph targets", 3);
+                    logger?.RaiseMessage("GLTFExporter.Mesh | Morph targets", 3);
                     _exportMorphTargets(babylonMesh, babylonSubMesh, babylonMorphTargetManager, gltf, buffer, meshPrimitive);
                 }
             }
@@ -440,7 +440,7 @@ namespace Babylon2GLTF
             {
                 if (babylonScene.morphTargetManagers == null)
                 {
-                    logger.RaiseWarning("GLTFExporter.Mesh | morphTargetManagers is not defined", 3);
+                    logger?.RaiseWarning("GLTFExporter.Mesh | morphTargetManagers is not defined", 3);
                 }
                 else
                 {
@@ -448,7 +448,7 @@ namespace Babylon2GLTF
 
                     if (babylonMorphTargetManager == null)
                     {
-                        logger.RaiseWarning($"GLTFExporter.Mesh | morphTargetManager with index {babylonMesh.morphTargetManagerId.Value} not found", 3);
+                        logger?.RaiseWarning($"GLTFExporter.Mesh | morphTargetManager with index {babylonMesh.morphTargetManagerId.Value} not found", 3);
                     }
                     return babylonMorphTargetManager;
                 }

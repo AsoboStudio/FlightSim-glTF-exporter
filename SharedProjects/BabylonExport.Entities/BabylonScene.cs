@@ -125,7 +125,7 @@ namespace BabylonExport.Entities
         public List<BabylonSkeleton> SkeletonsList { get; private set; }
         public List<BabylonMorphTargetManager> MorphTargetManagersList { get; private set; }
         public Dictionary<string, BabylonNode> NodeMap { get; private set; }
-        public Dictionary<IBabylonExtensionExporter,BabylonExtendTypes> BabylonToGLTFExtensions { get; private set; }
+        public Dictionary<IBabylonExtensionExporter,ExtendedTypes> BabylonToGLTFExtensions { get; private set; }
 
         public BabylonScene(string outputPath)
         {
@@ -141,7 +141,7 @@ namespace BabylonExport.Entities
             SoundsList = new List<BabylonSound>();
             MorphTargetManagersList = new List<BabylonMorphTargetManager>();
             NodeMap = new Dictionary<string, BabylonNode>();
-            BabylonToGLTFExtensions = new Dictionary<IBabylonExtensionExporter, BabylonExtendTypes>();
+            BabylonToGLTFExtensions = new Dictionary<IBabylonExtensionExporter, ExtendedTypes>();
 
             // Default values
             autoClear = true;
