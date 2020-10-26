@@ -239,6 +239,9 @@
     <Compile Include="..\FlightSim\FlightSimLightExtension.cs">
       <Link>FlightSim\FlightSimLightExtension.cs</Link>
     </Compile>
+    <Compile Include="..\FlightSim\FlightSimMaterialAnimationExporter.cs">
+      <Link>FlightSim\FlightSimMaterialAnimationExporter.cs</Link>
+    </Compile>
     <Compile Include="..\FlightSim\FlightSimMaterialExporter.cs">
       <Link>FlightSim\FlightSimMaterialExporter.cs</Link>
     </Compile>
