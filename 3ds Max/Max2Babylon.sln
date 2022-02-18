@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.10
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3ds Max", "3ds Max", "{2139CC27-1C89-49C8-95AC-7715ACBADC1F}"
 	ProjectSection(SolutionItems) = preProject
@@ -30,6 +30,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Max2Babylon2020", "Max2Babylon\2020\Max2Babylon2020.csproj", "{310270A9-E0BC-4795-948A-750AF82F31A6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Max2Babylon2021", "Max2Babylon\2021\Max2Babylon2021.csproj", "{33F63BB3-718C-4AD6-854D-55028916FD88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Max2Babylon2022", "Max2Babylon\2022\Max2Babylon2022.csproj", "{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{93D26108-3FC7-44F5-86B0-9C675951438D}"
+	ProjectSection(SolutionItems) = preProject
+		Max2Babylon\UpdateAssemblyVersion.ps1 = Max2Babylon\UpdateAssemblyVersion.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -60,6 +67,11 @@ Global
 		..\SharedProjects\BabylonFileConverter\BabylonFileConverter.projitems*{33f63bb3-718c-4ad6-854d-55028916fd88}*SharedItemsImports = 4
 		..\SharedProjects\GltfExport.Entities\GltfExport.Entities.projitems*{33f63bb3-718c-4ad6-854d-55028916fd88}*SharedItemsImports = 4
 		..\SharedProjects\Utilities\Extensions.projitems*{33f63bb3-718c-4ad6-854d-55028916fd88}*SharedItemsImports = 4
+		..\SharedProjects\Babylon2GLTF\Babylon2GLTF.projitems*{a3c6d202-b38f-4b59-a91c-7dd96cc979ed}*SharedItemsImports = 4
+		..\SharedProjects\BabylonExport.Entities\BabylonExport.Entities.projitems*{a3c6d202-b38f-4b59-a91c-7dd96cc979ed}*SharedItemsImports = 4
+		..\SharedProjects\BabylonFileConverter\BabylonFileConverter.projitems*{a3c6d202-b38f-4b59-a91c-7dd96cc979ed}*SharedItemsImports = 4
+		..\SharedProjects\GltfExport.Entities\GltfExport.Entities.projitems*{a3c6d202-b38f-4b59-a91c-7dd96cc979ed}*SharedItemsImports = 4
+		..\SharedProjects\Utilities\Extensions.projitems*{a3c6d202-b38f-4b59-a91c-7dd96cc979ed}*SharedItemsImports = 4
 		..\SharedProjects\Babylon2GLTF\Babylon2GLTF.projitems*{cc8bfa12-aff1-4f9f-9ee4-c4a3a5d86237}*SharedItemsImports = 13
 		..\SharedProjects\Utilities\Extensions.projitems*{daed1281-4757-4a4e-b252-b879b43193a3}*SharedItemsImports = 13
 		..\SharedProjects\Babylon2GLTF\Babylon2GLTF.projitems*{dd7c931a-8faf-4318-bb74-71dc858cc400}*SharedItemsImports = 4
@@ -306,6 +318,42 @@ Global
 		{33F63BB3-718C-4AD6-854D-55028916FD88}.Release|x64.Build.0 = Release|x64
 		{33F63BB3-718C-4AD6-854D-55028916FD88}.Release|x86.ActiveCfg = Release|Any CPU
 		{33F63BB3-718C-4AD6-854D-55028916FD88}.Release|x86.Build.0 = Release|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Debug|ARM.Build.0 = Debug|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Debug|Win32.Build.0 = Debug|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Debug|x64.ActiveCfg = Debug|x64
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Debug|x64.Build.0 = Debug|x64
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Debug|x86.Build.0 = Debug|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Master|Any CPU.ActiveCfg = Master|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Master|Any CPU.Build.0 = Master|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Master|ARM.ActiveCfg = Master|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Master|ARM.Build.0 = Master|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Master|Mixed Platforms.ActiveCfg = Master|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Master|Mixed Platforms.Build.0 = Master|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Master|Win32.ActiveCfg = Master|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Master|Win32.Build.0 = Master|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Master|x64.ActiveCfg = Master|x64
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Master|x64.Build.0 = Master|x64
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Master|x86.ActiveCfg = Master|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Master|x86.Build.0 = Master|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Release|ARM.ActiveCfg = Release|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Release|ARM.Build.0 = Release|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Release|Win32.ActiveCfg = Release|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Release|Win32.Build.0 = Release|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Release|x64.ActiveCfg = Release|x64
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Release|x64.Build.0 = Release|x64
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Release|x86.ActiveCfg = Release|Any CPU
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -317,6 +365,7 @@ Global
 		{2F49C726-A1F8-40D4-859F-1355949612DC} = {2139CC27-1C89-49C8-95AC-7715ACBADC1F}
 		{310270A9-E0BC-4795-948A-750AF82F31A6} = {2139CC27-1C89-49C8-95AC-7715ACBADC1F}
 		{33F63BB3-718C-4AD6-854D-55028916FD88} = {2139CC27-1C89-49C8-95AC-7715ACBADC1F}
+		{A3C6D202-B38F-4B59-A91C-7DD96CC979ED} = {2139CC27-1C89-49C8-95AC-7715ACBADC1F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B1C70ED2-1F05-433C-A16C-59F6C5BC9A0F}

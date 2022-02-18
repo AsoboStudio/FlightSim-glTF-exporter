@@ -47,5 +47,6 @@ namespace BabylonExport.Entities
 
         // Animations exported for glTF but not for Babylon
         public List<BabylonAnimation> extraAnimations;
+        public bool subModelRoot = false;
     }
 }

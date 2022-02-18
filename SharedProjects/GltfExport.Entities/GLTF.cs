@@ -115,7 +115,10 @@ namespace GLTFExport.Entities
 
         public void Prepare()
         {
-            scenes[0].Prepare();
+            foreach (GLTFScene scene in scenes)
+            {
+                scene.Prepare();
+            }
 
             // Do not export empty arrays
             if (NodesList.Count > 0)

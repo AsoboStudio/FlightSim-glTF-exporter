@@ -14,7 +14,7 @@ using Color = System.Drawing.Color;
 
 namespace Max2Babylon
 {
-    public static class Tools
+    public static partial class Tools
     {
         public static Random Random = new Random();
 
@@ -183,7 +183,7 @@ namespace Max2Babylon
         public static VersionNumber GetMaxVersion()
         {
             // https://getcoreinterface.typepad.com/blog/2017/02/querying-the-3ds-max-version.html
-            var versionString = ManagedServices.MaxscriptSDK.ExecuteStringMaxscriptQuery("getFileVersion \"$max/3dsmax.exe\"");
+            var versionString = ScriptsUtilities.ExecuteMaxScriptQuery("getFileVersion \"$max/3dsmax.exe\"");
             var versionSplit = versionString.Split(',');
             int major, minor, revision, buildNumber = 0;
             int.TryParse(versionSplit[0], out major);
@@ -304,10 +304,17 @@ namespace Max2Babylon
 
                 var pType = new IntPtr(&unitType);
                 var pScale = new IntPtr(&ptrScale);
-
+#if MAX2016 || MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
                 GlobalInterface.Instance.GetMasterUnitInfo(pType, pScale);
+#else
+                GlobalInterface.Instance.GetSystemUnitInfo(pType, pScale);
+#endif
             }
+#if MAX2016 || MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
             float masterScale = (float)Loader.Global.GetMasterScale(unitType);
+#else
+            float masterScale = (float)Loader.Global.GetSystemUnitScale(unitType);
+#endif
 
             ScaleUnitType scaleUnitType = (ScaleUnitType)unitType;
             switch (scaleUnitType)
@@ -539,68 +546,6 @@ namespace Max2Babylon
             return new[] { value.R, value.G, value.B };
         }
 
-        public static IEnumerable<IINode> DirectChildren(this IINode node)
-        {
-            List<IINode> children = new List<IINode>();
-            for (int i = 0; i < node.NumberOfChildren; ++i)
-                if (node.GetChildNode(i) != null)
-                    children.Add(node.GetChildNode(i));
-            return children;
-        }
-
-        public static IEnumerable<IINode> Nodes(this IINode node)
-        {
-            for (int i = 0; i < node.NumberOfChildren; ++i)
-                if (node.GetChildNode(i) != null)
-                    yield return node.GetChildNode(i);
-        }
-
-        public static IEnumerable<IINode> NodeTree(this IINode node)
-        {
-            foreach (var x in node.Nodes())
-            {
-                yield return x;
-                foreach (var y in x.NodeTree())
-                    yield return y;
-            }
-        }
-
-        public static IEnumerable<IINode> NodesListBySuperClass(this IINode rootNode, SClass_ID sid)
-        {
-            return from n in rootNode.NodeTree() where n.ObjectRef != null && n.EvalWorldState(0, false).Obj.SuperClassID == sid select n;
-        }
-
-        public static IEnumerable<IINode> NodesListBySuperClasses(this IINode rootNode, SClass_ID[] sids)
-        {
-            return from n in rootNode.NodeTree() where n.ObjectRef != null && sids.Any(sid => n.EvalWorldState(0, false).Obj.SuperClassID == sid) select n;
-        }
-
-        public static IINode FindChildNode(this IINode node, uint nodeHandle)
-        {
-            foreach (IINode childNode in node.NodeTree())
-                if (childNode.Handle.Equals(nodeHandle))
-                    return childNode;
-
-            return null;
-        }
-
-        public static IINode FindChildNode(this IINode node, string nodeName)
-        {
-            foreach (IINode childNode in node.NodeTree())
-                if (childNode.Name == nodeName)
-                    return childNode;
-
-            return null;
-        }
-
-        public static IINode FindChildNode(this IINode node, Guid nodeGuid)
-        {
-            foreach (IINode childNode in node.NodeTree())
-                if (childNode.GetGuid().Equals(nodeGuid))
-                    return childNode;
-
-            return null;
-        }
 
         /// <summary>
         /// Convert horizontal FOV to vertical FOV using default aspect ratio
@@ -699,15 +644,7 @@ namespace Max2Babylon
             return tm.Multiply(ptm);
         }
 
-        public static ITriObject GetMesh(this IObject obj)
-        {
-            var triObjectClassId = Loader.Global.Class_ID.Create(0x0009, 0);
-
-            if (obj.CanConvertToType(triObjectClassId) == 0)
-                return null;
-
-            return obj.ConvertToType(0, triObjectClassId) as ITriObject;
-        }
+        
         
         public static bool IsAlmostEqualTo(this IPoint4 current, IPoint4 other, float epsilon)
         {
@@ -769,362 +706,10 @@ namespace Max2Babylon
             return true;
         }
 
-        public static bool IsNodeTreeAnimated(this IINode node)
-        {
-            if (node.IsAnimated) return true;
-            foreach (IINode n in node.NodeTree())
-            {
-                if (n.IsAnimated) return true;
-            }
-
-            return false;
-        }
-
-
-        public static void RemoveFlattenModification()
-        {
-            List<IINode> toDelete = new List<IINode>();
-            foreach (IINode node in Loader.Core.RootNode.NodeTree())
-            {
-                node.DeleteProperty("babylonjs_flattened");
-                if (node.GetBoolProperty("babylonjs_flatteningTemp"))
-                {
-                    toDelete.Add(node);
-                }
-            }
-
-            foreach (IINode iNode in toDelete)
-            {
-                Loader.Core.DeleteNode(iNode, false, true);
-            }
-        }
-
-
-        public static IINode FlattenHierarchy(this IINode node)
-        {
-            string activeLayer =$"(LayerManager.getLayerFromName (maxOps.getNodeByHandle {node.Handle}).layer.name).current = true";
-            ScriptsUtilities.ExecuteMaxScriptCommand(activeLayer);
-            node.SetUserPropBool("babylonjs_flattened", true);
-            node.NodeTree().ToList().ForEach(x => x.SetUserPropBool("babylonjs_flattened",true));
-            IClass_ID cid = Loader.Global.Class_ID.Create((uint)BuiltInClassIDA.SPHERE_CLASS_ID, 0);
-            object obj = Loader.Core.CreateInstance(SClass_ID.Geomobject, cid as IClass_ID);
-            IINode result = Loader.Core.CreateObjectNode((IObject)obj);
-            result.Name = node.Name;
-            result.SetTMController(node.TMController);
-            string scale = $"scale (maxOps.getNodeByHandle {result.Handle}) [0.1,0.1,0.1]";
-            ScriptsUtilities.ExecuteMaxScriptCommand(scale);
-            result.ResetTransform(Loader.Core.Time,true);
-            string convertToEditablePoly = $"ConvertTo (maxOps.getNodeByHandle {result.Handle}) Editable_Poly";
-            ScriptsUtilities.ExecuteMaxScriptCommand(convertToEditablePoly);
-
-            IPolyObject polyObject = result.GetPolyObjectFromNode();
-            IEPoly nodeEPoly = (IEPoly)polyObject.GetInterface(Loader.EditablePoly);
-
-#if MAX2020 || MAX2021
-            IINodeTab toflatten = Loader.Global.INodeTab.Create();
-            IINodeTab resultTarget = Loader.Global.INodeTab.Create();
-#else
-            IINodeTab toflatten = Loader.Global.NodeTab.Create();
-            IINodeTab resultTarget = Loader.Global.NodeTab.Create();
-#endif
-            toflatten.AppendNode(node,false,1);
-
-            var offset = Loader.Global.Point3.Create(0, 0, 0);
-            Loader.Core.CloneNodes(toflatten, offset, true, CloneType.Copy, null, resultTarget);
-
-            bool undo = false;
-            for (int i = 0; i < resultTarget.Count; i++)
-            {
-#if MAX2015 || MAX2016
-                IINode n = resultTarget[(IntPtr)i];
-#else
-                IINode n = resultTarget[i];
-#endif
-                Loader.Core.RootNode.AttachChild(n,true);
-                if (n.GetPolyObjectFromNode() == null)
-                {
-                    Loader.Core.DeleteNode(n, false, false);
-                    continue;
-                }
-                n.ResetTransform(Loader.Core.Time, false);
-                nodeEPoly.EpfnAttach(n, ref undo, result, Loader.Core.Time);
-            }
-
-            result.SetUserPropBool("babylonjs_flatteningTemp",true);
-
-            return result;
-        }
-
-        public static bool IsSkinned(this IINode node)
-        {
-            IIDerivedObject derivedObject = node.ActualINode.ObjectRef as IIDerivedObject;
-
-            if (derivedObject == null)
-            {
-                return false;
-            }
-
-            for (int index = 0; index < derivedObject.NumModifiers; index++)
-            {
-                IModifier modifier = derivedObject.GetModifier(index);
-                if (modifier.ClassID.PartA == 9815843 && modifier.ClassID.PartB == 87654) // Skin
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
 
 #endregion
 
 #region GUID
-
-        public static void UnloadAllContainers()
-        {
-            foreach (IIContainerObject iContainerObject in GetAllContainers())
-            {
-                bool unload = iContainerObject.UnloadContainer;
-            }
-        }
-
-        
-
-        public static bool IsNodeSelected(this IINode node)
-        {
-#if MAX2020 || MAX2021
-            IINodeTab selection = Loader.Global.INodeTab.Create();
-#else
-            IINodeTab selection = Loader.Global.INodeTabNS.Create();
-#endif
-            Loader.Core.GetSelNodeTab(selection);
-            return selection.Contains(node);
-        }
-
-
-        public static bool IsMarkedAsNotFlattenable(this IINode node)
-        {
-            return node.GetBoolProperty("babylonjs_DoNotFlatten");
-        }
-
-        public static bool IsMarkedAsObjectToBakeAnimation(this IINode node)
-        {
-            return node.GetBoolProperty("babylonjs_BakeAnimation",0);
-        }
-
-        public static  IIContainerObject GetContainer(this IList<Guid> guids)
-        {
-            foreach (Guid guid in guids)
-            {
-                IINode node = GetINodeByGuid(guid);
-                IIContainerObject containerObject = Loader.Global.ContainerManagerInterface.IsInContainer(node);
-                if (containerObject != null)
-                {
-                    return containerObject;
-                }
-            }
-            return null;
-        }
-
-        public static  IIContainerObject GetContainer(this IList<uint> handles)
-        {
-            foreach (uint handle in handles)
-            {
-                IINode node = Loader.Core.GetINodeByHandle(handle);
-                IIContainerObject containerObject = Loader.Global.ContainerManagerInterface.IsInContainer(node);
-                if (containerObject != null)
-                {
-                    return containerObject;
-                }
-            }
-            return null;
-        }
-
-        public static List<IIContainerObject> GetContainerInSelection()
-        {
-#if MAX2020 || MAX2021
-            IINodeTab selection = Loader.Global.INodeTab.Create();
-#else
-            IINodeTab selection = Loader.Global.INodeTabNS.Create();
-#endif
-            Loader.Core.GetSelNodeTab(selection);
-            List<IIContainerObject> selectedContainers = new List<IIContainerObject>();
-
-            for (int i = 0; i < selection.Count; i++)
-            {
-#if MAX2015 || MAX2016
-                var selectedNode = selection[(IntPtr)i];
-#else
-                var selectedNode = selection[i];
-#endif
-
-                IIContainerObject containerObject = Loader.Global.ContainerManagerInterface.IsContainerNode(selectedNode);
-                if (containerObject != null)
-                {
-                    selectedContainers.Add(containerObject);
-                }
-            }
-
-            return selectedContainers;
-        }
-
-        public static IIContainerObject InSameContainer(this IList<Guid> guids)
-        {
-            List<IIContainerObject> containers = new List<IIContainerObject>();
-            foreach (Guid guid in guids)
-            {
-                IINode node = GetINodeByGuid(guid);
-                IIContainerObject containerObject = Loader.Global.ContainerManagerInterface.IsInContainer(node);
-                if (containerObject != null)
-                {
-                    if (!containers.Contains(containerObject))
-                    {
-                        containers.Add(containerObject);
-                    }
-                }
-            }
-
-            if (containers.Count == 1)
-            {
-                return containers[0];
-            }
-            return null;
-        }
-
-        public static List<IIContainerObject> GetAllContainers()
-        {
-            List<IIContainerObject> containersList = new List<IIContainerObject>();
-            foreach (IINode node in Loader.Core.RootNode.NodeTree())
-            {
-                IIContainerObject containerObject = Loader.Global.ContainerManagerInterface.IsContainerNode(node);
-                if (containerObject != null)
-                {
-                    containersList.Add(containerObject);
-                }
-            }
-            return containersList;
-        }
-
-        public static List<IINode> ContainerNodeTree(this IINode containerNode, bool includeSubContainer)
-        {
-            List<IINode> containersChildren = new List<IINode>();
-
-            foreach (IINode x in containerNode.Nodes())
-            {
-                IIContainerObject nestedContainerObject =Loader.Global.ContainerManagerInterface.IsContainerNode(x);
-                if (nestedContainerObject != null)
-                {
-                    if (includeSubContainer)
-                    {
-                        containersChildren.AddRange(ContainerNodeTree(nestedContainerObject.ContainerNode, includeSubContainer));
-                    }
-                }
-                else
-                {
-                    containersChildren.Add(x);
-                    containersChildren.AddRange(ContainerNodeTree(x,includeSubContainer));
-                }
-            }
-
-            return containersChildren;
-        }
-
-        private static int GetNextAvailableContainerID(this IIContainerObject container)
-        {
-            int id = 1;
-            string guidStr = container.ContainerNode.GetStringProperty("babylonjs_GUID",Guid.NewGuid().ToString());
-            List<IIContainerObject> containers = GetAllContainers();
-            foreach (IIContainerObject othersContainer in containers)
-            {
-                if (container.ContainerNode.Handle == othersContainer.ContainerNode.Handle) continue;
-                //string compareGuid = iContainerObject.ContainerNode.GetStringProperty("babylonjs_GUID",Guid.NewGuid().ToString());
-                string otherName = Regex.Replace(othersContainer.ContainerNode.Name, @"_\d+","");
-                string originalName = Regex.Replace(container.ContainerNode.Name, @"_\d+","");
-                if (otherName == originalName)
-                {
-                    int containerID = 1;
-                    othersContainer.ContainerNode.GetUserPropInt("babylonjs_ContainerID",ref containerID);
-                    id = Math.Max(id, containerID+1);
-                }
-            }
-            return id;
-        }   
-
-
-        public static void ResolveContainer(this IIContainerObject container)
-        {
-            guids = new Dictionary<Guid, IAnimatable>();
-            int id = container.GetNextAvailableContainerID();
-            string defaultName = Regex.Replace(container.ContainerNode.Name, @"_\d+","");
-            container.ContainerNode.Name = defaultName + "_" + id;
-            container.ContainerNode.SetUserPropInt("babylonjs_ContainerID",id);
-           
-        }
-
-        public static IINode BabylonAnimationHelper()
-        {
-            IINode babylonHelper = null;
-            foreach (IINode directChild in Loader.Core.RootNode.DirectChildren())
-            {
-                if (directChild.IsBabylonAnimationHelper())
-                {
-                    babylonHelper = directChild;
-                }
-            }
-
-            if (babylonHelper == null)
-            {
-                IDummyObject dummy = Loader.Global.DummyObject.Create();
-                babylonHelper = Loader.Core.CreateObjectNode(dummy, $"BabylonAnimationHelper_{Random.Next(0,99999)}");
-                babylonHelper.SetUserPropBool("babylonjs_AnimationHelper",true);
-            }
-
-            return babylonHelper;
-        }
-
-
-        public static IINode BabylonContainerHelper(this IIContainerObject containerObject)
-        {
-            IINode babylonHelper = null;
-            foreach (IINode directChild in containerObject.ContainerNode.DirectChildren())
-            {
-                if (directChild.IsBabylonContainerHelper())
-                {
-                    babylonHelper = directChild;
-                }
-            }
-
-            if (babylonHelper == null)
-            {
-                IDummyObject dummy = Loader.Global.DummyObject.Create();
-                babylonHelper = Loader.Core.CreateObjectNode(dummy, $"BabylonContainerHelper_{Random.Next(0,99999)}");
-                babylonHelper.SetUserPropBool("babylonjs_ContainerHelper",true);
-
-                Loader.Core.SetQuietMode(true);
-                containerObject.ContainerNode.AttachChild(babylonHelper,false);
-                Loader.Core.SetQuietMode(false);
-                containerObject.AddNodeToContent(babylonHelper);
-            }
-            return babylonHelper;
-        }
-
-        public static bool IsBabylonAnimationHelper(this IINode node)
-        {
-            return node.GetBoolProperty("babylonjs_AnimationHelper", 0);
-        }
-
-        public static bool IsBabylonContainerHelper(this IINode node)
-        {
-            //to keep retrocompatibility
-            if (node.Name == "BabylonAnimationHelper")
-            {
-                node.Name = $"BabylonContainerHelper_{Random.Next(0, 99999)}";
-                node.SetUserPropBool("babylonjs_ContainerHelper",true);
-            }
-
-            return node.GetBoolProperty("babylonjs_ContainerHelper", 0);
-        }
-
         public static List<Guid> ToGuids(this IList<uint> handles)
         {
             List<Guid> guids = new List<Guid>();
@@ -1189,13 +774,36 @@ namespace Max2Babylon
 
             for (int i = 0; i < Loader.Core.SceneMtls.Count; i++)
             {
-#if MAX2016
+#if MAX2015 || MAX2016
                 Loader.Core.SceneMtls[new IntPtr(i)].GetGuid();
 #else
                 Loader.Core.SceneMtls[i].GetGuid();
 #endif
                 
             }
+        }
+
+        public static List<IINode> VerifyUniqueIds()
+        {
+            List<string> uniqueIDs = new List<string>();
+            List<IINode> nonUniqueIdNodes = new List<IINode>();
+            foreach (IINode iNode in Loader.Core.RootNode.NodeTree())
+            {
+                string id = iNode.GetUniqueID();
+                if (Loader.Global.ContainerManagerInterface.IsInContainer(iNode) != null)
+                {
+                    //just for container node assign a rondom suffix to have a unqiue ID
+                    //when the gltf merge system will be used we will not use the containers
+                    iNode.SetStringProperty("flightsim_uniqueID", id + Random.Next(1000000));
+                    continue;
+                };
+                if (uniqueIDs.Exists(x => x.ToUpper() == id.ToUpper()))
+                {
+                    nonUniqueIdNodes.Add(iNode);
+                }
+                uniqueIDs.Add(id);
+            }
+            return nonUniqueIdNodes;
         }
 
         public static Guid GetGuid<T>(this T animatable) where T: IAnimatable
@@ -1560,7 +1168,7 @@ namespace Max2Babylon
 
         public static bool PrepareCheckBox(CheckBox checkBox, IINode node, string propertyName, int defaultState = 0)
         {
-            var state = node.GetBoolProperty(propertyName, defaultState);
+            var state = node.GetBoolProperty(propertyName, defaultState); 
 
             if (checkBox.CheckState == CheckState.Indeterminate)
             {
@@ -1599,17 +1207,25 @@ namespace Max2Babylon
             }
         }
 
-        public static void PrepareTextBox(TextBox textBox, IINode node, string propertyName, string defaultValue = "")
+        public static void PrepareTextBox(TextBox textBox, IINode node, string propertyName, string defaultValue = "", bool highlight = false)
         {
-            var state = node.GetStringProperty(propertyName, defaultValue);
-            textBox.Text = state;
+            string t = node.GetStringProperty(propertyName, defaultValue);
+            textBox.Text = t;
+
+            if (highlight && t == defaultValue) 
+            {
+                var f = textBox.Font;
+                System.Drawing.Font font = new System.Drawing.Font(f.FontFamily, f.Size, System.Drawing.FontStyle.Italic);
+                textBox.Font = font;
+            }
+           
         }
 
-        public static void PrepareTextBox(TextBox textBox, List<IINode> nodes, string propertyName, string defaultValue = "")
+        public static void PrepareTextBox(TextBox textBox, List<IINode> nodes, string propertyName, string defaultValue = "", bool highlight = false)
         {
             foreach(IINode node in nodes)
             {
-                PrepareTextBox(textBox, node, propertyName, defaultValue);
+                PrepareTextBox(textBox, node, propertyName, defaultValue, highlight);
             }
         }
 
@@ -1623,8 +1239,15 @@ namespace Max2Babylon
             comboBox.SelectedIndex = (int)node.GetFloatProperty(propertyName,defaultValue);
         }
 
+        public static void SetUserProp(bool state, IINode node, string propertyName)
+        {
+            node.SetUserPropBool(propertyName, state);
+        }
+
         public static void UpdateCheckBox(CheckBox checkBox, IINode node, string propertyName)
         {
+            
+
             if (checkBox.CheckState != CheckState.Indeterminate)
             {
                 node.SetUserPropBool(propertyName, checkBox.CheckState == CheckState.Checked);
@@ -1797,7 +1420,7 @@ namespace Max2Babylon
 
                 for (short k = 0; k < pBlock.NumParams; k++)
                 {
-#if MAX2016
+#if MAX2015 || MAX2016
 
                     IParamDef p = pBlock.GetParamDef(k);
 #else
@@ -1868,43 +1491,9 @@ namespace Max2Babylon
         }
 
 
-        #endregion
+#endregion
 
-        /// <summary>
-        /// Converts the ITab to a more convenient IEnumerable.
-        /// </summary>
-        public static IEnumerable<T> ITabToIEnumerable<T>(ITab<T> tab)
-        {
-        #if MAX2015 || MAX2016
-                    for (int i = 0; i < tab.Count; i++)
-                    {
-                        yield return tab[(IntPtr)i];
-                    }
-        #else
-            for (int i = 0; i < tab.Count; i++)
-            {
-                yield return tab[i];
-            }
-        #endif
-                        
-        }
-
-
-
-
-        /// <summary>
-        /// Generates a new list with only distinct items preserving original ordering.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        /// <param name="comparer"></param>
-        /// <returns></returns>
-        public static IList<T> ToUniqueList<T>(this IList<T> list, IEqualityComparer<T> comparer = null)
-        {
-            bool Contains(T x) => comparer == null ? list.Contains(x) : list.Contains(x, comparer);
-
-            return list.Where(entity => !Contains(entity)).ToList();
-        }
+        
         
     }
 }

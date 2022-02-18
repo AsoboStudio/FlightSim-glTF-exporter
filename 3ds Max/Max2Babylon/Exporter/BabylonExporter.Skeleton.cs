@@ -8,6 +8,7 @@ namespace Max2Babylon
     public partial class BabylonExporter
     {
         readonly List<IIGameSkin> skins = new List<IIGameSkin>();
+        Dictionary<IIGameSkin,IIGameNode> skinNodeMap = new Dictionary<IIGameSkin, IIGameNode>();
 
         private bool IsSkinEqualTo(IIGameSkin skin1, IIGameSkin skin2)
         {
@@ -41,6 +42,76 @@ namespace Max2Babylon
             return bones;
         }
 
+        
+        private List<IIGameNode> GetSubModelSkinHierarchy(IIGameSkin skin, IIGameNode meshNode)
+        {
+
+            if (skin == null)
+            {
+                return new List<IIGameNode>();
+            }
+
+            int logRank = 2;
+
+            List<IIGameNode> bones = GetBones(skin);
+
+            if (bones.Count == 0)
+            {
+                logger?.RaiseWarning("Skin has no bones.", logRank);
+                return new List<IIGameNode>();
+            }
+
+            if (bones.Contains(null))
+            {
+                logger?.RaiseError("Skin has bones that are outside of the exported hierarchy.", logRank);
+                logger?.RaiseError("The skin cannot be exported", logRank);
+                return new List<IIGameNode>();
+            }
+
+            List<IIGameNode> allHierarchyNodes = null;
+            bones.Add(meshNode);
+            IIGameNode lowestCommonAncestor = GetLowestCommonAncestor(bones, ref allHierarchyNodes);
+
+            if (lowestCommonAncestor == null)
+            {
+                logger?.RaiseError($"More than one root node for the skin. The skeleton bones need to be part of the same hierarchy.", logRank);
+                logger?.RaiseError($"The skin cannot be exported", logRank);
+
+                return new List<IIGameNode>();
+            }
+
+            // starting from the root, sort the nodes by depth first (add the children before the siblings)
+            List<IIGameNode> sorted = new List<IIGameNode>();
+            Stack<IIGameNode> siblings = new Stack<IIGameNode>();   // keep the siblings in a LIFO list to add them after the children
+            siblings.Push(lowestCommonAncestor);
+
+            // add the skeletonroot:
+            // - as a fallback for vertices without any joint weights (although invalid joints could also be "ok"?)
+            // - to have easy access to the root node for the gltf's [skin.skeleton] property (skeleton root node)
+            // [##onlyBones] commented for now because uncertain if it will work with babylon bone exports
+            //sorted.Add(lowestCommonAncestor);
+
+            while (siblings.Count > 0)
+            {
+                IIGameNode currentNode = siblings.Pop();
+
+                if (allHierarchyNodes.Contains(currentNode))    // The node is part of the skeleton hierarchy
+                {
+                    // only add if the node is an actual bone (to keep the joint list small)
+                    // [##onlyBones] commented for now because uncertain if it will work with babylon bone exports
+                    sorted.Add(currentNode);
+                    // Add its children to the stack (in reverse order because it's a LIFO)
+                    int childCount = currentNode.ChildCount;
+                    for (int index = 0; index < childCount; index++)
+                    {
+                        siblings.Push(currentNode.GetNodeChild(childCount - 1 - index));
+                    }
+                }
+            }
+
+            return sorted;
+        }
+
         /// <summary>
         /// Find all nodes needed for the skeleton (revelant nodes)
         /// Find the root node of the skeleton. If there is more than one, it's a problem.
@@ -51,7 +122,8 @@ namespace Max2Babylon
         /// All nodes needed for the skeleton hierarchy
         /// </returns>
         private Dictionary<IIGameSkin, List<IIGameNode>> relevantNodesBySkin = new Dictionary<IIGameSkin, List<IIGameNode>>();
-        private List<IIGameNode> GetSkinnedBones(IIGameSkin skin)
+
+        private List<IIGameNode> GetSkinnedBones(IIGameSkin skin, IIGameNode meshNode)
         {
 
             if (skin == null)
@@ -112,9 +184,7 @@ namespace Max2Babylon
                 {
                     // only add if the node is an actual bone (to keep the joint list small)
                     // [##onlyBones] commented for now because uncertain if it will work with babylon bone exports
-                    //if (bones.Contains(currentNode))
                     sorted.Add(currentNode);
-
                     // Add its children to the stack (in reverse order because it's a LIFO)
                     int childCount = currentNode.ChildCount;
                     for (int index = 0; index < childCount; index++)
@@ -128,6 +198,7 @@ namespace Max2Babylon
 
             return sorted;
         }
+
 
         private IIGameNode GetLowestCommonAncestor(List<IIGameNode> nodes, ref List<IIGameNode> allHierarchyNodes)
         {
@@ -253,7 +324,7 @@ namespace Max2Babylon
         /// The list that will convert à 3DS Max bone ID (value of the list) in Babylon bone ID (index of the list)
         /// </returns>
         private Dictionary<IIGameSkin, List<int>> nodeIndexBySkin = new Dictionary<IIGameSkin, List<int>>();
-        private List<int> GetNodeIndices(IIGameSkin skin)
+        private List<int> GetNodeIndices(IIGameSkin skin, IIGameNode meshNode)
         {
             // For optimization
             if (nodeIndexBySkin.ContainsKey(skin))
@@ -262,7 +333,7 @@ namespace Max2Babylon
             }
 
             List<int> nodeIndex = new List<int>();
-            List<IIGameNode> revelantNodes = GetSkinnedBones(skin);
+            List<IIGameNode> revelantNodes = GetSkinnedBones(skin, meshNode);
 
             for (int index = 0; index < revelantNodes.Count; index++)
             {
@@ -285,12 +356,12 @@ namespace Max2Babylon
             int skinIndex = skins.IndexOf(skin);
             string name = "skeleton #" + skinIndex;
            logger?.RaiseMessage(name, logRank);
-
+            IIGameNode skinNode = skinNodeMap[skin];
             BabylonSkeleton babylonSkeleton = new BabylonSkeleton
             {
                 id = skinIndex,
                 name = name,
-                bones = ExportBones(skin),
+                bones = ExportBones(skin, skinNode),
                 needInitialSkinMatrix = true
             };
 
@@ -302,18 +373,18 @@ namespace Max2Babylon
         /// </summary>
         /// <param name="skin">The skin to export</param>
         /// <returns></returns>
-        private BabylonBone[] ExportBones(IIGameSkin skin)
+        private BabylonBone[] ExportBones(IIGameSkin skin, IIGameNode meshNode)
         {
             List<BabylonBone> bones = new List<BabylonBone>();
-            List<int> nodeIndices = GetNodeIndices(skin);
-            List<IIGameNode> revelantNodes = GetSkinnedBones(skin);
+            List<int> nodeIndices = GetNodeIndices(skin, meshNode);
+            List<IIGameNode> revelantNodes = GetSkinnedBones(skin, meshNode);
 
             foreach (IIGameNode node in revelantNodes)
             {
                 int parentIndex = (node.NodeParent == null) ? -1 : nodeIndices.IndexOf(node.NodeParent.NodeID);
 
                 string boneId = node.MaxNode.GetGuid().ToString();
-                string animationTargetID = node.MaxNode.GetStringProperty("babylonjs_asb_anim_targetID", "");
+                string animationTargetID = node.MaxNode.GetUniqueID();
                 // create the bone
                 BabylonBone bone = new BabylonBone()
                 {
@@ -342,7 +413,7 @@ namespace Max2Babylon
                         }
                         return mat.ToArray();
                     },
-                    false,exportParameters.optimizeAnimations, node.Name); // Do not remove linear animation keys for bones
+                    false,true , node.Name); // Do not remove linear animation keys for bones; Always optimize animations
 
                 if (babylonAnimation != null)
                 {

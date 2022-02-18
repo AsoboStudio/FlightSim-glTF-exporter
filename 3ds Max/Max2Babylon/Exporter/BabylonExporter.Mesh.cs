@@ -16,6 +16,22 @@ namespace Max2Babylon
             return IsNodeExportable(meshNode);
         }
 
+        private BabylonNode ExportSubModelExtraNode(IIGameScene scene, IIGameNode meshNode, BabylonScene babylonScene)
+        {
+            logger?.RaiseMessage(meshNode.Name, 1);
+
+            var babylonMesh = new BabylonMesh { name = meshNode.Name, id = meshNode.MaxNode.GetGuid().ToString() };
+            babylonMesh.isDummy = true;
+
+            // Position / rotation / scaling / hierarchy
+            exportNode(babylonMesh, meshNode, scene, babylonScene);
+
+            babylonScene.MeshesList.Add(babylonMesh);
+
+            return babylonMesh;
+
+        }
+
         private BabylonNode ExportDummy(IIGameScene scene, IIGameNode meshNode, BabylonScene babylonScene)
         {
            logger?.RaiseMessage(meshNode.Name, 1);
@@ -29,9 +45,11 @@ namespace Max2Babylon
             // Animations
             exportAnimation(babylonMesh, meshNode);
 
+
             babylonScene.MeshesList.Add(babylonMesh);
 
             return babylonMesh;
+
         }
 
         private BabylonNode ExportMesh(IIGameScene scene, IIGameNode meshNode, BabylonScene babylonScene)
@@ -51,7 +69,7 @@ namespace Max2Babylon
             {
                 
                 // Instances
-    #if MAX2020 || MAX2021
+    #if MAX2020 || MAX2021 || MAX2022
                 var tabs = Loader.Global.INodeTab.Create();
     #else
                 var tabs = Loader.Global.NodeTab.Create();
@@ -62,7 +80,7 @@ namespace Max2Babylon
                     IINode Master = TabToList<IINode>(tabs)[tabs.Count - 1];
                 
                     List<IINode> Instances = TabToList<IINode>(tabs).FindAll(x => x.Handle != Master.Handle);
-                    foreach (IINode instanceNode in Tools.ITabToIEnumerable(tabs))
+                    foreach (IINode instanceNode in tabs.ToIEnumerable())
                     {
                         //this make sure every instance node is indexed in guid dictionary
                         Tools.GetGuid(instanceNode);
@@ -152,7 +170,7 @@ namespace Max2Babylon
             }
 
             // Misc.
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022
             babylonMesh.isVisible = meshNode.MaxNode.Renderable;
             babylonMesh.receiveShadows = meshNode.MaxNode.RcvShadows;
             babylonMesh.applyFog = meshNode.MaxNode.ApplyAtmospherics;
@@ -176,13 +194,14 @@ namespace Max2Babylon
             IGMatrix skinInitPoseMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
             List<int> boneIds = null;
             int maxNbBones = 0;
-            List<IIGameNode> skinnedBones = GetSkinnedBones(skin);
+            List<IIGameNode> skinnedBones = GetSkinnedBones(skin, meshNode) ;
             if (isSkinned && skinnedBones.Count > 0)  // if the mesh has a skin with at least one bone
             {
                 var skinAlreadyStored = skins.Find(_skin => IsSkinEqualTo(_skin, skin));
                 if (skinAlreadyStored == null)
                 {
                     skins.Add(skin);
+                    skinNodeMap.Add(skin,meshNode);
                     babylonMesh.skeletonId = skins.IndexOf(skin);
                 }
                 else
@@ -191,7 +210,7 @@ namespace Max2Babylon
                 }
 
                 skin.GetInitSkinTM(skinInitPoseMatrix);
-                boneIds = GetNodeIndices(skin);
+                boneIds = GetNodeIndices(skin, meshNode);
             }
             else
             {
@@ -295,11 +314,11 @@ namespace Max2Babylon
                     {
                         if (mtl.SubMaterialCount == 0 || mtl == unsupportedMaterial)
                         {
-                            logger?.RaiseWarning("Unsupported material type '" + unsupportedMaterial.MaterialClass + "'. Material is ignored.", 2);
+                            logger?.RaiseError("Unsupported material type '" + unsupportedMaterial.MaterialClass + "'. Material is ignored.", 2);
                         }
                         else
                         {
-                            logger?.RaiseWarning("Unsupported sub-material type '" + unsupportedMaterial.MaterialClass + "'. Material is ignored.", 2);
+                            logger?.RaiseError("Unsupported sub-material type '" + unsupportedMaterial.MaterialClass + "'. Material is ignored.", 2);
                         }
                     }
                 }
@@ -313,7 +332,7 @@ namespace Max2Babylon
                 bool hasUV2 = false;
                 for (int i = 0; i < mappingChannels.Count; ++i)
                 {
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022
                     var channelNum = mappingChannels[i];
 #else
                     var channelNum = mappingChannels[new IntPtr(i)];
@@ -330,7 +349,7 @@ namespace Max2Babylon
                 var hasColor = unskinnedMesh.NumberOfColorVerts > 0;
                 var hasAlpha = unskinnedMesh.GetNumberOfMapVerts(-2) > 0;
 
-                var optimizeVertices = meshNode.MaxNode.GetBoolProperty("babylonjs_optimizevertices");
+                var optimizeVertices = true;
 
                 var invertedWorldMatrix = GetInvertWorldTM(meshNode, 0);
                 var offsetTM = GetOffsetTM(meshNode, 0);
@@ -346,7 +365,7 @@ namespace Max2Babylon
 
                     if (!optimizeVertices)
                     {
-                        logger?.RaiseWarning("You can try to optimize your object using [Try to optimize vertices] option", 2);
+                        logger?.RaiseError("You can try to optimize your object using [Try to optimize vertices] option", 2);
                     }
                 }
 
@@ -635,7 +654,7 @@ namespace Max2Babylon
                             if (storeFaceIndexes)
                             {
                                 // Retreive face
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022
                                 face = materialFaces[j];
 #else
                                 face = materialFaces[new IntPtr(j)];
@@ -881,6 +900,10 @@ namespace Max2Babylon
                 }
 
                 vertex.Weights = Loader.Global.Point4.Create(weight);
+
+                if (bone[3] > 255 || bone[2] > 255 || bone[1] > 255 || bone[0] > 255)
+                    logger.RaiseCriticalError("CriticalError | Too many bones, the vertex with id " + vertexIndex + " is influenced by a bone with an id greater than 255.");
+
                 vertex.BonesIndices = (bone[3] << 24) | (bone[2] << 16) | (bone[1] << 8) | bone[0];
 
                 if (currentVtxBone >= 4 && currentSkinBone < nbBones)
@@ -996,6 +1019,7 @@ namespace Max2Babylon
 
         private void exportAnimation(BabylonNode babylonNode, IIGameNode maxGameNode)
         {
+            if (!maxGameNode.MaxNode.IsAnimated) return;
             var animations = new List<BabylonAnimation>();
 
             GenerateCoordinatesAnimations(maxGameNode, animations);

@@ -5,6 +5,7 @@ using System.Drawing;
 using Autodesk.Max;
 using Max2Babylon.FlightSimExtension;
 using Max2Babylon.Forms;
+using Max2Babylon.FlightSim;
 
 namespace Max2Babylon
 {
@@ -50,9 +51,13 @@ namespace Max2Babylon
                 nameTextBox.Enabled = true;
                 startTextBox.Enabled = true;
                 endTextBox.Enabled = true;
+                keepStaticAnimBox.Enabled = true;
+                keepNonAnimatedBox.Enabled = true;
                 nameTextBox.Text = info.Name.ToString();
                 startTextBox.Text = info.FrameStart.ToString();
                 endTextBox.Text = info.FrameEnd.ToString();
+                keepStaticAnimBox.Checked = info.KeepStaticAnimation;
+                keepNonAnimatedBox.Checked = info.KeepNonAnimated;
 
                 // a color can still be red after setting the string:
                 // possible if we change a name, don't confirm and switch to another item with the same name
@@ -76,7 +81,8 @@ namespace Max2Babylon
 
                 if (info.IsDirty)
                 {
-                    InfoChanged?.Invoke(info);
+                    //this is causing the event select changed to be triggered multiple times
+                    //InfoChanged?.Invoke(info);
                 }
             }
             else
@@ -84,9 +90,12 @@ namespace Max2Babylon
                 nameTextBox.Enabled = false;
                 startTextBox.Enabled = false;
                 endTextBox.Enabled = false;
+                keepStaticAnimBox.Enabled = false;
+                keepNonAnimatedBox.Enabled = false;
                 nameTextBox.Text = "";
                 startTextBox.Text = "";
                 endTextBox.Text = "";
+                keepStaticAnimBox.Checked = false;
 
                 MaxNodeTree.BeginUpdate();
                 MaxNodeTree.QueueSetNodes(null, false);
@@ -102,6 +111,8 @@ namespace Max2Babylon
             nameTextBox.ForeColor = DefaultForeColor;
             startTextBox.ForeColor = DefaultForeColor;
             endTextBox.ForeColor = DefaultForeColor;
+            keepStaticAnimBox.ForeColor = DefaultForeColor;
+            keepNonAnimatedBox.ForeColor = DefaultForeColor;
         }
 
 
@@ -155,6 +166,9 @@ namespace Max2Babylon
 
             string newName = nameTextBox.Text;
 
+            bool newKeepEmpty = keepStaticAnimBox.Checked;
+            bool newKeepNonAnimated = keepNonAnimatedBox.Checked;
+
             int newFrameStart;
 
             if (!int.TryParse(startTextBox.Text, out newFrameStart))
@@ -168,7 +182,13 @@ namespace Max2Babylon
             IList<Guid> newMaterialGUIDs;
             bool materialsChanged = maxMaterialView.ApplyMaterialsChanges(out newMaterialGUIDs);
 
-            bool changed = newName != confirmedInfo.Name || newFrameStart != confirmedInfo.FrameStart || newFrameEnd != confirmedInfo.FrameEnd || nodesChanged || materialsChanged;
+            bool changed = newKeepEmpty != confirmedInfo.KeepStaticAnimation 
+                        || newName != confirmedInfo.Name 
+                        || newFrameStart != confirmedInfo.FrameStart 
+                        || newFrameEnd != confirmedInfo.FrameEnd 
+                        || nodesChanged 
+                        || materialsChanged
+                        || newKeepNonAnimated != confirmedInfo.KeepNonAnimated;
             
             if (!changed)
                 return;
@@ -176,6 +196,8 @@ namespace Max2Babylon
             confirmedInfo.Name = newName;
             confirmedInfo.FrameStart = newFrameStart;
             confirmedInfo.FrameEnd = newFrameEnd;
+            confirmedInfo.KeepStaticAnimation = newKeepEmpty;
+            confirmedInfo.KeepNonAnimated = newKeepNonAnimated;
 
             if (nodesChanged)
             {
@@ -285,8 +307,18 @@ namespace Max2Babylon
 
             if (currentAnimationParseType==AnimationParseType.Materials)
             {
-                IMtl material = MaterialUtilities.GetSelectedMaterial();
-                if(material!=null)maxMaterialView.AddMaterialFromSelection(material);
+                if(Loader.Core.SelNodeCount< 1)
+                { 
+                    MessageBox.Show("You need to select at least one Node");
+                    return;
+                }
+                for (int i = 0; i < Loader.Core.SelNodeCount; ++i)
+                {
+                    IINode node = Loader.Core.GetSelNode(i);
+                    IMtl material = node.GetAnimatableMaterial();
+                    if(material!=null) maxMaterialView.AddMaterialFromSelection(material);
+                }               
+                
             }
         }
 
@@ -308,8 +340,18 @@ namespace Max2Babylon
 
             if (currentAnimationParseType==AnimationParseType.Materials)
             {
-                IMtl material = MaterialUtilities.GetSelectedMaterial();
-                if(material!=null)maxMaterialView.RemoveMaterialFromSelection(material);
+                if (Loader.Core.SelNodeCount < 1)
+                {
+                    MessageBox.Show("You need to select at least one Node");
+                    return;
+                }
+                for (int i = 0; i < Loader.Core.SelNodeCount; ++i)
+                {
+                    IINode node = Loader.Core.GetSelNode(i);
+                    IMtl material = node.GetAnimatableMaterial();
+                    if(material!=null)maxMaterialView.RemoveMaterialFromSelection(material);
+                }
+                
             }
         }
 
@@ -333,6 +375,38 @@ namespace Max2Babylon
             currentAnimationParseType = AnimationParseType.Nodes;
             MaxNodeTree.BackColor = Color.DodgerBlue;
             maxMaterialView.BackColor = Color.White;
+        }
+
+        private void keepStaticAnimation_CheckedChanged(object sender, EventArgs e)
+        {
+            if (currentInfo == null)
+            {
+                keepStaticAnimBox.ForeColor = DefaultForeColor;
+                return;
+            }
+
+            bool state = false;
+
+            state = keepStaticAnimBox.Checked;
+
+            bool changed = state != currentInfo.KeepStaticAnimation;
+            keepStaticAnimBox.ForeColor = changed ? ChangedTextColor : DefaultForeColor;
+        }
+
+        private void keepNonAnimated_CheckedChanged(object sender, EventArgs e)
+        {
+            if (currentInfo == null)
+            {
+                keepNonAnimatedBox.ForeColor = DefaultForeColor;
+                return;
+            }
+
+            bool state = false;
+
+            state = keepNonAnimatedBox.Checked;
+
+            bool changed = state != currentInfo.KeepNonAnimated;
+            keepNonAnimatedBox.ForeColor = changed ? ChangedTextColor : DefaultForeColor;
         }
     }
 }

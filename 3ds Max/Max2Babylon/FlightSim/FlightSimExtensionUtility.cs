@@ -22,11 +22,7 @@ namespace Max2Babylon.FlightSim
             }
             
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 ||MAX2016 || MAX2017 || MAX2018
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
-#else
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-#endif
+            ScriptsUtilities.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
             var r=  mxsRetVal.F;
             return r;
         }
@@ -44,11 +40,7 @@ namespace Max2Babylon.FlightSim
             }
 
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 || MAX2016 || MAX2017 || MAX2018
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
-#else
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-#endif
+            ScriptsUtilities.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
             var r = mxsRetVal.B;
             return r;
         }

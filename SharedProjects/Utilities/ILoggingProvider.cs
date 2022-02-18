@@ -8,6 +8,8 @@ namespace Utilities
         LogLevel LoggerLevel { get; set; }
         void ReportProgressChanged(int progress);
 
+        void RaiseCriticalError(string error, int rank = 0);
+
         void RaiseError(string error, int rank = 0);
 
         void RaiseWarning(string warning, int rank = 0);

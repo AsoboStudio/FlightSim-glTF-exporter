@@ -69,7 +69,7 @@ namespace Babylon2GLTF
         {
             ASBAnimationRetargeting extensionObject = new ASBAnimationRetargeting
             {
-                id = babylonNode.AnimationTargetId
+                id = babylonNode.UniqueID
             };
 
             if (gltfChannel != null)

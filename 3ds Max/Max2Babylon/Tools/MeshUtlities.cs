@@ -28,5 +28,11 @@ namespace Max2Babylon
             }
             return null;
         }
+
+        public static bool IsMesh(this IINode node) 
+        {
+            IObject obj = node.EvalWorldState(Loader.Core.Time, false).Obj;
+            return (obj.CanConvertToType(Loader.Global.TriObjectClassID) == 1);
+        }
     }
 }

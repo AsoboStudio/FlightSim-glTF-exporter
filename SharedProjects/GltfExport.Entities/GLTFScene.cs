@@ -24,6 +24,8 @@ namespace GLTFExport.Entities
             {
                 nodes = NodesList.ToArray();
             }
+
+            if (extensions.Count == 0) extensions= null;
         }
     }
 }

@@ -9,11 +9,10 @@ using System.IO;
 using System.Runtime.Serialization;
 using Babylon2GLTF;
 using BabylonExport.Entities;
-using Max2Babylon.FlightSim;
 using Max2Babylon.FlightSimExtension;
 using Utilities;
 
-namespace Max2Babylon
+namespace Max2Babylon.FlightSim
 {
     #region Serializable glTF Objects
 
@@ -44,6 +43,22 @@ namespace Max2Babylon
         [DataMember(EmitDefaultValue = false)] public float? occlusionBlendFactor;
     }
 
+    [DataContract]
+    class GLTFExtensionAsoboMaterialGhostEffect : GLTFProperty // use GLTFChildRootProperty if you want to add a name
+    {
+        public const string SerializedName = "ASOBO_material_ghost_effect";
+        [DataMember(EmitDefaultValue = false)] public float? bias;
+        [DataMember(EmitDefaultValue = false)] public float? scale;
+        [DataMember(EmitDefaultValue = false)] public float? power;
+
+        public static class Defaults
+        {
+            public static readonly float bias = 1;
+            public static readonly float scale = 1;
+            public static readonly float power = 1;
+        }
+    }
+
 
     [DataContract]
     class GLTFExtensionAsoboMaterialDrawOrder : GLTFProperty
@@ -60,6 +75,13 @@ namespace Max2Babylon
     class GLTFExtensionAsoboDayNightCycle : GLTFProperty
     {
         public const string SerializedName = "ASOBO_material_day_night_switch";
+    }
+
+    [DataContract]
+    class GLTFExtensionAsoboDisableMotionBlur : GLTFProperty
+    {
+        public const string SerializedName = "ASOBO_material_disable_motion_blur";
+        [DataMember(EmitDefaultValue = true)] public bool enabled = true;
     }
 
     [DataContract]
@@ -108,12 +130,22 @@ namespace Max2Babylon
         [DataMember(EmitDefaultValue = false)] public bool? clampUVX { get; set; }
         [DataMember(EmitDefaultValue = false)] public bool? clampUVY { get; set; }
         [DataMember(EmitDefaultValue = false)] public bool? clampUVZ { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float UVOffsetU { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float UVOffsetV { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float UVTilingU { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float UVTilingV { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float UVRotation { get; set; }
         public static class Defaults
         {
             public static readonly bool AOUseUV2 = false;
             public static readonly bool clampUVX = false;
             public static readonly bool clampUVY = false;
             public static readonly bool clampUVZ = false;
+            public static readonly float UVOffsetU = 0.0f;
+            public static readonly float UVOffsetV = 0.0f;
+            public static readonly float UVTilingU = 0.0f;
+            public static readonly float UVTilingV = 0.0f;
+            public static readonly float UVRotation = 0.0f;
         }
     }
 
@@ -211,13 +243,22 @@ namespace Max2Babylon
     [DataContract]
     class GLTFExtensionAsoboWindshield : GLTFProperty
     {
-        public const string SerializedName = "ASOBO_material_windshield";
+        public const string SerializedName = "ASOBO_material_windshield_v2";
         [DataMember(EmitDefaultValue = false)] public float? rainDropScale { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float? wiper1State { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float? wiper2State { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float? wiper3State { get; set; }
+        [DataMember(EmitDefaultValue = false)] public float? wiper4State { get; set; }
+
         [DataMember(EmitDefaultValue = false)] public GLTFTextureInfo wiperMaskTexture;
 
         public static class Defaults
         {
             public static readonly float rainDropScale = 1;
+            public static readonly float wiper1State = 0;
+            public static readonly float wiper2State = 0;
+            public static readonly float wiper3State = 0;
+            public static readonly float wiper4State = 0;
         }
     }
 
@@ -304,6 +345,89 @@ namespace Max2Babylon
 
     #endregion
 
+    public enum MaterialType
+    {
+        Standard,
+        GeoDecal,
+        GeoDecalFrosted,
+        Windshield,
+        Porthole,
+        Glass,//deprecated
+        ClearCoat,
+        ParallaxWindow,
+        Anisotropic,
+        Hair,
+        SSS,
+        Invisible,
+        FakeTerrain,
+        FresnelFade,
+        EnvironmentOccluder,
+        Ghost
+    };
+    public static class FlightSimMaterialHelper
+    {
+        public static MaterialType GetMaterialType(int materialValue)
+        {
+            MaterialType result;
+            switch (materialValue)
+            {
+                case 1:
+                    result = MaterialType.Standard;
+                    break;
+                case 2:
+                    result = MaterialType.GeoDecal;
+                    break;
+                case 3:
+                    result = MaterialType.Windshield;
+                    break;
+                case 4:
+                    result = MaterialType.Porthole;
+                    break;
+                case 5:
+                    result = MaterialType.Glass;
+                    break;
+                case 6:
+                    result = MaterialType.GeoDecalFrosted;
+                    break;
+                case 7:
+                    result = MaterialType.ClearCoat;
+                    break;
+                case 8:
+                    result = MaterialType.ParallaxWindow;
+                    break;
+                case 9:
+                    result = MaterialType.Anisotropic;
+                    break;
+                case 10:
+                    result = MaterialType.Hair;
+                    break;
+                case 11:
+                    result = MaterialType.SSS;
+                    break;
+                case 12:
+                    result = MaterialType.Invisible;
+                    break;
+                case 13:
+                    result = MaterialType.FakeTerrain;
+                    break;
+                case 14:
+                    result = MaterialType.FresnelFade;
+                    break;
+                case 15:
+                    result = MaterialType.EnvironmentOccluder;
+                    break;
+                case 16:
+                    result = MaterialType.Ghost;
+                    break;
+                default:
+                    result = MaterialType.Standard;
+                    break;
+            }
+
+            return result;
+        }
+    }
+
     public class FlightSimMaterialExtensionExporter : IBabylonMaterialExtensionExporter
     {
         public MaterialUtilities.ClassIDWrapper MaterialClassID
@@ -350,24 +474,7 @@ namespace Max2Babylon
        
 
 
-        enum MaterialType
-        {
-            Standard,
-            GeoDecal,
-            GeoDecalFrosted,
-            Windshield,
-            Porthole,
-            Glass,//deprecated
-            ClearCoat,
-            ParallaxWindow,
-            Anisotropic,
-            Hair,
-            SSS,
-            Invisible,
-            FakeTerrain,
-            FresnelFade,
-            EnvironmentOccluder
-        }
+       
 
         
 
@@ -516,6 +623,8 @@ namespace Max2Babylon
             */
         }
 
+        
+
         void ProcessMaterialProperties(GLTFMaterial material, IIGameMaterial maxMaterial)
         {
             #region Helper Variables
@@ -538,6 +647,8 @@ namespace Max2Babylon
             //
             // The flag indicating if percent fraction value (TYPE_PCNT_FRAC) should be converted (0.1 to 10), default:false 
             bool param_p = false;
+
+            float emisMultiplayer = 1;
 
             #endregion
 
@@ -580,6 +691,10 @@ namespace Max2Babylon
             string dirtTexPath = null;
 
             float rainDropScale = GLTFExtensionAsoboWindshield.Defaults.rainDropScale;
+            float wiperState1 = GLTFExtensionAsoboWindshield.Defaults.wiper1State;
+            float wiperState2 = GLTFExtensionAsoboWindshield.Defaults.wiper2State;
+            float wiperState3 = GLTFExtensionAsoboWindshield.Defaults.wiper3State;
+            float wiperState4 = GLTFExtensionAsoboWindshield.Defaults.wiper4State;
 
             float parallaxScale = GLTFExtensionAsoboParallaxWindow.Defaults.parallaxScale;
             float roomSizeXScale = GLTFExtensionAsoboParallaxWindow.Defaults.roomSizeXScale;
@@ -591,6 +706,10 @@ namespace Max2Babylon
             float fresnelFactor = GLTFExtensionAsoboMaterialFresnelFade.Defaults.fresnelFactor;
             float fresnelOpacityOffset = GLTFExtensionAsoboMaterialFresnelFade.Defaults.fresnelOpacityOffset;
 
+            float ghostPower = GLTFExtensionAsoboMaterialGhostEffect.Defaults.power;
+            float ghostBias = GLTFExtensionAsoboMaterialGhostEffect.Defaults.bias;
+            float ghostScale = GLTFExtensionAsoboMaterialGhostEffect.Defaults.scale;
+
             float glassReflectionMaskFactor = GLTFExtensionAsoboFlightSimGlass.Defaults.glassReflectionMaskFactor;
             float glassDeformationFactor = GLTFExtensionAsoboFlightSimGlass.Defaults.glassDeformationFactor;
 
@@ -598,9 +717,15 @@ namespace Max2Babylon
             bool clampUVX = GLTFExtensionAsoboMaterialUVOptions.Defaults.clampUVX;
             bool clampUVY = GLTFExtensionAsoboMaterialUVOptions.Defaults.clampUVY;
             bool clampUVZ = GLTFExtensionAsoboMaterialUVOptions.Defaults.clampUVZ;
+            float uvOffsetU = GLTFExtensionAsoboMaterialUVOptions.Defaults.UVOffsetU;
+            float uvOffsetV = GLTFExtensionAsoboMaterialUVOptions.Defaults.UVOffsetV;
+            float uvTilingU = GLTFExtensionAsoboMaterialUVOptions.Defaults.UVTilingU;
+            float uvTilingV = GLTFExtensionAsoboMaterialUVOptions.Defaults.UVTilingV;
+            float uvRotation = GLTFExtensionAsoboMaterialUVOptions.Defaults.UVRotation;
 
             int drawOrderOffset = GLTFExtensionAsoboMaterialDrawOrder.Defaults.drawOrderOffset;
             bool dayNightCycle = false;
+            bool disableMotionBlur = true;
             bool pearlescent = false;
             float pearlShift = GLTFExtensionAsoboPearlescent.Defaults.pearlShift;
             float pearlRange = GLTFExtensionAsoboPearlescent.Defaults.pearlRange;
@@ -640,65 +765,54 @@ namespace Max2Babylon
                         {
                             if (!property.GetPropertyValue(ref int_out, param_t))
                                 RaiseError("Could not retrieve MATERIALTYPE property.");
-                            switch(int_out)
+
+                            materialType = FlightSimMaterialHelper.GetMaterialType(int_out);
+                            switch (materialType)
                             {
-                                case 1:
-                                    materialType = MaterialType.Standard;
+                                case MaterialType.Standard:
                                     break;
-                                case 2:
-                                    materialType = MaterialType.GeoDecal;
+                                case MaterialType.GeoDecal:
                                     decalExtensionObject = new GLTFExtensionAsoboMaterialGeometryDecal();
                                     break;
-                                case 3:
-                                    materialType = MaterialType.Windshield;
-                                    materialExtras.Add(FlightSimGLTFExtras.Name_ASOBO_material_code, FlightSimGLTFExtras.MaterialCode.Code.Windshield.ToString());
-                                    break;
-                                case 4:
-                                    materialType = MaterialType.Porthole;
-                                    materialExtras.Add(FlightSimGLTFExtras.Name_ASOBO_material_code, FlightSimGLTFExtras.MaterialCode.Code.Porthole.ToString());
-                                    break;
-                                case 5:
-                                    materialType = MaterialType.Glass;
-                                    break;
-                                case 6:
-                                    materialType = MaterialType.GeoDecalFrosted;
+                                case MaterialType.GeoDecalFrosted:
                                     decalExtensionObject = new GLTFExtensionAsoboMaterialGeometryDecal();
                                     materialExtras.Add(FlightSimGLTFExtras.Name_ASOBO_material_code, FlightSimGLTFExtras.MaterialCode.Code.GeoDecalFrosted.ToString());
                                     break;
-                                case 7:
-                                    materialType = MaterialType.ClearCoat;
+                                case MaterialType.Windshield:
+                                    materialExtras.Add(FlightSimGLTFExtras.Name_ASOBO_material_code, FlightSimGLTFExtras.MaterialCode.Code.Windshield.ToString());
                                     break;
-                                case 8:
-                                    materialType = MaterialType.ParallaxWindow;
+                                case MaterialType.Porthole:
+                                    materialExtras.Add(FlightSimGLTFExtras.Name_ASOBO_material_code, FlightSimGLTFExtras.MaterialCode.Code.Porthole.ToString());
                                     break;
-                                case 9:
-                                    materialType = MaterialType.Anisotropic;
+                                case MaterialType.Glass:
                                     break;
-                                case 10:
-                                    materialType = MaterialType.Hair;
+                                case MaterialType.ClearCoat:
                                     break;
-                                case 11:
-                                    materialType = MaterialType.SSS;
+                                case MaterialType.ParallaxWindow:
                                     break;
-                                case 12:
-                                    materialType = MaterialType.Invisible;
+                                case MaterialType.Ghost:
+                                    break;
+                                case MaterialType.Anisotropic:
+                                    break;
+                                case MaterialType.Hair:
+                                    break;
+                                case MaterialType.SSS:
+                                    break;
+                                case MaterialType.Invisible:
                                     invisibleExtensionObject = new GLTFExtensionAsoboMaterialInvisible();
                                     break;
-                                case 13:
-                                    materialType = MaterialType.FakeTerrain;
+                                case MaterialType.FakeTerrain:
                                     fakeTerrainExtensionObject = new GLTFExtensionAsoboMaterialFakeTerrain();
                                     break;
-                                case 14:
-                                    materialType = MaterialType.FresnelFade;
+                                case MaterialType.FresnelFade:
                                     break;
-                                case 15:
-                                    materialType = MaterialType.EnvironmentOccluder;
+                                case MaterialType.EnvironmentOccluder:
                                     environmentOccluderExtensionObject = new GLTFExtensionAsoboMaterialEnvironmentOccluder();
                                     break;
                                 default:
-                                    materialType = MaterialType.Standard;
                                     break;
                             }
+
                             RaiseMessage(string.Format("Exporting Material Type: \"{0}\"", materialType.ToString()));
                             break;
                         }
@@ -807,15 +921,55 @@ namespace Max2Babylon
                             break;
                         }
                         case "RAINDROPSCALE":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
                             {
-                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
-                                {
-                                    RaiseError("Could not retrieve RAINDROPSCALE property.");
-                                    continue;
-                                }
-                                rainDropScale = float_out;
-                                break;
+                                RaiseError("Could not retrieve RAINDROPSCALE property.");
+                                continue;
                             }
+                            rainDropScale = float_out;
+                            break;
+                        }
+                        case "WIPERANIMSTATE1":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                            {
+                                RaiseError("Could not retrieve WIPERANIMSTATE property.");
+                                continue;
+                            }
+                            wiperState1 = float_out;
+                            break;
+                        }
+                        case "WIPERANIMSTATE2":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                            {
+                                RaiseError("Could not retrieve WIPERANIMSTATE property.");
+                                continue;
+                            }
+                            wiperState2 = float_out;
+                            break;
+                        }
+                        case "WIPERANIMSTATE3":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                            {
+                                RaiseError("Could not retrieve WIPERANIMSTATE property.");
+                                continue;
+                            }
+                            wiperState3 = float_out;
+                            break;
+                        }
+                        case "WIPERANIMSTATE4":
+                        {
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                            {
+                                RaiseError("Could not retrieve WIPERANIMSTATE property.");
+                                continue;
+                            }
+                            wiperState4 = float_out;
+                            break;
+                        }
                     }
                 }
             }
@@ -1127,6 +1281,55 @@ namespace Max2Babylon
             }
             #endregion
 
+            #region GhostEffect Extension Properties
+            {
+                for (int i = 0; i < numProps; ++i)
+                {
+                    IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                    if (property == null)
+                        continue;
+
+                    IParamDef paramDef = property.MaxParamBlock2?.GetParamDef(property.ParamID);
+                    string propertyName = property.Name.ToUpperInvariant();
+
+                    switch (propertyName)
+                    {
+                        case "GHOSTBIASFACTOR":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve GHOSTBIASFACTOR property.");
+                                    continue;
+                                }
+                                ghostBias = float_out;
+                                break;
+                            }
+                        case "GHOSTSCALEFACTOR":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve GHOSTSCALEFACTOR property.");
+                                    continue;
+                                }
+                                ghostScale = float_out;
+                                break;
+                            }
+                        case "GHOSTPOWERFACTOR":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve GHOSTPOWERFACTOR property.");
+                                    continue;
+                                }
+                                ghostPower = float_out;
+                                break;
+                            }
+                    }
+                }
+            }
+            #endregion
+
             #region ClearCoat Extension Properties
             {
                 for (int i = 0; i < numProps; ++i)
@@ -1173,7 +1376,7 @@ namespace Max2Babylon
                                     continue;
                                 }
                                 int drawOrder = int_out;
-                                if (drawOrder > 0)
+                                if (drawOrder != 0)
                                 {
                                     GLTFExtensionAsoboMaterialDrawOrder drawOrderExtensionObject = new GLTFExtensionAsoboMaterialDrawOrder();
                                     drawOrderExtensionObject.drawOrderOffset = drawOrder;
@@ -1240,6 +1443,56 @@ namespace Max2Babylon
                                 clampUVZ = (int_out != 0);
                                 break;
                             }
+                        case "UVOFFSETU":
+                            {
+                                 if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve UVOFFSETU property.");
+                                    continue;
+                                }
+                                uvOffsetU = float_out;
+                                break;
+                            }
+                        case "UVOFFSETV":
+                            {
+                                 if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve UVOFFSETV property.");
+                                    continue;
+                                }
+                                uvOffsetV = float_out;
+                                break;
+                            }
+                        case "UVTILINGU":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve UVTILINGU property.");
+                                    continue;
+                                }
+                                uvTilingU = float_out;
+                                break;
+                            }
+                        case "UVTILINGV":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve UVTILINGV property.");
+                                    continue;
+                                }
+                                uvTilingV = float_out;
+                                break;
+                            }
+                        case "UVROTATION":
+                            {
+                                if (!property.GetPropertyValue(ref float_out, param_t, param_p))
+                                {
+                                    RaiseError("Could not retrieve UVROTATION property.");
+                                    continue;
+                                }
+                                uvRotation = float_out;
+                                break;
+                            }
                     }
                 }
             }
@@ -1298,7 +1551,6 @@ namespace Max2Babylon
                             break;
                         }
                     }
-                    
                 }
                 if (asoboTagsExtensionObject.tags.Count > 0)
                 {
@@ -1555,14 +1807,17 @@ namespace Max2Babylon
 
             #region The Other Parameters
 
+
+
             for (int i = 0; i < numProps; ++i)
             {
                 IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
 
                 if (property == null)
                     continue;
-
                 string propertyName = property.Name.ToUpperInvariant();
+
+
                 switch (propertyName)
                 {
                     case "BASECOLOR":
@@ -1593,15 +1848,14 @@ namespace Max2Babylon
 
                             break;
                         }
-                    case "EMISSIVE":
+                    case "EMISSIVEMUL":
                         {
-                            if (!property.GetPropertyValue(point4_out, param_t))
+                            if (!property.GetPropertyValue(ref float_out, param_t, param_p))
                             {
-                                RaiseError("Could not retrieve EMISSIVE property.");
+                                RaiseError("Could not retrieve emissiveMul property.");
                                 continue;
                             }
-                            material.SetEmissiveFactor(point4_out.X, point4_out.Y, point4_out.Z);
-
+                            emisMultiplayer = float_out;
                             break;
                         }
                     case "ROUGHNESS":
@@ -1688,16 +1942,54 @@ namespace Max2Babylon
                             }
                             dayNightCycle = int_out != 0;
                             break;
-                }
+                        }
+                    case "DISABLEMOTIONBLUR":
+                        {
+                            if (!property.GetPropertyValue(ref int_out, param_t))
+                            {
+                                RaiseError("Could not retrieve DISABLEMOTIONBLUR property.");
+                                continue;
+                            }
+                            disableMotionBlur = int_out != 0;
+                            break;
+                        } 
             }
             }
 
+            #region ComputeEmissive
+            for (int i = 0; i < numProps; ++i)
+            {
+                IIGameProperty property = maxMaterial.IPropertyContainer.GetProperty(i);
+
+                if (property == null)
+                    continue;
+                string propertyName = property.Name.ToUpperInvariant();
+
+
+                switch (propertyName)
+                {
+                    case "EMISSIVE":
+                        {
+                            if (!property.GetPropertyValue(point4_out, param_t))
+                            {
+                                RaiseError("Could not retrieve EMISSIVE property.");
+                                continue;
+                            }
+                            material.SetEmissiveFactor(point4_out.X * emisMultiplayer, point4_out.Y * emisMultiplayer, point4_out.Z * emisMultiplayer);
+
+                                break;
+            }
+                    }
+                }
+            #endregion
             #endregion
             
 
             #region Process Extension Objects
-
             GLTFExtensionAsoboPearlescent pearlescentOptionsExtensionObject = null;
+
+            if (materialType == MaterialType.Standard) 
+            {
             if(pearlescent)
             {
                 pearlescentOptionsExtensionObject = new GLTFExtensionAsoboPearlescent();
@@ -1706,12 +1998,21 @@ namespace Max2Babylon
                 pearlescentOptionsExtensionObject.pearlRange = pearlRange;
                 pearlescentOptionsExtensionObject.pearlBrightness = pearlBrightness;
             }
+            }
+            
 
             GLTFExtensionAsoboDayNightCycle dayNightOptionsExtensionObject = null;
             if(materialType == MaterialType.Standard && dayNightCycle)
             {
                 dayNightOptionsExtensionObject = new GLTFExtensionAsoboDayNightCycle();
             }
+
+            GLTFExtensionAsoboDisableMotionBlur disableMotionBlurExtensionObject = null;
+            if (disableMotionBlur) 
+            {
+                disableMotionBlurExtensionObject = new GLTFExtensionAsoboDisableMotionBlur();
+            }
+
             // Anisotropic map extension, only if we have a wetnessAO map (sampler name in engine) assigned and an HAIR or ANISOTROPIC or WINDSHIELD material
             GLTFExtensionAsoboAnisotropic anisotropicExtensionObject = null;
             if( !string.IsNullOrWhiteSpace(wetnessAOTexPath) && (materialType == MaterialType.Anisotropic || materialType == MaterialType.Hair))
@@ -1733,6 +2034,10 @@ namespace Max2Babylon
                 windshiedlExtensionObject = new GLTFExtensionAsoboWindshield();
 
                 windshiedlExtensionObject.rainDropScale = rainDropScale;
+                windshiedlExtensionObject.wiper1State = wiperState1;
+                windshiedlExtensionObject.wiper2State = wiperState2;
+                windshiedlExtensionObject.wiper3State = wiperState3;
+                windshiedlExtensionObject.wiper4State = wiperState4;
 
                 if (!string.IsNullOrWhiteSpace(wetnessAOTexPath))
                 {
@@ -1789,7 +2094,7 @@ namespace Max2Babylon
 
             // UV Option extension
             GLTFExtensionAsoboMaterialUVOptions UVOptionsExtensionObject = null;
-            if (AOUseUV2 || clampUVX || clampUVY || clampUVZ)
+            if (AOUseUV2 || clampUVX || clampUVY || clampUVZ || (uvOffsetU!=0 || uvOffsetV!=0) || (uvTilingU!=1 || uvTilingV!=1) || uvRotation!=0 )
             {
                 UVOptionsExtensionObject = new GLTFExtensionAsoboMaterialUVOptions();
 
@@ -1797,6 +2102,11 @@ namespace Max2Babylon
                 UVOptionsExtensionObject.clampUVX = clampUVX;
                 UVOptionsExtensionObject.clampUVY = clampUVY;
                 UVOptionsExtensionObject.clampUVZ = clampUVZ;
+                UVOptionsExtensionObject.UVOffsetU = uvOffsetU;
+                UVOptionsExtensionObject.UVOffsetV = uvOffsetV;
+                UVOptionsExtensionObject.UVTilingU = uvTilingU;
+                UVOptionsExtensionObject.UVTilingV = uvTilingV;
+                UVOptionsExtensionObject.UVRotation = uvRotation;
             }
 
             // fresnel extension
@@ -1809,6 +2119,17 @@ namespace Max2Babylon
                 fresnelFadeExtensionObject.fresnelOpacityOffset = fresnelOpacityOffset;
             }
 
+            // ghost extension
+            GLTFExtensionAsoboMaterialGhostEffect ghostExtensionObject = null;
+            if (materialType == MaterialType.Ghost)
+            {
+                ghostExtensionObject = new GLTFExtensionAsoboMaterialGhostEffect();
+
+                ghostExtensionObject.bias = ghostBias;
+                ghostExtensionObject.power = ghostPower;
+                ghostExtensionObject.scale = ghostScale;
+            }
+
             // FlightSim extension, replacing glass extra, set by FlightSimGlass OR glass material
             GLTFExtensionAsoboFlightSimGlass flightSimGlassExtensionObject = null;
             if (materialType == MaterialType.Glass)
@@ -1818,7 +2139,7 @@ namespace Max2Babylon
                 flightSimGlassExtensionObject.glassDeformationFactor = glassDeformationFactor;
             }
 
-            //Clear Coat extension, requiert a dirtTex (lacquer comp) and Clear Coat material
+            //Clear Coat extension, require a dirtTex (lacquer comp) and Clear Coat material
             GLTFExtensionAsoboClearCoat clearCoatExtensionObject = null;
             if (!string.IsNullOrWhiteSpace(dirtTexPath) && materialType == MaterialType.ClearCoat)
             {
@@ -1905,6 +2226,9 @@ namespace Max2Babylon
             if (dayNightOptionsExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboDayNightCycle.SerializedName, dayNightOptionsExtensionObject);
 
+            if (disableMotionBlurExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboDisableMotionBlur.SerializedName, disableMotionBlurExtensionObject);
+
             if (pearlescentOptionsExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboPearlescent.SerializedName, pearlescentOptionsExtensionObject);
 
@@ -1932,6 +2256,9 @@ namespace Max2Babylon
 
             if (flightSimGlassExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboFlightSimGlass.SerializedName, flightSimGlassExtensionObject);
+
+            if (ghostExtensionObject != null)
+                materialExtensions.Add(GLTFExtensionAsoboMaterialGhostEffect.SerializedName, ghostExtensionObject);
 
             if (invisibleExtensionObject != null)
                 materialExtensions.Add(GLTFExtensionAsoboMaterialInvisible.SerializedName, invisibleExtensionObject);
@@ -2265,6 +2592,11 @@ namespace Max2Babylon
 
             info = gltf.AddImage();
             info.uri = textureName;
+            if (!string.IsNullOrWhiteSpace(exporterParameters.textureFolder))
+            {
+                info.uri = PathUtilities.GetRelativePath(exporterParameters.outputPath, exporterParameters.textureFolder);
+                info.uri = Path.Combine(info.uri, textureName);
+            }
             info.FileExtension = ext;
 
             srcTextureExportCache.Add(sourceTexturePath, info);
@@ -2301,8 +2633,8 @@ namespace Max2Babylon
                 texture = gltf.AddTexture(image, sampler);
             }
 
-            int extensionIndex = image.uri.IndexOf(".");
-            texture.name = image.uri.Substring(0,extensionIndex);
+            string imageName = Path.GetFileNameWithoutExtension(image.uri);            
+            texture.name = imageName;
             return CreateTextureInfo<T>(texture);
         }
         T CreateTextureInfo<T>(int textureIndex) where T : GLTFTextureInfo, new()
@@ -2572,9 +2904,6 @@ namespace Max2Babylon
         }
 
         #endregion
-
-     
-        
     }
     
 }

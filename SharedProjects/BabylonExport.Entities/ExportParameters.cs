@@ -23,15 +23,14 @@ namespace BabylonExport.Entities
         public float scaleFactor = 1.0f;
         public bool writeTextures = true;
         public AnimationExportType animationExportType = AnimationExportType.Export;
-        public bool enableASBAnimationRetargeting = false;
+        public bool enableASBAnimationRetargeting = true;
+        public bool enableASBUniqueID = true;
         public bool overwriteTextures = true;
         public bool exportHiddenObjects = false;
         public bool exportMaterials = true;
         public bool exportOnlySelected = false;
+        public bool exportAsSubmodel = false;
         public bool bakeAnimationFrames = false;
-        public bool optimizeAnimations = true;
-        public bool optimizeVertices = true;
-        public bool animgroupExportNonAnimated = false;
         public bool generateManifest = false;
         public bool autoSaveSceneFile = false;
         public bool exportTangents = true;
@@ -53,7 +52,7 @@ namespace BabylonExport.Entities
 
         
         public bool useMultiExporter = false;
-        public bool keepInstances = false;
+        public bool keepInstances = true;
 		public bool removeLodPrefix = true;
         public bool removeNamespaces = true;
         public string srcTextureExtension;

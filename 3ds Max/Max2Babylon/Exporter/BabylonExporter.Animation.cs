@@ -23,6 +23,7 @@ namespace Max2Babylon
                     name = animGroup.Name,
                     from = animGroup.FrameStart,
                     to = animGroup.FrameEnd,
+                    keepNonAnimated = animGroup.KeepNonAnimated,
                     targetedAnimations = new List<BabylonTargetedAnimation>()
                 };
 
@@ -35,11 +36,15 @@ namespace Max2Babylon
                     if (maxNode == null)
                         continue;
 
+                    if (exportParameters.exportAsSubmodel && !maxNode.Selected) 
+                    {
+                        continue;
+                    }
+
 
                     // Helpers can be exported as dummies and as bones
                     string nodeId = maxNode.GetGuid().ToString();
                     string boneId = isGltfExported?maxNode.GetGuid().ToString(): maxNode.GetGuid().ToString()+"-bone";   // the suffix "-bone" is added in babylon export format to assure the uniqueness of IDs
-
 
                     // Node
                     BabylonNode node = null;
@@ -49,6 +54,12 @@ namespace Max2Babylon
                         if (node.animations != null && node.animations.Length != 0)
                         {
                             IList<BabylonAnimation> animations = GetSubAnimations(node, animationGroup.from, animationGroup.to);
+
+                            if( !animGroup.KeepStaticAnimation )
+                            {
+                                RemoveStaticAnimations(ref animations);
+                            }
+
                             foreach (BabylonAnimation animation in animations)
                             {
                                 BabylonTargetedAnimation targetedAnimation = new BabylonTargetedAnimation
@@ -59,16 +70,6 @@ namespace Max2Babylon
 
                                 animationGroup.targetedAnimations.Add(targetedAnimation);
                             }
-                        }
-                        else if (exportNonAnimated)
-                        {
-                            BabylonTargetedAnimation targetedAnimation = new BabylonTargetedAnimation
-                            {
-                                animation = CreatePositionAnimation(animationGroup.from, animationGroup.to, node.position),
-                                targetId = node.id
-                            };
-
-                            animationGroup.targetedAnimations.Add(targetedAnimation);
                         }
                     }
 
@@ -98,16 +99,6 @@ namespace Max2Babylon
                                 animationGroup.targetedAnimations.Add(targetedAnimation);
                             }
                         }
-                        else if (exportNonAnimated)
-                        {
-                            BabylonTargetedAnimation targetedAnimation = new BabylonTargetedAnimation
-                            {
-                                animation = CreateMatrixAnimation(animationGroup.from, animationGroup.to, bone.matrix),
-                                targetId = bone.id
-                            };
-
-                            animationGroup.targetedAnimations.Add(targetedAnimation);
-                        }
                     }
                 }
 
@@ -127,7 +118,7 @@ namespace Max2Babylon
                     material = babylonScene.MaterialsList.FirstOrDefault(x => x.id == matId);
                     if (material != null)
                     {
-                        if (material.animations != null && material.animations.Length != 0)
+                        if (material.animations != null && material.animations.Length != 0) 
                         {
                             IList<BabylonAnimation> animations = GetSubAnimations(material, animationGroup.from, animationGroup.to);
                             foreach (BabylonAnimation animation in animations)
@@ -359,7 +350,7 @@ namespace Max2Babylon
             var keys = new List<BabylonAnimationKey>();
             for (int indexKey = 0; indexKey < gameKeyTab.Count; indexKey++)
             {
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022
                 var gameKey = gameKeyTab[indexKey];
 #else
                 var gameKey = gameKeyTab[new IntPtr(indexKey)];
@@ -517,7 +508,7 @@ namespace Max2Babylon
         public void ExportColor3Animation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)
         {
-            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Color3,exportParameters.optimizeAnimations);
+            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Color3, true);
         }
 
         public void ExportColor4Animation(string property, List<BabylonAnimation> animations,
@@ -529,19 +520,19 @@ namespace Max2Babylon
         private void ExportVector3Animation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)
         {
-            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Vector3,exportParameters.optimizeAnimations);
+            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Vector3,true);
         }
 
         private void ExportQuaternionAnimation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)
         {
-            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Quaternion,exportParameters.optimizeAnimations);
+            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Quaternion, true);
         }
 
         public void ExportFloatAnimation(string property, List<BabylonAnimation> animations,
             Func<int, float[]> extractValueFunc)
         {
-            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Float,exportParameters.optimizeAnimations);
+            ExportAnimation(property, animations, extractValueFunc, BabylonAnimation.DataType.Float, true);
         }
 
         private BabylonAnimation ExportMatrixAnimation(string property, Func<int, float[]> extractValueFunc, bool removeLinearAnimationKeys = true, bool optimize = false, string name = null)
@@ -631,25 +622,17 @@ namespace Max2Babylon
             return false;
 
         }
-        public void RemoveStaticAnimations(ref BabylonScene babylonScene)
+
+        public void RemoveStaticAnimations(ref IList<BabylonAnimation> babylonAnimations)
         {
-            foreach (string nodeName in babylonScene.NodeMap.Keys)
+            for(int i = babylonAnimations.Count - 1; i >= 0; i--)
             {
-                var node = babylonScene.NodeMap[nodeName];
-                var animations = node.animations;
-                List<BabylonAnimation> newAnimations = new List<BabylonAnimation>();
-                foreach (BabylonAnimation anim in animations)
+                BabylonAnimation anim = babylonAnimations[i];
+                if (IsAnEmptyAnimation(anim))
                 {
-                    if (IsAnEmptyAnimation(anim))
-                    {
-                        logger?.RaiseMessage("Optimization | " + anim.name + " was removed from " + node.name);
-                    }
-                    else
-                    {
-                        newAnimations.Add(anim);
-                    }
+                    logger?.RaiseMessage("Optimization | " + anim.name + " was removed ");
+                    babylonAnimations.RemoveAt(i);
                 }
-                node.animations = newAnimations.ToArray();
             }
         }
 

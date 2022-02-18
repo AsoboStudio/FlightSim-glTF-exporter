@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Autodesk.Max;
+using Max2Babylon.FlightSim;
 
 namespace Max2Babylon
 {
@@ -16,7 +18,7 @@ namespace Max2Babylon
             for (int i = 0; i < Loader.Core.SceneMtls.Count; i++)
             {
                 IMtl sceneMtl = null;
-#if MAX2016
+#if MAX2015 || MAX2016
                 sceneMtl = (IMtl)Loader.Core.SceneMtls[new IntPtr(i)];
 #else
                 sceneMtl = (IMtl)Loader.Core.SceneMtls[i];
@@ -75,11 +77,7 @@ namespace Max2Babylon
             mxs += "\r\n" + "smeSelMats[1])";
             
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 || MAX2016|| MAX2017 || MAX2018
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
-#else
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-#endif
+            ScriptsUtilities.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
             IMtl result = null;
             try
             {
@@ -91,6 +89,27 @@ namespace Max2Babylon
             }
 
             return result;
+        }
+
+        public static IMtl GetAnimatableMaterial(this IINode node)
+        {
+            IMtl material = node.Mtl;
+            if (material == null)
+            {
+                MessageBox.Show("No Material found for the selected node");
+                return null;
+            }
+            if (material.IsMultiMtl)
+            {
+                MessageBox.Show("MultiMaterial animation is not supported, use a non-MultiMaterial material");
+                return null;
+            }
+            if (!FlightSimMaterialUtilities.IsFlightSimMaterial(material))
+            {
+                MessageBox.Show("Material animation is supported only for FlightSimMaterial");
+                return null;
+            }
+            return material;
         }
 
         public static float GetFloatMaterialProperty(this IIGameMaterial material, string propName, int key, IInterval interval )
@@ -161,7 +180,7 @@ namespace Max2Babylon
         public static readonly ClassIDWrapper Sphere = new ClassIDWrapper(17,0);
         public static readonly ClassIDWrapper TargetCamera = new ClassIDWrapper(4098, 0);
 
-        private uint partA, partB;
+        public uint partA, partB;
         public ClassIDWrapper(IClass_ID classID) { partA = classID.PartA; partB = classID.PartB; }
         public ClassIDWrapper(uint partA, uint partB) { this.partA = partA; this.partB = partB; }
         

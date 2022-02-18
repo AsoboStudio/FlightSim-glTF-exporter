@@ -62,12 +62,12 @@ namespace Max2Babylon.FlightSimExtension
                     IObject obj = maxNode.ObjectRef;
                     if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(MacroLightOmniClassID))
                     {
-                        exporter.logger?.RaiseError($"{maxNode.NodeName} is type of MacroLightOmni and it is DEPRECATED, use FlightSimLight");
+                        exporter.logger?.RaiseCriticalError($"{maxNode.NodeName} is type of MacroLightOmni and it is DEPRECATED, use FlightSimLight");
                         return null;
                     }
                     else if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(MacroLightSpotClassID))
                     {
-                        exporter.logger?.RaiseError($"{maxNode.NodeName} is type of MacroLightSpot and it is DEPRECATED, use FlightSimLight");
+                        exporter.logger?.RaiseCriticalError($"{maxNode.NodeName} is type of MacroLightSpot and it is DEPRECATED, use FlightSimLight");
                         return null;
                     }
                     else if (new MaterialUtilities.ClassIDWrapper(obj.ClassID).Equals(FlightSimLightClassID))
@@ -95,11 +95,7 @@ namespace Max2Babylon.FlightSimExtension
             mxs = $"(maxOps.getNodeByHandle {node.Handle}).Color";
 
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 ||MAX2016 || MAX2017 || MAX2018
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
-#else
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-#endif
+            ScriptsUtilities.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
             var r = mxsRetVal.Clr.ToArray();
 
             return r;
@@ -112,11 +108,7 @@ namespace Max2Babylon.FlightSimExtension
             mxs = $"(maxOps.getNodeByHandle {node.Handle}).delegate.Intensity";
 
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 ||MAX2016|| MAX2017 || MAX2018
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
-#else
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-#endif
+            ScriptsUtilities.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
             var r = mxsRetVal.F;
             return r;
         }
@@ -127,11 +119,7 @@ namespace Max2Babylon.FlightSimExtension
             mxs = $"(maxOps.getNodeByHandle {node.Handle}).ConeAngle";
 
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 || MAX2016|| MAX2017 || MAX2018
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
-#else
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-#endif
+            ScriptsUtilities.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
             var r = mxsRetVal.F;
             return r;
         }
@@ -142,11 +130,7 @@ namespace Max2Babylon.FlightSimExtension
             mxs = $"(maxOps.getNodeByHandle {node.Handle}).HasSimmetry";
 
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 || MAX2016|| MAX2017 || MAX2018
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
-#else
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-#endif
+            ScriptsUtilities.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
             var r = mxsRetVal.B;
             return r;
         }
@@ -157,11 +141,7 @@ namespace Max2Babylon.FlightSimExtension
             mxs = $"(maxOps.getNodeByHandle {node.Handle}).FlashFrequency";
 
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 || MAX2016|| MAX2017 || MAX2018
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
-#else
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-#endif
+            ScriptsUtilities.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
             var r = mxsRetVal.F;
             return r;
         }
@@ -172,11 +152,7 @@ namespace Max2Babylon.FlightSimExtension
             mxs = $"(maxOps.getNodeByHandle {node.Handle}).FlashDuration";
 
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 || MAX2016|| MAX2017 || MAX2018
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
-#else
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-#endif
+            ScriptsUtilities.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
             var r = mxsRetVal.F;
             return r;
         }
@@ -187,11 +163,7 @@ namespace Max2Babylon.FlightSimExtension
             mxs = $"(maxOps.getNodeByHandle {node.Handle}).RotationSpeed";
 
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 || MAX2016|| MAX2017 || MAX2018
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
-#else
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-#endif
+            ScriptsUtilities.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
             var r = mxsRetVal.F;
             return r;
         }
@@ -203,11 +175,7 @@ namespace Max2Babylon.FlightSimExtension
             mxs = $"(maxOps.getNodeByHandle {node.Handle}).FlashPhase";
 
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 || MAX2016|| MAX2017 || MAX2018
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
-#else
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-#endif
+            ScriptsUtilities.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
             var r = mxsRetVal.F;
             return r;
         }
@@ -219,12 +187,7 @@ namespace Max2Babylon.FlightSimExtension
             mxs = $"(maxOps.getNodeByHandle {node.Handle}).ActivationMode";
 
             IFPValue mxsRetVal = Loader.Global.FPValue.Create();
-#if MAX2015 || MAX2016|| MAX2017 || MAX2018
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
-#else
-            Loader.Global.ExecuteMAXScriptScript(mxs, true, mxsRetVal, true);
-#endif
-
+            ScriptsUtilities.ExecuteMAXScriptScript(mxs, true, mxsRetVal);
             bool r = mxsRetVal.I == 1;
             return r;
         }

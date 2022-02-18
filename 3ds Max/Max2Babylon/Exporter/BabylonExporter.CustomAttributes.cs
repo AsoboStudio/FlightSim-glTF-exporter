@@ -16,7 +16,7 @@ namespace Max2Babylon
         public Dictionary<string, object> ExportExtraAttributes(IIGameMaterial gameMaterial, BabylonScene babylonScene, List<string> excludeAttributes = null)
         {
             // Retreive the max object
-            ManagedServices.MaxscriptSDK.ExecuteMaxscriptCommand("obj = sceneMaterials[\"" + gameMaterial.MaterialName + "\"];");
+            ScriptsUtilities.ExecuteMaxScriptCommand("obj = sceneMaterials[\"" + gameMaterial.MaterialName + "\"];");
 
             return _ExportExtraAttributes(gameMaterial.IPropertyContainer, babylonScene, excludeAttributes);
         }
@@ -30,7 +30,7 @@ namespace Max2Babylon
         public Dictionary<string, object> ExportExtraAttributes(IIGameNode gameNode, BabylonScene babylonScene, List<string> excludeAttributes = null)
         {
             // Retreive the max object
-            ManagedServices.MaxscriptSDK.ExecuteMaxscriptCommand("obj = execute(\"$'" + gameNode.MaxNode.Handle + "'\");");
+            ScriptsUtilities.ExecuteMaxScriptCommand("obj = execute(\"$'" + gameNode.MaxNode.Handle + "'\");");
 
             return _ExportExtraAttributes(gameNode.IGameObject.IPropertyContainer, babylonScene, excludeAttributes);
         }
@@ -71,7 +71,7 @@ namespace Max2Babylon
                     + "\r\n" + ")"
                 + "\r\n" + ")"
                 + "\r\n" + "s";
-            string result = ManagedServices.MaxscriptSDK.ExecuteStringMaxscriptQuery(cmd);
+            string result = ScriptsUtilities.ExecuteMaxScriptQuery(cmd);
 
             if (result == null || result == "")
             {

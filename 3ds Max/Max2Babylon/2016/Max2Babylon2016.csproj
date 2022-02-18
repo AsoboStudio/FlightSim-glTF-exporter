@@ -131,6 +131,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
@@ -148,28 +149,37 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\BabylonActionCallback.cs">
+    <Compile Include="..\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Extensions\ASOBOUniqueIDExtension.cs">
+      <Link>Extensions\ASOBOUniqueIDExtension.cs</Link>
+    </Compile>
+    <Compile Include="..\Global\BabylonActionCallback.cs">
       <Link>BabylonActionCallback.cs</Link>
     </Compile>
-    <Compile Include="..\BabylonAnimationActionItem.cs">
+    <Compile Include="..\Global\BabylonAnimationActionItem.cs">
       <Link>BabylonAnimationActionItem.cs</Link>
     </Compile>
-    <Compile Include="..\BabylonExportActionItem.cs">
+    <Compile Include="..\Global\BabylonExportActionItem.cs">
       <Link>BabylonExportActionItem.cs</Link>
     </Compile>
-    <Compile Include="..\BabylonLoadAnimations.cs">
+    <Compile Include="..\Global\BabylonLoadAnimations.cs">
       <Link>BabylonLoadAnimations.cs</Link>
     </Compile>
-    <Compile Include="..\BabylonPropertiesActionItem.cs">
+    <Compile Include="..\Global\BabylonPropertiesActionItem.cs">
       <Link>BabylonPropertiesActionItem.cs</Link>
     </Compile>
-    <Compile Include="..\BabylonSkipFlatten.cs">
+    <Compile Include="..\Global\BabylonResolveUniqueIDActionItem.cs">
+      <Link>BabylonResolveUniqueIDActionItem.cs</Link>
+    </Compile>
+    <Compile Include="..\Global\BabylonSkipFlatten.cs">
       <Link>BabylonSkipFlatten.cs</Link>
     </Compile>
-    <Compile Include="..\BabylonStoreAnimations.cs">
+    <Compile Include="..\Global\BabylonStoreAnimations.cs">
       <Link>BabylonStoreAnimations.cs</Link>
     </Compile>
-    <Compile Include="..\Descriptor.cs">
+    <Compile Include="..\Global\Descriptor.cs">
       <Link>Descriptor.cs</Link>
     </Compile>
     <Compile Include="..\Exporter\AnimationGroup.cs">
@@ -349,13 +359,13 @@
       <Link>Forms\Vector3Control.Designer.cs</Link>
       <DependentUpon>Vector3Control.cs</DependentUpon>
     </Compile>
-    <Compile Include="..\GlobalUtility.cs">
+    <Compile Include="..\Global\GlobalUtility.cs">
       <Link>GlobalUtility.cs</Link>
     </Compile>
-    <Compile Include="..\Loader.cs">
+    <Compile Include="..\Global\Loader.cs">
       <Link>Loader.cs</Link>
     </Compile>
-    <Compile Include="..\MaxScriptManager.cs">
+    <Compile Include="..\Global\MaxScriptManager.cs">
       <Link>MaxScriptManager.cs</Link>
     </Compile>
     <Compile Include="..\PreExport\PreExportProcess.cs">
@@ -363,6 +373,9 @@
     </Compile>
     <Compile Include="..\Tools\CameraUtilities.cs">
       <Link>Tools\CameraUtilities.cs</Link>
+    </Compile>
+    <Compile Include="..\Tools\GroupsUtilities.cs">
+      <Link>Tools\GroupsUtilities.cs</Link>
     </Compile>
     <Compile Include="..\Tools\LayerUtilities.cs">
       <Link>Tools\LayerUtilities.cs</Link>
@@ -375,6 +388,9 @@
     </Compile>
     <Compile Include="..\Tools\NativeMethods.cs">
       <Link>Tools\NativeMethods.cs</Link>
+    </Compile>
+    <Compile Include="..\Tools\NodeUtilities.cs">
+      <Link>Tools\NodeUtilities.cs</Link>
     </Compile>
     <Compile Include="..\Tools\ScriptsUtilities.cs">
       <Link>Tools\ScriptsUtilities.cs</Link>
@@ -394,7 +410,6 @@
     <Compile Include="..\Exporter\BabylonExporter.WorldModifiers.cs">
       <Link>Exporter\BabylonExporter.WorldModifiers.Skin.cs</Link>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -404,6 +419,9 @@
   <ItemGroup>
     <Content Include="Refs\Autodesk.Max.dll" />
     <Content Include="Refs\ManagedServices.dll" />
+    <None Include="..\app.config">
+      <Link>app.config</Link>
+    </None>
     <None Include="Resources\FlightSimExporter.png" />
     <None Include="Resources\MaxExporter.png" />
   </ItemGroup>

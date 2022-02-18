@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Max;
-
 namespace Max2Babylon
 {
     public partial class AnimationForm : Form
@@ -37,7 +36,6 @@ namespace Max2Babylon
             animationGroupControl.InfoChanged += animationGroupControl_InfoChanged;
             animationGroupControl.ConfirmPressed += animationGroupControl_ConfirmPressed;
 
-            Tools.PrepareCheckBox(exportNonAnimatedNodesCheckBox, Loader.Core.RootNode, "babylonjs_animgroup_exportnonanimated");
         }
 
         #endregion
@@ -127,9 +125,12 @@ namespace Max2Babylon
             }
         }
 
-        private void animationList_SelectedValueChanged(object sender, EventArgs e)
+        private void animationList_SelectedValueChanged(object sender,  EventArgs e)
         {
-            animationGroupControl.SetAnimationGroupInfo((AnimationGroup)AnimationListBox.SelectedItem);
+            if (AnimationListBox.SelectedIndex != -1)
+            {
+                animationGroupControl.SetAnimationGroupInfo((AnimationGroup)AnimationListBox.SelectedItem);
+            }
         }
 
         // Typically called when the user presses confirm, but can also happen when scene changes are detected.
@@ -172,12 +173,6 @@ namespace Max2Babylon
         }
 
         #endregion
-
-        private void exportNonAnimatedNodesCheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            Tools.UpdateCheckBox(exportNonAnimatedNodesCheckBox, Loader.Core.RootNode, "babylonjs_animgroup_exportnonanimated");
-            Loader.Global.SetSaveRequiredFlag(true, false);
-        }
 
         private void ExportBtn_Click(object sender, EventArgs e)
         {

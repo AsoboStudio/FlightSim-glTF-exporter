@@ -8,6 +8,7 @@ namespace Max2Babylon
 {
     public enum LogLevel
     {
+        CRITICAL,
         ERROR,
         WARNING,
         MESSAGE,
@@ -64,7 +65,23 @@ namespace Max2Babylon
             logEntry.rank = rank;
             logEntry.emphasys = emphasis;
             logEntry.color = color;
+            logEntry.level = LogLevel.MESSAGE;
             logMessages.Add(logEntry);
+        }
+
+        void ILoggingProvider.RaiseCriticalError(string error, int rank)
+        {
+            if (logLevel >= LogLevel.ERROR)
+            {
+                if (logInListener) Autodesk.Max.GlobalInterface.Instance.TheListener.EditStream.Printf(error + "\n");
+                LogEntry logEntry = new LogEntry();
+                logEntry.message = error;
+                logEntry.rank = rank;
+                logEntry.color = Color.Red;
+                logEntry.level = LogLevel.CRITICAL;
+                logMessages.Add(logEntry);
+            }
+            throw new Exception(error);
         }
 
         void ILoggingProvider.RaiseError(string error, int rank)
@@ -79,7 +96,6 @@ namespace Max2Babylon
                 logEntry.level = LogLevel.ERROR;
                 logMessages.Add(logEntry);
             }
-            throw new Exception(error);
         }
 
         void ILoggingProvider.RaiseMessage(string message, int rank, bool emphasis)
@@ -144,6 +160,7 @@ namespace Max2Babylon
             LogEntry logEntry = new LogEntry();
             logEntry.message = progress.ToString();
             logEntry.progress = true;
+            logEntry.level = LogLevel.MESSAGE;
             logMessages.Add(logEntry);
         }
 
@@ -196,13 +213,21 @@ namespace Max2Babylon
             }
         }
 
-        public void RaiseError(string error, int rank = 0)
+        public void RaiseCriticalError(string error, int rank = 0)
         {
             if (OnError != null && logLevel >= LogLevel.ERROR)
             {
                 OnError(error, rank);
             }
             throw new Exception(error);
+        }
+
+        public void RaiseError(string error, int rank = 0)
+        {
+            if (OnError != null && logLevel >= LogLevel.ERROR)
+            {
+                OnError(error, rank);
+            }
         }
 
         public void RaiseWarning(string warning, int rank = 0)
@@ -262,8 +287,12 @@ namespace Max2Babylon
                 for (short i = 0; i < paramBlock.NumParams; i++)
                 {
                     ParamType2 paramType = paramBlock.GetParameterType(i);
-
-                    RaiseVerbose("paramBlock.GetLocalName(" + i + ")=" + paramBlock.GetLocalName(i, 0) + ", type=" + paramType, logRank + 1);
+#if MAX2016 || MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
+                    string localName= paramBlock.GetLocalName(i, 0);
+#else
+                    string localName= paramBlock.GetLocalName(i, 0, false);
+#endif
+                    RaiseVerbose("paramBlock.GetLocalName(" + i + ")=" + localName + ", type=" + paramType, logRank + 1);
                     switch (paramType)
                     {
                         case ParamType2.String:

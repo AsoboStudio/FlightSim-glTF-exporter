@@ -95,7 +95,10 @@ namespace Max2Babylon
                 babylonCamera.extraAnimations = extraAnimations;
             }
 
-            ExportFloatAnimation("fov", animations, key => new[] { Tools.ConvertFovToVertical((gameCamera.MaxObject as ICameraObject).GetFOV(key, Tools.Forever)) });
+            if(gameCamera.CameraFOV.IsPropAnimated)
+            {
+                ExportFloatAnimation("fov", animations, key => new[] { Tools.ConvertFovToVertical((gameCamera.MaxObject as ICameraObject).GetFOV(key, Tools.Forever)) });
+            }
 
             babylonCamera.animations = animations.ToArray();
 

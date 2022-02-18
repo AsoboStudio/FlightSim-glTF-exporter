@@ -35,12 +35,6 @@ namespace Max2Babylon
             System.Windows.Forms.Label warningLabel;
             System.Windows.Forms.Panel startEndPanel;
             System.Windows.Forms.Panel warningLabelPanel;
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("D");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("C");
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("B");
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("A", new System.Windows.Forms.TreeNode[] {
-            treeNode2,
-            treeNode3});
             this.nameTextBox = new System.Windows.Forms.TextBox();
             this.nameLabel = new System.Windows.Forms.Label();
             this.ConfirmButton = new System.Windows.Forms.Button();
@@ -48,6 +42,9 @@ namespace Max2Babylon
             this.calculateTimeRangeBtn = new System.Windows.Forms.Button();
             this.removeNodeButton = new System.Windows.Forms.Button();
             this.addSelectedButton = new System.Windows.Forms.Button();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.keepNonAnimatedBox = new System.Windows.Forms.CheckBox();
+            this.keepStaticAnimBox = new System.Windows.Forms.CheckBox();
             this.endTextBox = new System.Windows.Forms.TextBox();
             this.endLabel = new System.Windows.Forms.Label();
             this.startTextBox = new System.Windows.Forms.TextBox();
@@ -70,6 +67,7 @@ namespace Max2Babylon
             optionsButtonsPanel.SuspendLayout();
             nodeButtonsPanel.SuspendLayout();
             startEndPanel.SuspendLayout();
+            this.panel1.SuspendLayout();
             warningLabelPanel.SuspendLayout();
             this.optionsGroupBox.SuspendLayout();
             this.nodesGroupBox.SuspendLayout();
@@ -99,10 +97,12 @@ namespace Max2Babylon
             // 
             // nameTextBox
             // 
+            this.nameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.nameTextBox.Location = new System.Drawing.Point(39, 3);
             this.nameTextBox.MinimumSize = new System.Drawing.Size(20, 20);
             this.nameTextBox.Name = "nameTextBox";
-            this.nameTextBox.Size = new System.Drawing.Size(105, 20);
+            this.nameTextBox.Size = new System.Drawing.Size(142, 20);
             this.nameTextBox.TabIndex = 0;
             this.nameTextBox.WordWrap = false;
             this.nameTextBox.TextChanged += new System.EventHandler(this.nameTextBox_TextChanged);
@@ -123,7 +123,7 @@ namespace Max2Babylon
             optionsButtonsPanel.Controls.Add(this.ConfirmButton);
             optionsButtonsPanel.Controls.Add(this.cancelButton);
             optionsButtonsPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            optionsButtonsPanel.Location = new System.Drawing.Point(3, 143);
+            optionsButtonsPanel.Location = new System.Drawing.Point(3, 198);
             optionsButtonsPanel.Name = "optionsButtonsPanel";
             optionsButtonsPanel.Size = new System.Drawing.Size(184, 29);
             optionsButtonsPanel.TabIndex = 0;
@@ -156,7 +156,7 @@ namespace Max2Babylon
             nodeButtonsPanel.Controls.Add(this.removeNodeButton);
             nodeButtonsPanel.Controls.Add(this.addSelectedButton);
             nodeButtonsPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            nodeButtonsPanel.Location = new System.Drawing.Point(3, 68);
+            nodeButtonsPanel.Location = new System.Drawing.Point(3, 123);
             nodeButtonsPanel.Name = "nodeButtonsPanel";
             nodeButtonsPanel.Padding = new System.Windows.Forms.Padding(3);
             nodeButtonsPanel.Size = new System.Drawing.Size(184, 75);
@@ -218,6 +218,7 @@ namespace Max2Babylon
             // 
             startEndPanel.AutoSize = true;
             startEndPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            startEndPanel.Controls.Add(this.panel1);
             startEndPanel.Controls.Add(this.endTextBox);
             startEndPanel.Controls.Add(this.endLabel);
             startEndPanel.Controls.Add(this.startTextBox);
@@ -225,8 +226,39 @@ namespace Max2Babylon
             startEndPanel.Dock = System.Windows.Forms.DockStyle.Top;
             startEndPanel.Location = new System.Drawing.Point(3, 42);
             startEndPanel.Name = "startEndPanel";
-            startEndPanel.Size = new System.Drawing.Size(184, 26);
+            startEndPanel.Size = new System.Drawing.Size(184, 81);
             startEndPanel.TabIndex = 0;
+            // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.keepNonAnimatedBox);
+            this.panel1.Controls.Add(this.keepStaticAnimBox);
+            this.panel1.Location = new System.Drawing.Point(1, 29);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(184, 49);
+            this.panel1.TabIndex = 1;
+            // 
+            // keepNonAnimatedBox
+            // 
+            this.keepNonAnimatedBox.AutoSize = true;
+            this.keepNonAnimatedBox.Location = new System.Drawing.Point(6, 25);
+            this.keepNonAnimatedBox.Name = "keepNonAnimatedBox";
+            this.keepNonAnimatedBox.Size = new System.Drawing.Size(150, 17);
+            this.keepNonAnimatedBox.TabIndex = 7;
+            this.keepNonAnimatedBox.Text = "Keep Non-Animated Node";
+            this.keepNonAnimatedBox.UseVisualStyleBackColor = true;
+            this.keepNonAnimatedBox.CheckedChanged += new System.EventHandler(this.keepNonAnimated_CheckedChanged);
+            // 
+            // keepStaticAnimBox
+            // 
+            this.keepStaticAnimBox.AutoSize = true;
+            this.keepStaticAnimBox.Location = new System.Drawing.Point(6, 2);
+            this.keepStaticAnimBox.Name = "keepStaticAnimBox";
+            this.keepStaticAnimBox.Size = new System.Drawing.Size(130, 17);
+            this.keepStaticAnimBox.TabIndex = 6;
+            this.keepStaticAnimBox.Text = "Keep Static Animation";
+            this.keepStaticAnimBox.UseVisualStyleBackColor = true;
+            this.keepStaticAnimBox.CheckedChanged += new System.EventHandler(this.keepStaticAnimation_CheckedChanged);
             // 
             // endTextBox
             // 
@@ -390,6 +422,7 @@ namespace Max2Babylon
             // maxMaterialView
             // 
             this.maxMaterialView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.maxMaterialView.HideSelection = false;
             this.maxMaterialView.Location = new System.Drawing.Point(0, 0);
             this.maxMaterialView.Name = "maxMaterialView";
             this.maxMaterialView.Size = new System.Drawing.Size(265, 479);
@@ -413,6 +446,8 @@ namespace Max2Babylon
             nodeButtonsPanel.PerformLayout();
             startEndPanel.ResumeLayout(false);
             startEndPanel.PerformLayout();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             warningLabelPanel.ResumeLayout(false);
             this.optionsGroupBox.ResumeLayout(false);
             this.optionsGroupBox.PerformLayout();
@@ -455,5 +490,8 @@ namespace Max2Babylon
         private System.Windows.Forms.Panel materialPanel;
         private MaxMaterialView maxMaterialView;
         private System.Windows.Forms.SplitContainer splitContainer2;
+        private System.Windows.Forms.CheckBox keepStaticAnimBox;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.CheckBox keepNonAnimatedBox;
     }
 }

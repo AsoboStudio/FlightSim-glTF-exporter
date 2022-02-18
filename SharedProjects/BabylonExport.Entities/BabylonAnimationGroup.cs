@@ -27,6 +27,9 @@ namespace BabylonExport.Entities
         [DataMember]
         public float to { get; set; }
 
+        [DataMember]
+        public bool keepNonAnimated { get; set; }
+
         [DataMember(EmitDefaultValue = false)]
         public IList<BabylonTargetedAnimation> targetedAnimations { get; set; }
     }

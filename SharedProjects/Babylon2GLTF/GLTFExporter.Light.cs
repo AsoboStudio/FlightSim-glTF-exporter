@@ -55,7 +55,7 @@ namespace Babylon2GLTF
                     };
                     break;
                 default:
-                    logger?.RaiseError($"Unsupported light type {light.type} for glTF");
+                    logger?.RaiseCriticalError($"Unsupported light type {light.type} for glTF");
                     throw new System.Exception($"Unsupported light type {light.type} for glTF");
             }
 

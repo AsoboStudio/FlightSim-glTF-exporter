@@ -79,12 +79,12 @@ namespace Max2Babylon
                 return false;
             }
 
-            if (UV != null && !other.UV.IsAlmostEqualTo(UV, Tools.Epsilon))
+            if (UV != null && !other.UV.IsAlmostEqualTo(UV, Tools.KeyEpsilon))
             {
                 return false;
             }
 
-            if (UV2 != null && !other.UV2.IsAlmostEqualTo(UV2, Tools.Epsilon))
+            if (UV2 != null && !other.UV2.IsAlmostEqualTo(UV2, Tools.KeyEpsilon))
             {
                 return false;
             }

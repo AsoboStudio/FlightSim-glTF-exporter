@@ -16,9 +16,10 @@ namespace Max2Babylon.PreExport
         private ExportParameters exportParameters;
         public ILoggingProvider logger;
 
-        public PreExportProcess(ExportParameters _exportParameters)
+        public PreExportProcess(ExportParameters _exportParameters, ILoggingProvider _logger)
         {
             exportParameters = _exportParameters;
+            logger = _logger;
         }
 
         private bool IsMeshFlattenable(IINode node, AnimationGroupList animationGroupList, ref List<IINode> flattenableNodes)
@@ -28,10 +29,14 @@ namespace Max2Babylon.PreExport
             //- is hidden
             //- is not selected when exportOnlyselected is checked
             //- is part of animation group
-            //- is skinned
             //- is linked to animated node
 
-            if (node.IsMarkedAsNotFlattenable()) return false;
+            if (node.IsMarkedAsNotFlattenable()) 
+            {
+                logger?.RaiseWarning($"{node.Name} is marked as not flattenable");
+                return false;
+            }
+            
 
             if (node.IsRootNode)
             {
@@ -43,27 +48,18 @@ namespace Max2Babylon.PreExport
                 return false;
             }
 
-            if (!exportParameters.exportHiddenObjects && node.IsNodeHidden(false)) return false;
 
-            if (exportParameters.exportOnlySelected && !node.IsNodeSelected()) return false;
-
-            if (node.IsSkinned())
+            if (!exportParameters.exportHiddenObjects && node.IsNodeHidden(false))
             {
-                string message = $"{node.Name} can't be flatten, because is skinned";
-                logger?.RaiseMessage(message, 0);
-                for (int i = 0; i < node.NumChildren; i++)
-                {
-                    IINode n = node.GetChildNode(i);
-                    return IsMeshFlattenable(n, animationGroupList, ref flattenableNodes);
-                }
+                logger?.RaiseWarning($"{node.Name} is hidden");
                 return false;
-
             }
+
 
             if (node.IsNodeTreeAnimated())
             {
                 string message = $"{node.Name} can't be flatten, his hierarchy contains animated node";
-                logger?.RaiseMessage(message, 0);
+                logger?.RaiseWarning(message, 0);
                 for (int i = 0; i < node.NumChildren; i++)
                 {
                     IINode n = node.GetChildNode(i);
@@ -75,7 +71,7 @@ namespace Max2Babylon.PreExport
             if (node.IsInAnimationGroups(animationGroupList))
             {
                 string message = $"{node.Name} can't be flatten, because is part of an AnimationGroup";
-                logger?.RaiseMessage(message, 0);
+                logger?.RaiseWarning(message, 0);
                 for (int i = 0; i < node.NumChildren; i++)
                 {
                     IINode n = node.GetChildNode(i);
@@ -105,10 +101,13 @@ namespace Max2Babylon.PreExport
                 List<IINode> flattenableNodes = new List<IINode>();
                 if (IsMeshFlattenable(itemNode, animationGroupList, ref flattenableNodes))
                 {
-                    itemNode = itemNode.FlattenHierarchy();
+                    itemNode = itemNode.FlattenHierarchyMS();
                 }
-
-
+                else
+                {
+                    string msg = $"{itemNode.Name} cannot be flatten, check the content of his hierarchy.";
+                    logger?.RaiseWarning(msg, 0);
+                }
             }
         }
 
@@ -118,7 +117,7 @@ namespace Max2Babylon.PreExport
 
             IINode hierachyRoot = (node != null) ? node : Loader.Core.RootNode;
 
-#if MAX2020 || MAX2021
+#if MAX2020 || MAX2021 || MAX2022
             var tobake = Loader.Global.INodeTab.Create();
 #else
             var tobake = Loader.Global.NodeTab.Create();
@@ -141,7 +140,7 @@ namespace Max2Babylon.PreExport
 
             if (bakeAnimationType == BakeAnimationType.BakeAllAnimations)
             {
-                foreach (IINode n in Tools.ITabToIEnumerable(tobake))
+                foreach (IINode n in tobake.ToIEnumerable())
                 {
                     n.SetUserPropBool("babylonjs_BakeAnimation", true);
                 }
@@ -182,9 +181,24 @@ namespace Max2Babylon.PreExport
             {
                 if (!containerObject.IsInherited) continue;
                 containerLayers.Clear();
-                ScriptsUtilities.ExecuteMaxScriptCommand($@"(getNodeByName(""{containerObject.ContainerNode.Name}"")).LoadContainer()");
-                ScriptsUtilities.ExecuteMaxScriptCommand($@"(getNodeByName(""{containerObject.ContainerNode.Name}"")).UpdateContainer()");
-                bool makeUnique = containerObject.MakeUnique;
+                if (!containerObject.LoadContainer)
+                {
+                    logger?.RaiseWarning($"Impossible to load container {containerObject.ContainerNode.Name}...");
+                }
+                if (!containerObject.UnloadContainer)
+                {
+                    logger?.RaiseWarning($"Impossible to update container {containerObject.ContainerNode.Name}...");
+                }
+                if (!containerObject.MakeUnique)
+                {
+                    logger?.RaiseWarning($"Impossible to make unique container{containerObject.ContainerNode.Name}...");
+                }
+                int resolvePropertySet = 0;
+                if (containerObject.ContainerNode.GetUserPropBool("flightsim_resolved", ref resolvePropertySet) && resolvePropertySet>0) 
+                {
+                    logger?.RaiseCriticalError($"{containerObject.ContainerNode.Name} has an invalid object property 'flightsim_resolved', " +
+                        $"remove it manually trough Right Click -> Object Properties -> UserDefined  and save the scene");
+                }
                 containerLayers = containerObject.GetContainerLayers();
                 foreach (var layer in containerLayers)
                 {
@@ -199,6 +213,13 @@ namespace Max2Babylon.PreExport
 
             }
             AnimationGroupList.LoadDataFromAllContainers();
+
+            foreach (IIContainerObject containerObject in sceneContainers) 
+            {
+                // this property must be set to false at the and on the export of a containers
+                // saving the scene with the property stored end to conflict and error on the IDresolved for multiple inherited containers
+                containerObject.ContainerNode.SetUserPropBool("flightsim_resolved", false);
+            }
         }
 
         public void MergeAllXrefRecords()
@@ -215,6 +236,19 @@ namespace Max2Babylon.PreExport
             AnimationGroupList.LoadDataFromAnimationHelpers();
         }
 
+        public void FlattenGroups(IINode topNode = null) 
+        {
+            topNode = (topNode != null) ? topNode : Loader.Core.RootNode;
+            List<IINode> groupsList;
+            groupsList = GroupsUtilities.GetAllGroups(topNode);
+
+            for (int i = 0; i < groupsList.Count; i++)
+            {
+                IINode node = groupsList[i];
+                FlattenItem(ref node);
+            }
+        }
+
         public void ApplyPreExport()
         {
             var watch = new Stopwatch();
@@ -225,43 +259,32 @@ namespace Max2Babylon.PreExport
                 MaxExportParameters maxExporterParameters = (exportParameters as MaxExportParameters);
                 exportNode = maxExporterParameters.exportNode;
 
-                if (maxExporterParameters.usePreExportProcess)
+                if (maxExporterParameters.mergeContainersAndXRef)
                 {
-                    if (maxExporterParameters.mergeContainersAndXRef)
-                    {
-                        string message = "Merging containers and Xref...";
-                        logger?.Print(message, Color.Black, 0);
-                        ExportClosedContainers();
-                        MergeAllXrefRecords();
+                    string message = "Merging containers and Xref...";
+                    logger?.Print(message, Color.Black, 0);
+                    ExportClosedContainers();
+                    MergeAllXrefRecords();
 #if DEBUG
-                        var containersXrefMergeTime = watch.ElapsedMilliseconds / 1000.0;
-                        logger?.Print(string.Format("Containers and Xref  merged in {0:0.00}s", containersXrefMergeTime), Color.Blue);
+                    var containersXrefMergeTime = watch.ElapsedMilliseconds / 1000.0;
+                    logger?.Print(string.Format("Containers and Xref  merged in {0:0.00}s", containersXrefMergeTime), Color.Blue);
 #endif
-                    }
-                    BakeAnimationsFrame(exportNode, maxExporterParameters.bakeAnimationType);
                 }
+
+                if (maxExporterParameters.flattenGroups)
+                {
+                    string message = "Flattening groups...";
+                    logger?.Print(message, Color.Black, 0);
+                    FlattenGroups(exportNode);
+
+#if DEBUG
+                    var flattenGroupsTime = watch.ElapsedMilliseconds / 1000.0;
+                    logger?.Print(string.Format("Groups Flattened in {0:0.00}s", flattenGroupsTime), Color.Blue);
+#endif
+                }
+                BakeAnimationsFrame(exportNode, maxExporterParameters.bakeAnimationType);
             }
             watch.Stop();
-        }
-
-        public void RevertScene()
-        {
-            if (exportParameters is MaxExportParameters)
-            {
-                MaxExportParameters maxExporterParameters = (exportParameters as MaxExportParameters);
-                //flattening bake should not be reserved as it is part of a pre-process
-                //if (maxExporterParameters.flattenScene)
-                //{
-                //    Tools.RemoveFlattenModification();
-                //}
-
-                if (!maxExporterParameters.applyPreprocessToScene && maxExporterParameters.usePreExportProcess)
-                {
-                    Loader.Core.SetQuietMode(true);
-                    Loader.Core.LoadFromFile(Loader.Core.CurFilePath, true);
-                    Loader.Core.SetQuietMode(false);
-                }
-            }
         }
     }
 }

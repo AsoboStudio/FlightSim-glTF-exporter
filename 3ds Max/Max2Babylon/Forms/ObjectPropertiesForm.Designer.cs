@@ -45,7 +45,7 @@ namespace Max2Babylon
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.lblAsbAnimationTargetID = new System.Windows.Forms.Label();
             this.chkBakeAnimationNode = new System.Windows.Forms.CheckBox();
-            this.txtASBAnimationTargetID = new System.Windows.Forms.TextBox();
+            this.txtASBUniqueID = new System.Windows.Forms.TextBox();
             this.grpAutoAnimate = new System.Windows.Forms.GroupBox();
             this.chkLoop = new System.Windows.Forms.CheckBox();
             this.nupTo = new System.Windows.Forms.NumericUpDown();
@@ -261,6 +261,7 @@ namespace Max2Babylon
             // chkOptimize
             // 
             this.chkOptimize.AutoSize = true;
+            this.chkOptimize.Enabled = false;
             this.chkOptimize.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.chkOptimize.Location = new System.Drawing.Point(182, 51);
             this.chkOptimize.Name = "chkOptimize";
@@ -269,6 +270,7 @@ namespace Max2Babylon
             this.chkOptimize.Text = "Try to optimize vertices";
             this.chkOptimize.ThreeState = true;
             this.chkOptimize.UseVisualStyleBackColor = true;
+            this.chkOptimize.Visible = false;
             // 
             // chkPickable
             // 
@@ -286,7 +288,7 @@ namespace Max2Babylon
             // 
             this.groupBox3.Controls.Add(this.lblAsbAnimationTargetID);
             this.groupBox3.Controls.Add(this.chkBakeAnimationNode);
-            this.groupBox3.Controls.Add(this.txtASBAnimationTargetID);
+            this.groupBox3.Controls.Add(this.txtASBUniqueID);
             this.groupBox3.Controls.Add(this.grpAutoAnimate);
             this.groupBox3.Controls.Add(this.chkAutoAnimate);
             this.groupBox3.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -302,9 +304,9 @@ namespace Max2Babylon
             this.lblAsbAnimationTargetID.AutoSize = true;
             this.lblAsbAnimationTargetID.Location = new System.Drawing.Point(18, 54);
             this.lblAsbAnimationTargetID.Name = "lblAsbAnimationTargetID";
-            this.lblAsbAnimationTargetID.Size = new System.Drawing.Size(101, 13);
+            this.lblAsbAnimationTargetID.Size = new System.Drawing.Size(87, 13);
             this.lblAsbAnimationTargetID.TabIndex = 20;
-            this.lblAsbAnimationTargetID.Text = "Animation TargetID:";
+            this.lblAsbAnimationTargetID.Text = "Node Unique ID:";
             // 
             // chkBakeAnimationNode
             // 
@@ -317,12 +319,13 @@ namespace Max2Babylon
             this.chkBakeAnimationNode.ThreeState = true;
             this.chkBakeAnimationNode.UseVisualStyleBackColor = true;
             // 
-            // txtASBAnimationTargetID
+            // txtASBUniqueID
             // 
-            this.txtASBAnimationTargetID.Location = new System.Drawing.Point(125, 51);
-            this.txtASBAnimationTargetID.Name = "txtASBAnimationTargetID";
-            this.txtASBAnimationTargetID.Size = new System.Drawing.Size(167, 20);
-            this.txtASBAnimationTargetID.TabIndex = 21;
+            this.txtASBUniqueID.Location = new System.Drawing.Point(125, 51);
+            this.txtASBUniqueID.Name = "txtASBUniqueID";
+            this.txtASBUniqueID.Size = new System.Drawing.Size(167, 20);
+            this.txtASBUniqueID.TabIndex = 21;
+            this.txtASBUniqueID.TextChanged += new System.EventHandler(this.txtASBUniqueID_TextChanged);
             // 
             // grpAutoAnimate
             // 
@@ -1048,7 +1051,7 @@ namespace Max2Babylon
         private System.Windows.Forms.TextBox tagInput;
         private System.Windows.Forms.CheckBox chkBakeAnimationNode;
         private System.Windows.Forms.Label lblAsbAnimationTargetID;
-        private System.Windows.Forms.TextBox txtASBAnimationTargetID;
+        private System.Windows.Forms.TextBox txtASBUniqueID;
         private System.Windows.Forms.GroupBox groupBox6;
         private System.Windows.Forms.NumericUpDown lodValueNumeric;
         private System.Windows.Forms.Label lodValueLabel;

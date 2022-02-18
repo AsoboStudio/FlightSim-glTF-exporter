@@ -70,13 +70,16 @@ COPY %source_dir%\Microsoft.WindowsAPICodePack.ShellExtensions.dll %dest_dir%\Mi
 if exist %dest_dir%\Max2Babylon.dll del /f /q %dest_dir%\Max2Babylon.dll
 COPY %source_dir%\Max2Babylon.dll %dest_dir%\Max2Babylon.dll
 
+if exist %dest_dir%\Max2Babylon.dll.config del /f /q %dest_dir%\Max2Babylon.dll.config
+COPY %source_dir%\Max2Babylon.dll.config %dest_dir%\Max2Babylon.dll.config
+
 
 
 IF %1=="Debug" GOTO DebugOnMax
 GOTO Close
 
 :NoConfiguration
-ECHO "No Configuaration"
+ECHO "No Configuration"
 GOTO Close
 
 :DebugOnMax

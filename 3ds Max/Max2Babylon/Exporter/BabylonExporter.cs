@@ -15,13 +15,17 @@ using Autodesk.Max.Plugins;
 using GLTFExport.Entities;
 using Color = System.Drawing.Color;
 using Utilities;
+using System.Configuration;
 
 namespace Max2Babylon
 {
     public partial class BabylonExporter
     {
         public ILoggingProvider logger;
-        public BabylonExporter(){}
+        public BabylonExporter(ILoggingProvider _logger) 
+        {
+            logger = _logger;
+        }
         public Form callerForm;
 
         public ExportParameters exportParameters;
@@ -36,11 +40,33 @@ namespace Max2Babylon
         private bool optimizeAnimations;
         private bool exportNonAnimated;
 
-        public static string exporterVersion = "1.5.0";
         public float scaleFactor = 1.0f;
 
         public const int MaxSceneTicksPerSecond = 4800; //https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2016/ENU/MAXScript-Help/files/GUID-141213A1-B5A8-457B-8838-E602022C8798-htm.html
 
+        public static string exporterVersion = GetConfigurationValue();
+
+
+        public static string GetConfigurationValue()
+        {
+            string title = "1.0.0.0";
+            string dllPath = Assembly.GetExecutingAssembly().Location;
+            string dllFolder = Path.GetDirectoryName(dllPath);
+            string configPath = Path.Combine(dllFolder,"Max2Babylon.dll.config");
+            if(File.Exists(configPath))
+            {
+                ExeConfigurationFileMap fileMap = new ExeConfigurationFileMap();
+                fileMap.ExeConfigFilename = configPath;
+                Configuration config = ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None);
+                var key = config.AppSettings.Settings["Version"];
+                if(key!=null)
+                {
+                    title = key.Value;    
+                }
+            }
+
+            return title;
+        }
 
         public void Export(ExportParameters exportParameters)
         {
@@ -58,7 +84,21 @@ namespace Max2Babylon
             }
 
             Tools.InitializeGuidsMap();
-
+            if (exportParameters.enableASBUniqueID) 
+            {
+                var nodeToResolve = Tools.VerifyUniqueIds();
+                if (nodeToResolve.Count > 0)
+                {
+                    string criticalNodes ="";
+                    foreach (IINode node in nodeToResolve)
+                    {
+                        criticalNodes += node.Name + "\n";
+                    }
+                    logger?.RaiseCriticalError($"Export interrupted due to UniqueID conflict in the following nodes, {criticalNodes} \nFix the issue trough Babylon -> Resolve UniqueID button");
+                }
+                
+            }
+            
             string fileExportString = exportNode != null? $"{exportNode.NodeName} | {exportParameters.outputPath}": exportParameters.outputPath;
             logger?.Print($"Exportation started: {fileExportString}", Color.Blue);
 
@@ -84,15 +124,38 @@ namespace Max2Babylon
             gameConversionManger.CoordSystem = Autodesk.Max.IGameConversionManager.CoordSystem.D3d;
 
             var gameScene = Loader.Global.IGameInterface;
+
             if (exportNode == null || exportNode.IsRootNode)
             {
-                gameScene.InitialiseIGame(false);
+                if (exportParameters.exportAsSubmodel)
+                {
+                    IINodeTab selection = Tools.CreateNodeTab();
+                    Loader.Core.GetSelNodeTab(selection);
+                    foreach (IINode node in selection.ToIEnumerable())
+                    {
+                        foreach (IINode child in node.NodeTree())
+                        {
+                            selection.AppendNode(child, false, 0);
+                }
+                    }
+                    Loader.Core.SelectNodeTab(selection,true, false);
+                    exportParameters.exportOnlySelected = true;
+                    gameScene.InitialiseIGame(false);
+                }
+                else 
+                {
+                    gameScene.InitialiseIGame(false);
+                }
             }
-            else
+            else if(exportNode!=null)
             {
                 gameScene.InitialiseIGame(exportNode, true);
             }
-            
+            else
+            {
+                logger?.RaiseError("Impossible to initialize the scene");
+            }
+
             gameScene.SetStaticFrame(0);
 
             MaxSceneFileName = gameScene.SceneFileName;
@@ -110,7 +173,7 @@ namespace Max2Babylon
             // Check directory exists
             if (!Directory.Exists(outputDirectory))
             {
-                logger?.RaiseError("Exportation stopped: Output folder does not exist");
+                logger?.RaiseCriticalError($"Exportation stopped: Output folder ({folderOuputDirectory}\\{outputFileName}) does not exist");
                 logger?.ReportProgressChanged(100);
                 return;
             }
@@ -139,7 +202,9 @@ namespace Max2Babylon
             babylonScene.producer = new BabylonProducer
             {
                 name = "3dsmax",
-#if MAX2021
+#if MAX2022
+                version = "2022",
+#elif MAX2021
                 version = "2021",
 #elif MAX2020
                 version = "2020",
@@ -238,7 +303,8 @@ namespace Max2Babylon
 
             // Root nodes
             logger?.Print("Exporting nodes",Color.Black);
-            HashSet<IIGameNode> maxRootNodes = getRootNodes(gameScene);
+            HashSet<IIGameNode> maxRootNodes = (exportParameters.exportAsSubmodel == false) ? getRootNodes(gameScene) : getSubModelsRootNodes(gameScene);
+            
             var progressionStep = 80.0f / maxRootNodes.Count;
             var progression = 10.0f;
             logger?.ReportProgressChanged((int)progression);
@@ -252,9 +318,28 @@ namespace Max2Babylon
                 {
                     calculateSkeletonList(maxRootNode,babylonScene, gameScene);
                 }
+                else if (exportParameters.exportAsSubmodel)
+                {
+                    // in case the skin has one or more bones that are not par of the submodel hierarchy
+                    BabylonNode subModelRoot = CalculateSubModelBonesDependencies(maxRootNode, babylonScene, gameScene);
+                    BabylonNode node = exportNodeRec(maxRootNode, babylonScene, gameScene);
+                    if (subModelRoot == null) 
+                    {
+                        // in case the skin has all the skinned nodes in the submodel child hierarchy
+                        // in case it is not a mesh 
+                        // in case it is not skinned
+                        subModelRoot = node;
+                    }
+                    subModelRoot.subModelRoot = true;
+                    babylonScene.RootNodes.Add(subModelRoot);
+
+                }
                 else
                 {
                 BabylonNode node = exportNodeRec(maxRootNode, babylonScene, gameScene);
+                
+                if(node!=null) babylonScene.RootNodes.Add(node);
+
                 // if we're exporting from a specific node, reset the pivot to {0,0,0}
                 if (node != null && exportNode != null && !exportNode.IsRootNode)
                     SetNodePosition(ref node, ref babylonScene, new float[] { 0, 0, 0 });
@@ -398,7 +483,13 @@ namespace Max2Babylon
             {
                 var atmospheric = Loader.Core.GetAtmospheric(index);
 
-                if (atmospheric!=null && atmospheric.Active(0) && atmospheric.ClassName == "Fog")
+#if MAX2016 || MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
+                string atmosphericClassName = atmospheric.ClassName;
+#else
+                string atmosphericClassName = "";
+                atmospheric.GetClassName(ref atmosphericClassName);
+#endif
+                if (atmospheric!=null && atmospheric.Active(0) && atmosphericClassName == "Fog")
                 {
                     var fog = atmospheric as IStdFog;
 
@@ -437,13 +528,15 @@ namespace Max2Babylon
             // ----------------------------
 
             //Remove useless animations
-            if (optimizeAnimations)
-            {
-                RemoveStaticAnimations(ref babylonScene);
-            }
             
             logger?.Print("Export animation groups",Color.Black);
             // add animation groups to the scene
+
+            //if (optimizeAnimations)
+            //{
+             //   RemoveStaticAnimations(ref babylonScene);
+            //}
+
             babylonScene.animationGroups = ExportAnimationGroups(babylonScene);
 #if DEBUG
             var animationGroupExportTime = watch.ElapsedMilliseconds / 1000.0 -nodesExportTime;
@@ -525,7 +618,7 @@ namespace Max2Babylon
                 var sw = new StringWriter(sb, CultureInfo.InvariantCulture);
                 using (var jsonWriter = new JsonTextWriterOptimized(sw))
                 {
-                    jsonWriter.Formatting = Formatting.None;
+                    jsonWriter.Formatting = Newtonsoft.Json.Formatting.None;
                     jsonSerializer.Serialize(jsonWriter, babylonScene);
                 }
                 File.WriteAllText(outputFile, sb.ToString());
@@ -651,9 +744,15 @@ namespace Max2Babylon
 
         private void moveFileToOutputDirectory(string sourceFilePath, string targetFilePath, ExportParameters exportParameters)
         {
+            var texDir = Path.GetDirectoryName(targetFilePath);
+            if (!Directory.Exists(texDir)) 
+            {
+                logger.RaiseCriticalError($"Impossible to find the following directory: {texDir}");
+            }
             var fileExtension = Path.GetExtension(sourceFilePath).Substring(1).ToLower();
             if (validFormats.Contains(fileExtension))
             {
+                
                 if (exportParameters.writeTextures)
                 {
                     if (File.Exists(targetFilePath))
@@ -687,6 +786,7 @@ namespace Max2Babylon
             }
         }
 
+        
         private BabylonNode exportNodeRec(IIGameNode maxGameNode, BabylonScene babylonScene, IIGameScene maxGameScene)
         {
             BabylonNode babylonNode = null;
@@ -736,7 +836,8 @@ namespace Max2Babylon
                     babylonNode.tags = tag;
                 }
 
-                babylonNode.AnimationTargetId= maxGameNode.MaxNode.GetStringProperty("babylonjs_asb_anim_targetID", "");
+                babylonNode.UniqueID = maxGameNode.MaxNode.GetUniqueID();
+                babylonNode.AnimationTargetId = babylonNode.UniqueID;
 
                 // Export its children
                 for (int i = 0; i < maxGameNode.ChildCount; i++)
@@ -760,12 +861,13 @@ namespace Max2Babylon
                 var skin = gameMesh.IGameSkin;
                 IGMatrix skinInitPoseMatrix = Loader.Global.GMatrix.Create(Loader.Global.Matrix3.Create(true));
 
-                if (isSkinned && GetSkinnedBones(skin).Count > 0)  // if the mesh has a skin with at least one bone
+                if (isSkinned && GetSkinnedBones(skin, maxGameNode).Count > 0)  // if the mesh has a skin with at least one bone
                 {
                     var skinAlreadyStored = skins.Find(_skin => IsSkinEqualTo(_skin, skin));
                     if (skinAlreadyStored == null)
                     {
                         skins.Add(skin);
+                        skinNodeMap.Add(skin,maxGameNode);
                     }
 
                     skin.GetInitSkinTM(skinInitPoseMatrix);
@@ -784,6 +886,47 @@ namespace Max2Babylon
             }
 
             
+        }
+
+        private List<IIGameNode> CalculateSubModelSkinsDependencies(IIGameNode maxGameNode, BabylonScene babylonScene, IIGameScene maxGameScene)
+        {
+            List<IIGameNode> subModelDeps = new List<IIGameNode>();
+            if (maxGameNode.IGameObject.IGameType is Autodesk.Max.IGameObject.ObjectTypes.Mesh)
+            {
+                var gameMesh = maxGameNode.IGameObject.AsGameMesh();
+                // Skin
+                var isSkinned = gameMesh.IsObjectSkinned;
+                var skin = gameMesh.IGameSkin;
+
+                if (isSkinned) subModelDeps = GetSubModelSkinHierarchy(skin, maxGameNode); // if the mesh has a skin with at least one bone
+            }
+
+
+            for (int i = 0; i < maxGameNode.ChildCount; i++)
+            {
+                var descendant = maxGameNode.GetNodeChild(i);
+                subModelDeps.AddRange(CalculateSubModelSkinsDependencies(descendant, babylonScene, maxGameScene));
+            }
+
+            return subModelDeps;
+        }
+
+        private BabylonNode CalculateSubModelBonesDependencies(IIGameNode maxGameNode, BabylonScene babylonScene, IIGameScene maxGameScene) 
+        {
+            BabylonNode subModelRoot = null;
+            List<IIGameNode> subModelDeps = CalculateSubModelSkinsDependencies(maxGameNode, babylonScene, maxGameScene);
+
+            foreach (IIGameNode subModelDep in subModelDeps)
+            {
+                if (!subModelDep.MaxNode.Selected)
+                {
+                    BabylonNode babylonNode = ExportSubModelExtraNode(maxGameScene, subModelDep, babylonScene);
+                    if (!subModelDeps.Contains(subModelDep.NodeParent)) subModelRoot = babylonNode;
+                    babylonScene.NodeMap[babylonNode.id] = babylonNode;
+                }
+
+            }
+            return subModelRoot;
         }
 
         /// <summary>
@@ -876,6 +1019,42 @@ namespace Max2Babylon
             return maxGameNodes;
         }
 
+        private HashSet<IIGameNode> getSubModelsRootNodes(IIGameScene maxGameScene)
+        {
+            HashSet<IIGameNode> maxGameNodes = new HashSet<IIGameNode>();
+
+            Func<IIGameNode, IIGameNode> getMaxRootNode = delegate (IIGameNode maxGameNode)
+            {
+                while (maxGameNode.NodeParent != null && maxGameNode.NodeParent.MaxNode.Selected == true)
+                {
+                    maxGameNode = maxGameNode.NodeParent;
+                }
+                return maxGameNode;
+            };
+
+            Action<Autodesk.Max.IGameObject.ObjectTypes> addMaxRootNodes = delegate (Autodesk.Max.IGameObject.ObjectTypes type)
+            {
+                ITab<IIGameNode> maxGameNodesOfType = maxGameScene.GetIGameNodeByType(type);
+                if (maxGameNodesOfType != null)
+                {
+                    TabToList(maxGameNodesOfType).ForEach(maxGameNode =>
+                    {
+                        if (maxGameNode.MaxNode.Selected) 
+                        {
+                            var maxRootNode = getMaxRootNode(maxGameNode);
+                            maxGameNodes.Add(maxRootNode);
+                        }
+                        
+                    });
+                }
+            };
+
+            addMaxRootNodes(Autodesk.Max.IGameObject.ObjectTypes.Mesh);
+            addMaxRootNodes(Autodesk.Max.IGameObject.ObjectTypes.Helper);
+
+            return maxGameNodes;
+        }
+
         private static List<T> TabToList<T>(ITab<T> tab)
         {
             if (tab == null)
@@ -887,7 +1066,7 @@ namespace Max2Babylon
                 List<T> list = new List<T>();
                 for (int i = 0; i < tab.Count; i++)
                 {
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022
                     var item = tab[i];
 #else
                     var item = tab[new IntPtr(i)];
@@ -933,7 +1112,7 @@ namespace Max2Babylon
                 return false;
             }
 
-            if (exportParameters.exportOnlySelected && !gameNode.MaxNode.Selected)
+            if ((exportParameters.exportOnlySelected|| exportParameters.exportAsSubmodel) && !gameNode.MaxNode.Selected)
             {
                 return false;
             }
@@ -1093,6 +1272,8 @@ namespace Max2Babylon
         {
             float[] offset = new float[] { newPosition[0] - node.position[0], newPosition[1] - node.position[1], newPosition[2] - node.position[2] };
             node.position = newPosition;
+
+            if (node.animations == null) return;
 
             List<BabylonAnimation> animations = new List<BabylonAnimation>(node.animations);
             BabylonAnimation animationPosition = animations.Find(animation => animation.property.Equals("position"));

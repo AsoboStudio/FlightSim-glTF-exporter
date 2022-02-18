@@ -72,7 +72,7 @@ namespace Max2Babylon
                     {
                         if (subMat.SubMaterialCount > 0)
                         {
-                            logger?.RaiseError("MultiMaterials as inputs to other MultiMaterials are not supported!");
+                            logger?.RaiseCriticalError("MultiMaterials as inputs to other MultiMaterials are not supported!");
                         }
                         else
                         {
@@ -1083,9 +1083,9 @@ namespace Max2Babylon
 
         private void AddBabylonAttributes(string attributesContainer, string cmdCreateBabylonAttributes)
         {
-            ManagedServices.MaxscriptSDK.ExecuteMaxscriptCommand(cmdCreateBabylonAttributes);
-            ManagedServices.MaxscriptSDK.ExecuteMaxscriptCommand("maxMaterial = sceneMaterials[\"" + attributesContainer + "\"];");
-            ManagedServices.MaxscriptSDK.ExecuteMaxscriptCommand(@"custAttributes.add maxMaterial babylonAttributesDataCA;");
+            ScriptsUtilities.ExecuteMaxScriptCommand(cmdCreateBabylonAttributes);
+            ScriptsUtilities.ExecuteMaxScriptCommand("maxMaterial = sceneMaterials[\"" + attributesContainer + "\"];");
+            ScriptsUtilities.ExecuteMaxScriptCommand(@"custAttributes.add maxMaterial babylonAttributesDataCA;");
         }
 
         private void ExportCommonBabylonAttributes(IIPropertyContainer babylonAttributesContainer, BabylonMaterial babylonMaterial)

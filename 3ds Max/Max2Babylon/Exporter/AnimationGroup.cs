@@ -13,10 +13,101 @@ using Autodesk.Max.Plugins;
 using ManagedServices;
 using Max2Babylon.FlightSim;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Utilities;
 
 namespace Max2Babylon
 {
+
+    public struct SerializableAnimationGroup
+    {
+        public string name;
+        public int ticksStart;
+        public int ticksEnd;
+
+        public bool keepEmpty;
+        public bool keepNonAnimated;
+
+        public List<Guid> nodes;
+        public List<Guid> materials;
+
+        public SerializableAnimationGroup(string serializedData)
+        {
+            JObject o = JObject.Parse(serializedData);
+
+            //Default Values
+            name = "";
+            ticksStart = 0;
+            ticksEnd = 16000;
+            keepEmpty = false;
+            keepNonAnimated = true;
+            nodes = null;
+            materials = null;
+
+            //Set result from the parsing
+            if (o.ContainsKey("name"))
+            {
+                name = o["name"].Value<string>();
+            }
+            if (o.ContainsKey("ticksStart"))
+            {
+                ticksStart = o["ticksStart"].Value<int>();
+            }
+            if (o.ContainsKey("ticksEnd"))
+            {
+                ticksEnd = o["ticksEnd"].Value<int>();
+            }
+            if (o.ContainsKey("keepEmpty"))
+            {
+                keepEmpty = o["keepEmpty"].Value<bool>();
+            }
+            if (o.ContainsKey("keepNonAnimated"))
+            {
+                keepNonAnimated = o["keepNonAnimated"].Value<bool>();
+            }
+            if (o.ContainsKey("nodes"))
+            {
+                List<string> parsed = o["nodes"].Values<string>()?.ToList();
+                if (parsed != null) nodes = parsed.ConvertAll(x => new Guid(x));
+            }
+            if (o.ContainsKey("materials"))
+            {
+                List<string> parsed = o["materials"].Values<string>()?.ToList();
+                if (parsed != null) materials = parsed.ConvertAll(x => new Guid(x));
+            }
+            
+        }
+
+        /// <summary>
+        /// Apply the settings stored in the SerializableAnimationGroup to the input AnimationGroup
+        /// </summary>
+        /// <param name="animGroup">This animation group will receive the values from the Serializable</param>
+        public void FillSerializedData(AnimationGroup animGroup)
+        {
+            animGroup.Name = name;
+            animGroup.TicksStart = ticksStart;
+            animGroup.TicksEnd = ticksEnd;
+            animGroup.KeepStaticAnimation = keepEmpty;
+            animGroup.NodeGuids = nodes;
+            animGroup.MaterialGuids = materials;
+            animGroup.KeepNonAnimated = keepNonAnimated;
+        }
+        
+        /// <summary>
+        /// Gather the settings stored in the AnimationGroup and use them to set the values of the SerializableAnimationGroup
+        /// </summary>
+        /// <param name="animGroup"></param>
+        public void GetDataToSerialize(AnimationGroup animGroup)
+        {
+            name = animGroup.Name;
+            ticksStart = animGroup.TicksStart;
+            ticksEnd = animGroup.TicksEnd;
+            keepEmpty = animGroup.KeepStaticAnimation;
+            nodes = animGroup.NodeGuids.ToList();
+            materials = animGroup.MaterialGuids.ToList();
+            keepNonAnimated = animGroup.KeepNonAnimated;
+        }
+    }
 
     [DataContract]
     public class AnimationGroupNode
@@ -186,7 +277,25 @@ namespace Max2Babylon
             get { return ticksEnd; }
             set { ticksEnd = value; }
         }
-        
+
+        private bool keepStaticAnimation = false;
+
+        [DataMember]
+        public bool KeepStaticAnimation
+        {
+            get { return keepStaticAnimation; }
+            set { keepStaticAnimation = value; }
+        }
+
+        private bool keepNonAnimated = true;
+
+
+        [DataMember]
+        public bool KeepNonAnimated
+        {
+            get { return keepNonAnimated; }
+            set { keepNonAnimated = value; }
+        }
 
         public const string s_DisplayNameFormat = "{0} ({1:d}, {2:d})";
         public const char s_PropertySeparator = ';';
@@ -209,6 +318,8 @@ namespace Max2Babylon
         {
             serializedId = other.serializedId;
             name = other.name;
+            KeepStaticAnimation = other.KeepStaticAnimation;
+            KeepNonAnimated = other.KeepNonAnimated;
             TicksStart = other.TicksStart;
             TicksEnd = other.TicksEnd;
             nodeGuids.Clear();
@@ -239,6 +350,7 @@ namespace Max2Babylon
             if (!Guid.TryParse(propertyName, out serializedId))
                 throw new Exception("Invalid ID, can't deserialize.");
 
+
             string propertiesString = string.Empty;
 
             if (rootNodePropDictionary == null)
@@ -252,42 +364,51 @@ namespace Max2Babylon
                     return;
             }
 
-            
-            int indexOfguidPart = propertiesString
-                .Select((c, i) => new {c, i})
-                .Where(x => x.c == s_PropertySeparator)
-                .Skip(2)
-                .FirstOrDefault().i;
-            string[] baseProperties = propertiesString.Substring(0, indexOfguidPart)?.Split(s_PropertySeparator);
-            string guidPart = propertiesString.Substring(indexOfguidPart+1);
-
-            if (baseProperties.Length != 3)
-                throw new Exception("Invalid number of properties, can't deserialize.");
-
-            // set dirty explicitly just before we start loading, set to false when loading is done
-            // if any exception is thrown, it will have a correct value
-            IsDirty = true;
-
-            name = baseProperties[0];
-            if (!int.TryParse(baseProperties[1], out ticksStart))
-                throw new Exception("Failed to parse FrameStart property.");
-            if (!int.TryParse(baseProperties[2], out ticksEnd))
-                throw new Exception("Failed to parse FrameEnd property.");
-
-            if (string.IsNullOrEmpty(guidPart) || guidPart==s_GUIDTypeSeparator.ToString()) return;
 
             int numFailed = 0;
 
-            if (!guidPart.Contains(s_GUIDTypeSeparator))
+            try // Try using the new way, if it's not working use the old way.
             {
-                // to grant retro-compatiblity
-               numFailed = ParseOldProperties(guidPart);
+                SerializableAnimationGroup serialAnimGroup = new SerializableAnimationGroup(propertiesString);
+                serialAnimGroup.FillSerializedData(this);
             }
-            else
+            catch
             {
-                //new format with nodes and node materials guid
-                numFailed = ParseNewProperties(guidPart);
-            }
+                int indexOfguidPart = propertiesString
+                    .Select((c, i) => new {c, i})
+                    .Where(x => x.c == s_PropertySeparator)
+                    .Skip(2)
+                    .FirstOrDefault().i;
+                string[] baseProperties = propertiesString.Substring(0, indexOfguidPart)?.Split(s_PropertySeparator);
+                string guidPart = propertiesString.Substring(indexOfguidPart+1);
+
+                if (baseProperties.Length != 3)
+                    throw new Exception("Invalid number of properties, can't deserialize.");
+
+                // set dirty explicitly just before we start loading, set to false when loading is done
+                // if any exception is thrown, it will have a correct value
+                IsDirty = true;
+
+                name = baseProperties[0];
+                if (!int.TryParse(baseProperties[1], out ticksStart))
+                    throw new Exception("Failed to parse FrameStart property.");
+                if (!int.TryParse(baseProperties[2], out ticksEnd))
+                    throw new Exception("Failed to parse FrameEnd property.");
+
+                if (string.IsNullOrEmpty(guidPart) || guidPart==s_GUIDTypeSeparator.ToString()) return;
+
+
+                if (!guidPart.Contains(s_GUIDTypeSeparator))
+                {
+                    // to grant retro-compatiblity
+                   numFailed = ParseOldProperties(guidPart);
+                }
+                else
+                {
+                    //new format with nodes and node materials guid
+                    numFailed = ParseNewProperties(guidPart);
+                }
+            }           
             
 
             AnimationGroupNodes = new List<AnimationGroupNode>();
@@ -419,17 +540,18 @@ namespace Max2Babylon
             if (name.Contains(' ') || name.Contains('=') || name.Contains(s_PropertySeparator))
                 throw new FormatException("Invalid character(s) in animation Name: " + name + ". Spaces, equal signs and the separator '" + s_PropertySeparator + "' are not allowed.");
 
-            string nodes = string.Join(s_PropertySeparator.ToString(), nodeGuids);
-            string materials = string.Join(s_PropertySeparator.ToString(), materialsGuids);
-            string guids = string.Join(s_GUIDTypeSeparator.ToString(), nodes, materials);
+            SerializableAnimationGroup serializableAnimation = new SerializableAnimationGroup();
 
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.AppendFormat(s_PropertyFormat, name, TicksStart, TicksEnd, guids);
+            serializableAnimation.GetDataToSerialize(this);
 
-            dataNode.SetStringProperty(GetPropertyName(), stringBuilder.ToString());
+            string serializedInfo = JsonConvert.SerializeObject(serializableAnimation);
+
+            dataNode.SetStringProperty(GetPropertyName(), serializedInfo);
 
             IsDirty = false;
         }
+
+
 
         public void DeleteFromData(IINode dataNode = null)
         {
@@ -790,8 +912,9 @@ namespace Max2Babylon
                 MessageBox.Show("Animations of " + iContainerObject.ContainerNode.Name +" cannot be loaded because Container is closed");
                 return;
             }
-
+            
             ResolveMultipleInheritedContainer(iContainerObject);
+            
 
             //on container added in scene try retrieve info from containers
             string[] sceneAnimationPropertyNames = Loader.Core.RootNode.GetStringArrayProperty(s_AnimationListPropertyName);
@@ -807,67 +930,65 @@ namespace Max2Babylon
                 Loader.Core.RootNode.SetStringProperty(propertyNameStr, prop);
             }
         }
-
+        
         private static void ResolveMultipleInheritedContainer(IIContainerObject container)
         {
+            //resolve container name
             int b = 0;
-            if (container.ContainerNode.GetUserPropBool("flightsim_resolved", ref b))
+            if (container.ContainerNode.GetUserPropBool("flightsim_resolved", ref b) && b!=0)
             {
                 return;
             }
+
+            List<IINode> containerHierarchy = new List<IINode>() { };
+            containerHierarchy.AddRange(container.ContainerNode.ContainerNodeTree(false));
 
             string helperPropBuffer = string.Empty;
             container.BabylonContainerHelper().GetUserPropBuffer(ref helperPropBuffer);
-
-            List<IINode> containerHierarchy = new List<IINode>() {};
-            containerHierarchy.AddRange(container.ContainerNode.ContainerNodeTree(false));
-
             int containerID = 1;
             container.ContainerNode.GetUserPropInt("babylonjs_ContainerID", ref containerID);
-
-            int idIndex = container.ContainerNode.Name.LastIndexOf("_");
-            string firstContainer = container.ContainerNode.Name.Substring(0,idIndex);
-            IINode firstContainerObject = Loader.Core.GetINodeByName(firstContainer+ "_1");
-            if (firstContainerObject == null)
-            {
-                MessageBox.Show("ERROR resolve ID with FlightSim/BabylonUtilities/UpdateContainerID");
-                return;
-            }
-
-
-            //manage multiple containers inherithed from the same source
-            foreach (IINode n in containerHierarchy)
-            {
-                if (n.IsBabylonContainerHelper()) continue;
-                //change the guid of the node
-                //replace the guid in the babylon helper
-                string oldGuid = n.GetStringProperty("babylonjs_GUID",Guid.NewGuid().ToString());
-                n.DeleteProperty("babylonjs_GUID");
-                Guid newGuid = n.GetGuid();
-                helperPropBuffer = helperPropBuffer.Replace(oldGuid, newGuid.ToString());
-
-                n.Name = $"{n.Name}_{containerID}";
-                if (n.Mtl!=null && FlightSimMaterialUtilities.HasFlightSimMaterials(n.Mtl) && FlightSimMaterialUtilities.HasRuntimeAccess(n.Mtl))
+            container.ContainerNode.Name = containerID == -1 ? $"{container.ContainerNode.Name}" : $"{container.ContainerNode.Name}_{containerID}";
+            // resolve nodes , adding an id at the end
+            {               
+                //manage multiple containers inherited from the same source
+                foreach (IINode n in containerHierarchy)
                 {
-                    if (n.Mtl.IsMultiMtl)
-                    {
-                        throw new Exception($@"Material {n.Mtl.Name} has a property ""Unique In Container"" enabled, cannot be child of a multi material");
-                    }
-                    else
-                    {
-                        string cmd = $"mNode = maxOps.getNodeByHandle {n.Handle} \r\n" +
-                                  $"newMat = copy mNode.material \r\n" +
-                                  $"newMat.name = \"{n.Mtl.Name}_{containerID}\" \r\n" +
-                                  $"mNode.material = newMat";
+                    if (n.IsBabylonContainerHelper()) continue;
+                    //change the guid of the node
+                    //replace the guid in the babylon helper
+                    string oldGuid = n.GetStringProperty("babylonjs_GUID", Guid.NewGuid().ToString());
+                    n.DeleteProperty("babylonjs_GUID");
+                    Guid newGuid = n.GetGuid();
+                    helperPropBuffer = helperPropBuffer.Replace(oldGuid, newGuid.ToString());
 
-                        MaxscriptSDK.ExecuteMaxscriptCommand(cmd);
+                    n.Name = containerID == -1 ? $"{n.Name}" : $"{n.Name}_{containerID}";
+                    if (n.Mtl != null && FlightSimMaterialUtilities.HasFlightSimMaterials(n.Mtl) && FlightSimMaterialUtilities.HasRuntimeAccess(n.Mtl))
+                    {
+                        if (n.Mtl.IsMultiMtl)
+                        {
+                            throw new Exception($@"Material {n.Mtl.Name} has a property ""Unique In Container"" enabled, cannot be child of a multi material");
+                        }
+                        else
+                        {
+                            string cmd = $"mNode = maxOps.getNodeByHandle {n.Handle} \r\n" +
+                                      $"newMat = copy mNode.material \r\n" +
+                                      $"newMat.name = \"{n.Mtl.Name}_{containerID}\" \r\n" +
+                                      $"mNode.material = newMat";
+
+                            ScriptsUtilities.ExecuteMaxScriptCommand(cmd);
+                        }
                     }
                 }
             }
 
+
+
             //replace animationList guid to have distinct list of AnimationGroup for each container
             string animationListStr = string.Empty;
-            container.BabylonContainerHelper().GetUserPropString(s_AnimationListPropertyName, ref animationListStr);
+            IINode containerHelper = container.BabylonContainerHelper();
+            
+
+            containerHelper.GetUserPropString(s_AnimationListPropertyName, ref animationListStr);
             if (!string.IsNullOrEmpty(animationListStr))
             {
                 string[] animationGroupGuid = animationListStr.Split(AnimationGroup.s_PropertySeparator);
@@ -876,28 +997,38 @@ namespace Max2Babylon
                     Guid newAnimGroupGuid = Guid.NewGuid();
                     helperPropBuffer = helperPropBuffer.Replace(guidStr, newAnimGroupGuid.ToString());
                 }
-            
-                container.BabylonContainerHelper().SetUserPropBuffer(helperPropBuffer);
+                
+                containerHelper.SetUserPropBuffer(helperPropBuffer);
 
                 //add ID of container to animationGroup name to identify animation in viewer
-                container.BabylonContainerHelper().GetUserPropString(s_AnimationListPropertyName, ref animationListStr);
+               containerHelper.GetUserPropString(s_AnimationListPropertyName, ref animationListStr);
                 string[] newAnimationGroupGuid = animationListStr.Split(AnimationGroup.s_PropertySeparator);
                 
                 foreach (string guidStr in newAnimationGroupGuid)
                 {
                     string propertiesString = string.Empty;
-                    if (!container.BabylonContainerHelper().GetUserPropString(guidStr, ref propertiesString))
+                    if (!containerHelper.GetUserPropString(guidStr, ref propertiesString))
                         return;
 
-                    string[] properties = propertiesString.Split(AnimationGroup.s_PropertySeparator);
-                    if (properties.Length < 4)
-                        throw new Exception("Invalid number of properties, can't deserialize.");
-
-                    string name = properties[0];
-                    if (!string.IsNullOrEmpty(name))
+                    try // new serialization method
                     {
-                        propertiesString = propertiesString.Replace(name, name + "_" + containerID);
-                        container.BabylonContainerHelper().SetUserPropString(guidStr, propertiesString);
+                        SerializableAnimationGroup serialAnimGroup = new SerializableAnimationGroup(propertiesString);
+                        serialAnimGroup.name = containerID == -1 ? serialAnimGroup.name : serialAnimGroup.name + $"_{containerID}";
+                        string serializedInfo = JsonConvert.SerializeObject(serialAnimGroup);
+                        container.BabylonContainerHelper().SetUserPropString(guidStr, serializedInfo);
+                    }
+                    catch (Exception)
+                    {
+                        string[] properties = propertiesString.Split(AnimationGroup.s_PropertySeparator);
+                        if (properties.Length < 4)
+                            throw new Exception($"Invalid number of properties, can't de-serialize property of {containerHelper.Name} of {container.ContainerNode.Name}.");
+
+                        string name = properties[0];
+                        if (!string.IsNullOrEmpty(name))
+                        {
+                            propertiesString = propertiesString.Replace(name, name + "_" + containerID);
+                            container.BabylonContainerHelper().SetUserPropString(guidStr, propertiesString);
+                        }
                     }
                 }
             }

@@ -22,13 +22,13 @@ namespace GLTFExport.Entities
         [DataMember(EmitDefaultValue = false)]
         public int? mesh { get; set; }
 
-        [DataMember(IsRequired = true)]
+        [DataMember(EmitDefaultValue = false)]
         public float[] translation { get; set; }
 
-        [DataMember(IsRequired = true)]
+        [DataMember(EmitDefaultValue = false)]
         public float[] rotation { get; set; }
 
-        [DataMember(IsRequired = true)]
+        [DataMember(EmitDefaultValue = false)]
         public float[] scale { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
@@ -51,6 +51,37 @@ namespace GLTFExport.Entities
             {
                 children = ChildrenList.ToArray();
             }
+            if (IsTranslationDefault(translation)) translation = null;
+            if (IsRotationDefault(rotation)) rotation = null;
+            if (IsScaleDefault(scale)) scale = null;
+        }
+
+        private bool IsTranslationDefault(float[] translation)
+        {
+            if (translation.Length != 3) return false;
+            if (translation[0] != 0) return false;
+            if (translation[1] != 0) return false;
+            if (translation[2] != 0) return false;
+            return true;
+        }
+
+        private bool IsRotationDefault(float[] rotation) 
+        {
+            if (rotation.Length != 4) return false;
+            if (rotation[0] != 0) return false;
+            if (rotation[1] != 0) return false;
+            if (rotation[2] != 0) return false;
+            if (rotation[3] != 1) return false;
+            return true;
+        }
+
+        private bool IsScaleDefault(float[] scale)
+        {
+            if (scale.Length != 3) return false;
+            if (scale[0] != 1) return false;
+            if (scale[1] != 1) return false;
+            if (scale[2] != 1) return false;
+            return true;
         }
     }
 }

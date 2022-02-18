@@ -637,7 +637,13 @@ namespace Max2Babylon
                 return null;
             }
 
-            if (texMap.ClassName == "Normal Bump")
+#if MAX2016 || MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
+            string className = texMap.ClassName;
+#else
+            string className = "";
+            texMap.GetClassName(ref className);
+#endif
+            if (className == "Normal Bump")
             {
                 var block = texMap.GetParamBlockByID(0);        // General Block
                 if (block != null)
@@ -792,8 +798,14 @@ namespace Max2Babylon
         {
             fresnelParameters = null;
 
+#if MAX2016 || MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
+            string className = texMap.ClassName;
+#else
+            string className = "";
+            texMap.GetClassName(ref className);
+#endif
             // Fallout
-            if (texMap.ClassName == "Falloff") // This is the only way I found to detect it. This is crappy but it works
+            if (className == "Falloff") // This is the only way I found to detect it. This is crappy but it works
             {
                logger?.RaiseMessage("fresnelParameters", 3);
                 fresnelParameters = new BabylonFresnelParameters();

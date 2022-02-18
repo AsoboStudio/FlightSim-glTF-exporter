@@ -140,7 +140,7 @@ namespace Babylon2GLTF
                             }
                             else
                             {
-                                ExportNodeAnimation(gltfAnimation, startFrame, endFrame, gltf, babylonNode, gltfNode, babylonScene);
+                                ExportNodeAnimation(gltfAnimation, startFrame, endFrame, gltf, babylonNode, gltfNode, babylonScene, animGroup.keepNonAnimated);
                             }
                         }
                         else
@@ -184,12 +184,13 @@ namespace Babylon2GLTF
             ExportGLTFExtension(babylonObject, ref gltfAnimation, gltf, info);
         }
 
-        private void ExportNodeAnimation(GLTFAnimation gltfAnimation, int startFrame, int endFrame, GLTF gltf, BabylonNode babylonNode, GLTFNode gltfNode, BabylonScene babylonScene)
+        private void ExportNodeAnimation(GLTFAnimation gltfAnimation, int startFrame, int endFrame, GLTF gltf, BabylonNode babylonNode, GLTFNode gltfNode, BabylonScene babylonScene, bool keepNonAnimated = false)
         {
             var channelList = gltfAnimation.ChannelList;
             var samplerList = gltfAnimation.SamplerList;
 
-            bool exportNonAnimated = exportParameters.animgroupExportNonAnimated;
+            // bool exportNonAnimated = exportParameters.animgroupExportNonAnimated;
+            //bool exportNonAnimated = true;
             
             // Combine babylon animations from .babylon file and cached ones
             var babylonAnimations = new List<BabylonAnimation>();
@@ -205,13 +206,13 @@ namespace Babylon2GLTF
             // Filter animations to only keep TRS ones
             babylonAnimations = babylonAnimations.FindAll(babylonAnimation => _getTargetPath(babylonAnimation.property) != null);
 
-            if (babylonAnimations.Count > 0 || exportNonAnimated)
+            if (babylonAnimations.Count > 0 || keepNonAnimated)
             {
                 if (babylonAnimations.Count > 0)
                 {
                     logger?.RaiseMessage("GLTFExporter.Animation | Export animations of node named: " + babylonNode.name, 2);
                 }
-                else if (exportNonAnimated)
+                else if (keepNonAnimated)
                 {
                     logger?.RaiseMessage("GLTFExporter.Animation | Export dummy animation for node named: " + babylonNode.name, 2);
                     // Export a dummy animation
@@ -249,7 +250,7 @@ namespace Babylon2GLTF
 
                         // copy data before changing it in case animation groups overlap
                         float[] outputValues = new float[babylonAnimationKey.values.Length];
-                        babylonAnimationKey.values.CopyTo(outputValues,0);
+                        babylonAnimationKey.values.CopyTo(outputValues, 0);
 
                         // Switch coordinate system at object level
                         if (babylonAnimation.property == "position")
@@ -295,7 +296,7 @@ namespace Babylon2GLTF
 
                     if (exportParameters.enableASBAnimationRetargeting)
                     {
-                        ASOBOAnimationRetargetingTargetExtension(ref gltf, ref gltfTarget,babylonNode);
+                        ASOBOAnimationRetargetingTargetExtension(ref gltf, ref gltfTarget, babylonNode);
                     }
 
                     channelList.Add(gltfChannel);

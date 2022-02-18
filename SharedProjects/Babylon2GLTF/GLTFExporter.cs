@@ -20,6 +20,7 @@ namespace Babylon2GLTF
     {
 
         public ExportParameters exportParameters;
+//        public Dictionary<BabylonAnimationGroup,>
 
         private List<BabylonMaterial> babylonMaterials;
         private List<BabylonNode> babylonNodes;
@@ -79,19 +80,28 @@ namespace Babylon2GLTF
 
             // Scenes
             GLTFScene scene = new GLTFScene();
-            ExportGLTFExtension( babylonScene, ref scene,gltf);
+            List<GLTFScene> subScenes = new List<GLTFScene>();
+
             GLTFScene[] scenes = { scene };
             gltf.scenes = scenes;
 
             // Initialization
-            initBabylonNodes(babylonScene,gltf);            
- 
+            initBabylonNodes(babylonScene, gltf);
 
             // Root nodes
             logger?.Print("GLTFExporter | Exporting nodes",Color.Black);
             progression = 30.0f;
             logger?.ReportProgressChanged((int)progression);
-            List<BabylonNode> babylonRootNodes = babylonNodes.FindAll(node => node.parentId == null);
+            List<BabylonNode> babylonRootNodes;
+            if (exportParameters.exportAsSubmodel) 
+            {
+                babylonRootNodes = babylonNodes.FindAll(node => node.subModelRoot == true);
+            }
+            else 
+            {
+                babylonRootNodes = babylonNodes.FindAll(node => node.parentId == null);
+            }
+            
             progressionStep = 30.0f / babylonRootNodes.Count;
             alreadyExportedSkeletons = new Dictionary<BabylonSkeleton, BabylonSkeletonExportData>();
             nodeToGltfNodeMap = new Dictionary<BabylonNode, GLTFNode>();
@@ -105,6 +115,7 @@ namespace Babylon2GLTF
                 logger?.ReportProgressChanged((int)progression);
                 //logger?.CheckCancelled(this);
             });
+
 #if DEBUG
             var nodesExportTime = watch.ElapsedMilliseconds / 1000.0;
             logger?.Print(string.Format("GLTFNodes exported in {0:0.00}s", nodesExportTime), Color.Blue);
@@ -226,6 +237,12 @@ namespace Babylon2GLTF
             foreach (GLTFNode gltfNode in gltf.NodesList)
             {
                 gltfNode.name = gltfNode.name.TrimEnd();
+            }
+
+
+            for (int i = 0; i < gltf.scenes.Count(); i++) 
+            {
+                ExportGLTFExtension(babylonScene, ref gltf.scenes[i], gltf);
             }
 
             // Output
@@ -425,10 +442,15 @@ namespace Babylon2GLTF
                     gltfNode.extras["tags"] = babylonNode.tags;
                 }
 
-                //export extensions
-                if (exportParameters.enableASBAnimationRetargeting)
+                ////export extensions
+                //if (exportParameters.enableASBAnimationRetargeting)
+                //{
+                //    ASOBOAnimationRetargetingNodeExtension(ref gltf,ref gltfNode,babylonNode);
+                //}
+
+                if (exportParameters.enableASBUniqueID) 
                 {
-                    ASOBOAnimationRetargetingNodeExtension(ref gltf,ref gltfNode,babylonNode);
+                    ASOBOUniqueIDExtension(ref gltf, ref gltfNode, babylonNode);
                 }
 
                 // ...export its children

@@ -53,7 +53,7 @@ namespace Max2Babylon
             Tools.UpdateTextBox(txtSound, objects, "babylonjs_sound_filename");
 
             Tools.UpdateTextBox(tagInput, objects, "babylonjs_tag");
-            Tools.UpdateTextBox(txtASBAnimationTargetID, objects,"babylonjs_asb_anim_targetID");
+            Tools.UpdateTextBox(txtASBUniqueID, objects, "flightsim_uniqueID");
 
             Tools.UpdateNumericUpDown(lodValueNumeric, objects, "flightsim_lod_value");
 
@@ -70,6 +70,8 @@ namespace Max2Babylon
                     node.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Geomobject
                     ||
                     node.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Helper
+                    ||
+                    node.ObjectRef.Eval(0).Obj.SuperClassID == SClass_ID.Shape
                     ))
                 {
                     objects.Add(node);
@@ -115,7 +117,8 @@ namespace Max2Babylon
 
             Tools.PrepareTextBox(tagInput, objects, "babylonjs_tag");
 
-            Tools.PrepareTextBox(txtASBAnimationTargetID, objects,"babylonjs_asb_anim_targetID");
+            string defaultID = (objects.Count == 1) ? objects[0].GetUniqueID() : "";
+            Tools.PrepareTextBox(txtASBUniqueID, objects,"flightsim_uniqueID", defaultID,true);
             Tools.PrepareNumericUpDown(lodValueNumeric, objects, "flightsim_lod_value",70.0f);
         }
 
@@ -135,6 +138,11 @@ namespace Max2Babylon
             {
                 txtSound.Text = ofdOpenSound.FileName;
             }
+        }
+
+        private void txtASBUniqueID_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

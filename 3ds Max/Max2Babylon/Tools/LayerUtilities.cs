@@ -39,7 +39,7 @@ namespace Max2Babylon
 
         public static bool HasNode(this IILayer layer,IINode node,bool checkInChild = true)
         {
-#if MAX2020 || MAX2021
+#if MAX2020 || MAX2021 || MAX2022
             ITab<IINode> nodes = Loader.Global.INodeTab.Create();
 #else
             ITab<IINode> nodes = Loader.Global.INodeTabNS.Create();
@@ -47,7 +47,7 @@ namespace Max2Babylon
             IILayerProperties layerProperties = Loader.IIFPLayerManager.GetLayer(layer.Name);
             layerProperties.Nodes(nodes);
 
-            foreach (IINode n in Tools.ITabToIEnumerable(nodes))
+            foreach (IINode n in nodes.ToIEnumerable())
             {
                 if (node.Handle == n.Handle) return true;
             }
@@ -106,24 +106,23 @@ namespace Max2Babylon
         public static IEnumerable<IINode> LayerNodes(this IILayer layer)
         {
             IILayerProperties layerProp = Loader.IIFPLayerManager.GetLayer(layer.Name);
-#if MAX2020 || MAX2021
+#if MAX2020 || MAX2021 || MAX2022
             ITab<IINode> nodes = Loader.Global.INodeTab.Create();
 #else
             ITab<IINode> nodes = Loader.Global.INodeTabNS.Create();
 #endif
             layerProp.Nodes(nodes);
-            return Tools.ITabToIEnumerable(nodes);
+            return nodes.ToIEnumerable();
         }
 
         public static IILayer GetNodeLayer(this IINode node)
         {
-            string mxs = $"(maxOps.getNodeByHandle {node.Handle}).layer.name)";
-             string result = ScriptsUtilities.ExecuteMaxScriptQuery(mxs);
-             if(!string.IsNullOrWhiteSpace(result))
-             {
-                 IILayer layer = Loader.Core.LayerManager.GetLayer(result);
-                 return layer;
-             }
+            int num = node.NumRefs;
+            for (int i = 0; i < num; i++)
+            {
+                IILayer r = node.GetReference(i) as IILayer;
+                if (r != null) return r;
+            }
             return null;
         }
 
@@ -137,6 +136,39 @@ namespace Max2Babylon
                 if(nodeLayer!=null)result.Add(node.GetNodeLayer());
             }
             return result;
+        }
+
+        public static IEnumerable<IILayer> ParentsLayers(this IILayer layer)
+        {
+            var p = layer;
+            while (p.ParentLayer != null) 
+            {
+                p = p.ParentLayer;
+                yield return p;
+            }
+        }
+
+        public static void ShowExportItemLayers(IList<IILayer> exportedLayers)
+        {
+            if (exportedLayers == null) return;
+
+            foreach (IILayer rootLayer in LayerUtilities.RootLayers())
+            {
+                rootLayer.Hide(true, true);
+                foreach (IILayer lay in rootLayer.LayerTree())
+                {
+                    lay.Hide(true, true);
+                }
+            }
+
+            foreach (IILayer layer in exportedLayers)
+            {
+                layer.Hide(false, false);
+                foreach (IINode layerNode in layer.LayerNodes())
+                {
+                    layerNode.Hide(false);
+                }
+            }
         }
 
     }

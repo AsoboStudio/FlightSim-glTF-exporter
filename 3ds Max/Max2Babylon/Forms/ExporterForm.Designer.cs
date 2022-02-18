@@ -42,6 +42,9 @@ namespace Max2Babylon
             this.label2 = new System.Windows.Forms.Label();
             this.chkWriteTextures = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.chkExportAsSubmodel = new System.Windows.Forms.CheckBox();
+            this.chkUniqueID = new System.Windows.Forms.CheckBox();
+            this.chkFlattenGroups = new System.Windows.Forms.CheckBox();
             this.chkASBAnimationRetargeting = new System.Windows.Forms.CheckBox();
             this.grpGeometry = new System.Windows.Forms.GroupBox();
             this.chkKeepInstances = new System.Windows.Forms.CheckBox();
@@ -52,7 +55,6 @@ namespace Max2Babylon
             this.chkExportTangents = new System.Windows.Forms.CheckBox();
             this.grpAnimations = new System.Windows.Forms.GroupBox();
             this.cmbExportAnimationType = new System.Windows.Forms.ComboBox();
-            this.chkAnimgroupExportNonAnimated = new System.Windows.Forms.CheckBox();
             this.label8 = new System.Windows.Forms.Label();
             this.chkExportMorphTangents = new System.Windows.Forms.CheckBox();
             this.chkExportMorphNormals = new System.Windows.Forms.CheckBox();
@@ -83,10 +85,8 @@ namespace Max2Babylon
             this.chkOnlySelected = new System.Windows.Forms.CheckBox();
             this.chkAutoSave = new System.Windows.Forms.CheckBox();
             this.chkHidden = new System.Windows.Forms.CheckBox();
-            this.butExportAndRun = new System.Windows.Forms.Button();
             this.butClose = new System.Windows.Forms.Button();
             this.toolTipDracoCompression = new System.Windows.Forms.ToolTip(this.components);
-            this.butMultiExport = new System.Windows.Forms.Button();
             this.envFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.grp_FlightSim = new System.Windows.Forms.GroupBox();
@@ -115,10 +115,10 @@ namespace Max2Babylon
             this.butExport.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.butExport.Enabled = false;
             this.butExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butExport.Location = new System.Drawing.Point(421, 495);
+            this.butExport.Location = new System.Drawing.Point(916, 493);
             this.butExport.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.butExport.Name = "butExport";
-            this.butExport.Size = new System.Drawing.Size(197, 27);
+            this.butExport.Size = new System.Drawing.Size(344, 27);
             this.butExport.TabIndex = 100;
             this.butExport.Text = "Export";
             this.butExport.UseVisualStyleBackColor = true;
@@ -210,7 +210,7 @@ namespace Max2Babylon
             // 
             this.chkManifest.AutoSize = true;
             this.chkManifest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkManifest.Location = new System.Drawing.Point(16, 239);
+            this.chkManifest.Location = new System.Drawing.Point(16, 262);
             this.chkManifest.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkManifest.Name = "chkManifest";
             this.chkManifest.Size = new System.Drawing.Size(112, 17);
@@ -250,6 +250,9 @@ namespace Max2Babylon
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.chkExportAsSubmodel);
+            this.groupBox1.Controls.Add(this.chkUniqueID);
+            this.groupBox1.Controls.Add(this.chkFlattenGroups);
             this.groupBox1.Controls.Add(this.chkASBAnimationRetargeting);
             this.groupBox1.Controls.Add(this.grpGeometry);
             this.groupBox1.Controls.Add(this.grpAnimations);
@@ -292,6 +295,49 @@ namespace Max2Babylon
             this.groupBox1.Size = new System.Drawing.Size(892, 479);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
+            // 
+            // chkExportAsSubmodel
+            // 
+            this.chkExportAsSubmodel.AutoSize = true;
+            this.chkExportAsSubmodel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkExportAsSubmodel.Location = new System.Drawing.Point(16, 239);
+            this.chkExportAsSubmodel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkExportAsSubmodel.Name = "chkExportAsSubmodel";
+            this.chkExportAsSubmodel.Size = new System.Drawing.Size(160, 17);
+            this.chkExportAsSubmodel.TabIndex = 44;
+            this.chkExportAsSubmodel.Text = "Export selection as submodel";
+            this.chkExportAsSubmodel.UseVisualStyleBackColor = true;
+            this.chkExportAsSubmodel.CheckedChanged += new System.EventHandler(this.chkExportAsSubmodel_CheckedChanged);
+            // 
+            // chkUniqueID
+            // 
+            this.chkUniqueID.AutoSize = true;
+            this.chkUniqueID.Checked = true;
+            this.chkUniqueID.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkUniqueID.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkUniqueID.Location = new System.Drawing.Point(640, 455);
+            this.chkUniqueID.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkUniqueID.Name = "chkUniqueID";
+            this.chkUniqueID.Size = new System.Drawing.Size(109, 17);
+            this.chkUniqueID.TabIndex = 43;
+            this.chkUniqueID.Text = "ASOBO_uniqueID";
+            this.chkUniqueID.UseVisualStyleBackColor = true;
+            this.chkUniqueID.Visible = true;
+            this.chkUniqueID.CheckedChanged += new System.EventHandler(this.chkUniqueID_CheckedChanged);
+            // 
+            // chkFlattenGroups
+            // 
+            this.chkFlattenGroups.AutoSize = true;
+            this.chkFlattenGroups.Enabled = false;
+            this.chkFlattenGroups.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkFlattenGroups.Location = new System.Drawing.Point(23, 344);
+            this.chkFlattenGroups.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.chkFlattenGroups.Name = "chkFlattenGroups";
+            this.chkFlattenGroups.Size = new System.Drawing.Size(92, 17);
+            this.chkFlattenGroups.TabIndex = 43;
+            this.chkFlattenGroups.Text = "Flatten Groups";
+            this.chkFlattenGroups.UseVisualStyleBackColor = true;
+            this.chkFlattenGroups.CheckedChanged += new System.EventHandler(this.chkFlattenGroups_CheckedChanged);
             // 
             // chkASBAnimationRetargeting
             // 
@@ -414,7 +460,6 @@ namespace Max2Babylon
             // grpAnimations
             // 
             this.grpAnimations.Controls.Add(this.cmbExportAnimationType);
-            this.grpAnimations.Controls.Add(this.chkAnimgroupExportNonAnimated);
             this.grpAnimations.Controls.Add(this.label8);
             this.grpAnimations.Controls.Add(this.chkExportMorphTangents);
             this.grpAnimations.Controls.Add(this.chkExportMorphNormals);
@@ -439,23 +484,10 @@ namespace Max2Babylon
             this.cmbExportAnimationType.TabIndex = 34;
             this.cmbExportAnimationType.SelectedIndexChanged += new System.EventHandler(this.cmbExportAnimationType_SelectedIndexChanged);
             // 
-            // chkAnimgroupExportNonAnimated
-            // 
-            this.chkAnimgroupExportNonAnimated.AutoSize = true;
-            this.chkAnimgroupExportNonAnimated.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkAnimgroupExportNonAnimated.Location = new System.Drawing.Point(12, 69);
-            this.chkAnimgroupExportNonAnimated.Name = "chkAnimgroupExportNonAnimated";
-            this.chkAnimgroupExportNonAnimated.Size = new System.Drawing.Size(249, 17);
-            this.chkAnimgroupExportNonAnimated.TabIndex = 18;
-            this.chkAnimgroupExportNonAnimated.Text = "(Animation Group) Export Non-Animated Objects";
-            this.chkAnimgroupExportNonAnimated.UseVisualStyleBackColor = true;
-            this.chkAnimgroupExportNonAnimated.CheckedChanged += new System.EventHandler(this.chkAnimgroupExportNonAnimated_CheckedChanged);
-            this.chkAnimgroupExportNonAnimated.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
-            // 
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(6, 89);
+            this.label8.Location = new System.Drawing.Point(6, 40);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(113, 13);
             this.label8.TabIndex = 33;
@@ -465,7 +497,7 @@ namespace Max2Babylon
             // 
             this.chkExportMorphTangents.AutoSize = true;
             this.chkExportMorphTangents.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkExportMorphTangents.Location = new System.Drawing.Point(18, 105);
+            this.chkExportMorphTangents.Location = new System.Drawing.Point(6, 56);
             this.chkExportMorphTangents.Name = "chkExportMorphTangents";
             this.chkExportMorphTangents.Size = new System.Drawing.Size(129, 17);
             this.chkExportMorphTangents.TabIndex = 16;
@@ -480,7 +512,7 @@ namespace Max2Babylon
             this.chkExportMorphNormals.Checked = true;
             this.chkExportMorphNormals.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkExportMorphNormals.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkExportMorphNormals.Location = new System.Drawing.Point(166, 105);
+            this.chkExportMorphNormals.Location = new System.Drawing.Point(141, 56);
             this.chkExportMorphNormals.Name = "chkExportMorphNormals";
             this.chkExportMorphNormals.Size = new System.Drawing.Size(124, 17);
             this.chkExportMorphNormals.TabIndex = 16;
@@ -520,7 +552,7 @@ namespace Max2Babylon
             this.chkApplyPreprocessToScene.AutoSize = true;
             this.chkApplyPreprocessToScene.Enabled = false;
             this.chkApplyPreprocessToScene.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.chkApplyPreprocessToScene.Location = new System.Drawing.Point(23, 347);
+            this.chkApplyPreprocessToScene.Location = new System.Drawing.Point(23, 361);
             this.chkApplyPreprocessToScene.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.chkApplyPreprocessToScene.Name = "chkApplyPreprocessToScene";
             this.chkApplyPreprocessToScene.Size = new System.Drawing.Size(155, 17);
@@ -823,21 +855,6 @@ namespace Max2Babylon
             this.chkHidden.CheckedChanged += new System.EventHandler(this.chkHidden_CheckedChanged);
             this.chkHidden.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
             // 
-            // butExportAndRun
-            // 
-            this.butExportAndRun.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.butExportAndRun.Enabled = false;
-            this.butExportAndRun.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butExportAndRun.Location = new System.Drawing.Point(624, 495);
-            this.butExportAndRun.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.butExportAndRun.Name = "butExportAndRun";
-            this.butExportAndRun.Size = new System.Drawing.Size(197, 27);
-            this.butExportAndRun.TabIndex = 102;
-            this.butExportAndRun.Text = "Export && Run";
-            this.butExportAndRun.UseVisualStyleBackColor = true;
-            this.butExportAndRun.Click += new System.EventHandler(this.butExportAndRun_Click);
-            this.butExportAndRun.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ExporterForm_KeyDown);
-            // 
             // butClose
             // 
             this.butClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -855,19 +872,6 @@ namespace Max2Babylon
             // toolTipDracoCompression
             // 
             this.toolTipDracoCompression.ShowAlways = true;
-            // 
-            // butMultiExport
-            // 
-            this.butMultiExport.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.butMultiExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.butMultiExport.Location = new System.Drawing.Point(827, 495);
-            this.butMultiExport.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.butMultiExport.Name = "butMultiExport";
-            this.butMultiExport.Size = new System.Drawing.Size(199, 27);
-            this.butMultiExport.TabIndex = 109;
-            this.butMultiExport.Text = "Multi-File Export | Shift-click to edit";
-            this.butMultiExport.UseVisualStyleBackColor = true;
-            this.butMultiExport.Click += new System.EventHandler(this.butMultiExport_Click);
             // 
             // envFileDialog
             // 
@@ -1040,8 +1044,6 @@ namespace Max2Babylon
             this.Controls.Add(this.logLevelcmb);
             this.Controls.Add(this.pictureBox_flightsim);
             this.Controls.Add(this.grp_FlightSim);
-            this.Controls.Add(this.butMultiExport);
-            this.Controls.Add(this.butExportAndRun);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.butClose);
@@ -1090,7 +1092,6 @@ namespace Max2Babylon
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox chkHidden;
         private System.Windows.Forms.CheckBox chkAutoSave;
-        private System.Windows.Forms.Button butExportAndRun;
         private System.Windows.Forms.CheckBox chkOnlySelected;
         private System.Windows.Forms.Button butClose;
         private System.Windows.Forms.ComboBox comboOutputFormat;
@@ -1104,7 +1105,6 @@ namespace Max2Babylon
         private System.Windows.Forms.CheckBox chkDracoCompression;
         private System.Windows.Forms.ToolTip toolTipDracoCompression;
         private System.Windows.Forms.CheckBox chkOverwriteTextures;
-        private System.Windows.Forms.Button butMultiExport;
         private System.Windows.Forms.CheckBox chkKHRLightsPunctual;
         private System.Windows.Forms.CheckBox chkKHRTextureTransform;
         private System.Windows.Forms.CheckBox chkKHRMaterialsUnlit;
@@ -1121,7 +1121,6 @@ namespace Max2Babylon
         private System.Windows.Forms.CheckBox chkNoAutoLight;
         private System.Windows.Forms.CheckBox chkWriteTextures;
         private System.Windows.Forms.OpenFileDialog envFileDialog;
-        private System.Windows.Forms.CheckBox chkAnimgroupExportNonAnimated;
         private System.Windows.Forms.CheckBox chkExportMorphTangents;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.CheckBox chkExportMorphNormals;
@@ -1148,5 +1147,8 @@ namespace Max2Babylon
         private System.Windows.Forms.ComboBox logLevelcmb;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.CheckBox chkKeepInstances;
+        private System.Windows.Forms.CheckBox chkUniqueID;
+        private System.Windows.Forms.CheckBox chkFlattenGroups;
+        private System.Windows.Forms.CheckBox chkExportAsSubmodel;
     }
 }
