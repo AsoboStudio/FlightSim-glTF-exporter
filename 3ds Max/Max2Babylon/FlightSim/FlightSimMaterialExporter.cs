@@ -2592,11 +2592,11 @@ namespace Max2Babylon.FlightSim
 
             info = gltf.AddImage();
             info.uri = textureName;
-            if (!string.IsNullOrWhiteSpace(exporterParameters.textureFolder))
-            {
-                info.uri = PathUtilities.GetRelativePath(exporterParameters.outputPath, exporterParameters.textureFolder);
-                info.uri = Path.Combine(info.uri, textureName);
-            }
+            //if (!string.IsNullOrWhiteSpace(exporterParameters.textureFolder))
+            //{
+            //    info.uri = PathUtilities.GetRelativePath(exporterParameters.outputPath, exporterParameters.textureFolder);
+            //    info.uri = Path.Combine(info.uri, textureName);
+            //}
             info.FileExtension = ext;
 
             srcTextureExportCache.Add(sourceTexturePath, info);
