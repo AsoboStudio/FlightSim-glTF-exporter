@@ -147,27 +147,63 @@ namespace Max2Babylon.PreExport
             }
 
             ScriptsUtilities.ExecuteMaxScriptCommand(@"
-                for obj in selection do 
+                sel = selection
+                selNodeNames = for s in sel collect s.name
+                temps = #()
+
+                for objn in selNodeNames do 
                 (
-                    tag = getUserProp obj ""babylonjs_BakeAnimation""
-                    if tag!=true then continue
+	                obj = getNodeByName objn
+	
+	                tag = getUserProp obj ""babylonjs_BakeAnimation""
+
+                    if tag != true then continue
+
+                    tmp = undefined
 
                     tmp = Point()
+
+                    tmp.name = obj.name
+
+                    append temps tmp
                     --store anim to a point
+
                     for t = animationRange.start to animationRange.end do (
                        with animate on at time t tmp.transform = obj.transform
-                       )
+	                   )
+                )
+
+                i = 1
+                for objn in selNodeNames do
+                (
+                    obj = getNodeByName objn
+                    tag = getUserProp obj ""babylonjs_BakeAnimation""
+                    if tag != true then continue
 
                     --remove constraint on original object
-                    obj.transform.controller = Link_Constraint ()
-                    obj.transform.controller = prs ()
-                    obj.transform = tmp.transform
+                    if classOf(obj.transform.controller) == IKControl do (
+                        refdep = refs.dependents(obj.transform.controller)
+                        for rd in refdep do (
+                            if classOf(rd) == IK_Chain_Object do (
+                                delete rd
+                            )
+		                )
+	                )
+	
+	                obj.transform.controller = Link_Constraint()
+                    obj.transform.controller = prs()
+                    obj.transform = temps[i].transform
 
                     --copy back anim from point
-                    for t = animationRange.start to animationRange.end do (
-                       with animate on at time t obj.transform = tmp.transform
-                       )
-                    delete tmp
+                     for t = animationRange.start to animationRange.end do (
+                        with animate on at time t obj.transform = temps[i].transform
+ 	                   )
+	
+	                i += 1
+                )
+
+                for t in temps do (
+                    delete t
                 )
              ");
 

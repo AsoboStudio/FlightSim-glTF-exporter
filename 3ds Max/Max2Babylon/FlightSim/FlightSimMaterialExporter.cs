@@ -216,7 +216,7 @@ namespace Max2Babylon.FlightSim
         {
             public static readonly float UVScale = 1;
             public static readonly float[] UVOffset = new float[] { 0, 0 };
-            public static readonly float blendThreshold = 0.1f;
+            public static readonly float blendThreshold = 0.0f;
             public static readonly float NormalScale = 1;
         }
     }
@@ -283,9 +283,9 @@ namespace Max2Babylon.FlightSim
         public static class Defaults
         {
             public static readonly float parallaxScale = 0;
-            public static readonly float roomSizeXScale = 1;
-            public static readonly float roomSizeYScale = 1;
-            public static readonly float roomNumberXY = 1;
+            public static readonly float roomSizeXScale = 0.5f;
+            public static readonly float roomSizeYScale = 0.5f;
+            public static readonly float roomNumberXY = 5;
             public static readonly bool corridor = false;
         }
     }
@@ -2592,11 +2592,11 @@ namespace Max2Babylon.FlightSim
 
             info = gltf.AddImage();
             info.uri = textureName;
-            //if (!string.IsNullOrWhiteSpace(exporterParameters.textureFolder))
-            //{
-            //    info.uri = PathUtilities.GetRelativePath(exporterParameters.outputPath, exporterParameters.textureFolder);
-            //    info.uri = Path.Combine(info.uri, textureName);
-            //}
+            if (!string.IsNullOrWhiteSpace(exporterParameters.textureFolder))
+            {
+                info.uri = PathUtilities.GetRelativePath(exporterParameters.outputPath, exporterParameters.textureFolder);
+                info.uri = Path.Combine(info.uri, textureName);
+            }
             info.FileExtension = ext;
 
             srcTextureExportCache.Add(sourceTexturePath, info);

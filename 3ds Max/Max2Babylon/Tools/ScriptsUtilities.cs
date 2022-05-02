@@ -32,7 +32,7 @@ namespace Max2Babylon
                 ManagedServices.MaxscriptSDK.ExecuteMaxscriptCommand(maxScriptCmd, 0);
 #endif
             }
-            }
+        }
 
         public static void ExecuteMAXScriptScript(string mxs, bool quietErrors, IFPValue fpv) 
         {
@@ -59,7 +59,7 @@ namespace Max2Babylon
         public static string ExecuteMaxScriptQuery(string mxsCode)
         {
 #if MAX2015 || MAX2016 || MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
-             return ManagedServices.MaxscriptSDK.ExecuteStringMaxscriptQuery(mxsCode);           
+            return ManagedServices.MaxscriptSDK.ExecuteStringMaxscriptQuery(mxsCode); 
 #else
             return ManagedServices.MaxscriptSDK.ExecuteStringMaxscriptQuery(mxsCode,0);
 #endif

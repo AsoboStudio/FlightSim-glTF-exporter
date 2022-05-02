@@ -155,7 +155,7 @@ namespace Max2Babylon.FlightSimExtension
                         gizmo.Type = "cylinder";
 
                         bool isRoad = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "CylCollider", "IsRoad",IsSubClass:false);
-                        bool isCollision = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "CylCollider", "IsCollider",IsSubClass:false);
+                        bool isCollision = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "CylCollider", "IsCollider", IsSubClass:false);
                         
                         if(isCollision) tags.Add(AsoboTag.Collision);
                         if(isRoad) tags.Add(AsoboTag.Road);
@@ -173,7 +173,7 @@ namespace Max2Babylon.FlightSimExtension
                         gizmo.Params = sphereParams;
 
                         bool isRoad = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "SphereCollider", "IsRoad",IsSubClass:false);
-                        bool isCollision = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "SphereCollider", "IsCollider",IsSubClass:false);
+                        bool isCollision = FlightSimExtensionUtility.GetGizmoParameterBoolean(node, "SphereCollider", "IsCollider", IsSubClass:false);
                         
                         if(isCollision) tags.Add(AsoboTag.Collision);
                         if(isRoad) tags.Add(AsoboTag.Road);

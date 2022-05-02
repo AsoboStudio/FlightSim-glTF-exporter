@@ -64,7 +64,7 @@ namespace Max2Babylon
             panel1.Dock = System.Windows.Forms.DockStyle.Top;
             panel1.Location = new System.Drawing.Point(3, 16);
             panel1.Name = "panel1";
-            panel1.Size = new System.Drawing.Size(171, 56);
+            panel1.Size = new System.Drawing.Size(309, 56);
             panel1.TabIndex = 4;
             // 
             // MergeBtn
@@ -147,7 +147,7 @@ namespace Max2Babylon
             panel2.Dock = System.Windows.Forms.DockStyle.Fill;
             panel2.Location = new System.Drawing.Point(3, 72);
             panel2.Name = "panel2";
-            panel2.Size = new System.Drawing.Size(171, 362);
+            panel2.Size = new System.Drawing.Size(309, 389);
             panel2.TabIndex = 5;
             // 
             // AnimationListBox
@@ -156,8 +156,7 @@ namespace Max2Babylon
             this.AnimationListBox.HorizontalScrollbar = true;
             this.AnimationListBox.Location = new System.Drawing.Point(0, 0);
             this.AnimationListBox.Name = "AnimationListBox";
-            this.AnimationListBox.SelectionMode = System.Windows.Forms.SelectionMode.One;
-            this.AnimationListBox.Size = new System.Drawing.Size(171, 362);
+            this.AnimationListBox.Size = new System.Drawing.Size(309, 389);
             this.AnimationListBox.Sorted = true;
             this.AnimationListBox.TabIndex = 0;
             this.AnimationListBox.SelectedValueChanged += new System.EventHandler(this.animationList_SelectedValueChanged);
@@ -173,7 +172,7 @@ namespace Max2Babylon
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
             this.groupBox1.MinimumSize = new System.Drawing.Size(114, 256);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(177, 437);
+            this.groupBox1.Size = new System.Drawing.Size(315, 464);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Animations";
@@ -197,8 +196,8 @@ namespace Max2Babylon
             // 
             this.splitContainer1.Panel2.Controls.Add(this.animationGroupControl);
             this.splitContainer1.Panel2MinSize = 295;
-            this.splitContainer1.Size = new System.Drawing.Size(956, 437);
-            this.splitContainer1.SplitterDistance = 177;
+            this.splitContainer1.Size = new System.Drawing.Size(1173, 464);
+            this.splitContainer1.SplitterDistance = 315;
             this.splitContainer1.TabIndex = 5;
             // 
             // animationGroupControl
@@ -211,7 +210,7 @@ namespace Max2Babylon
             this.animationGroupControl.Location = new System.Drawing.Point(0, 0);
             this.animationGroupControl.MinimumSize = new System.Drawing.Size(295, 256);
             this.animationGroupControl.Name = "animationGroupControl";
-            this.animationGroupControl.Size = new System.Drawing.Size(775, 437);
+            this.animationGroupControl.Size = new System.Drawing.Size(854, 464);
             this.animationGroupControl.TabIndex = 3;
             // 
             // AnimationForm
@@ -219,7 +218,7 @@ namespace Max2Babylon
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(980, 461);
+            this.ClientSize = new System.Drawing.Size(1197, 488);
             this.Controls.Add(this.splitContainer1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.MinimumSize = new System.Drawing.Size(516, 371);
