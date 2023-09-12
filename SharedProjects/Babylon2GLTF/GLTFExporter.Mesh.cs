@@ -357,21 +357,21 @@ namespace Babylon2GLTF
                 if (hasBones)
                 {
                     logger?.RaiseMessage("GLTFExporter.Mesh | Bones", 3);
-
+                    // TODO YK - check if there is a way to optimize it !
                     // if we've already exported this mesh's skeleton, check if the skins match,
                     // if so then export this mesh primitive to share joint and weight accessors.
-                    var matchingSkinnedMesh = alreadyExportedSkinnedMeshes.FirstOrDefault(skinnedMesh => skinnedMesh.skeletonId == babylonMesh.skeletonId);
-                    if (matchingSkinnedMesh != null && BabylonMesh.MeshesShareSkin(matchingSkinnedMesh, babylonMesh))
-                    {
-                        var tmpGltfMesh = gltf.MeshesList.FirstOrDefault(mesh => matchingSkinnedMesh.name == mesh.name);
-                        var tmpGltfMeshPrimitive = tmpGltfMesh.primitives.First();
+                    //var matchingSkinnedMesh = alreadyExportedSkinnedMeshes.FirstOrDefault(skinnedMesh => skinnedMesh.skeletonId == babylonMesh.skeletonId);
+                    //if (matchingSkinnedMesh != null && BabylonMesh.MeshesShareSkin(matchingSkinnedMesh, babylonMesh))
+                    //{
+                    //    var tmpGltfMesh = gltf.MeshesList.FirstOrDefault(mesh => matchingSkinnedMesh.name == mesh.name);
+                    //    var tmpGltfMeshPrimitive = tmpGltfMesh.primitives.First();
                         
-                        meshPrimitive.attributes.Add(GLTFMeshPrimitive.Attribute.JOINTS_0.ToString(), tmpGltfMeshPrimitive.attributes[GLTFMeshPrimitive.Attribute.JOINTS_0.ToString()]);
-                        meshPrimitive.attributes.Add(GLTFMeshPrimitive.Attribute.WEIGHTS_0.ToString(), tmpGltfMeshPrimitive.attributes[GLTFMeshPrimitive.Attribute.WEIGHTS_0.ToString()]);
-                        sharedSkinnedMeshesByOriginal[tmpGltfMesh].Add(gltfMesh);
-                    }
-                    else
-                    {
+                    //    meshPrimitive.attributes.Add(GLTFMeshPrimitive.Attribute.JOINTS_0.ToString(), tmpGltfMeshPrimitive.attributes[GLTFMeshPrimitive.Attribute.JOINTS_0.ToString()]);
+                    //    meshPrimitive.attributes.Add(GLTFMeshPrimitive.Attribute.WEIGHTS_0.ToString(), tmpGltfMeshPrimitive.attributes[GLTFMeshPrimitive.Attribute.WEIGHTS_0.ToString()]);
+                    //    sharedSkinnedMeshesByOriginal[tmpGltfMesh].Add(gltfMesh);
+                    //}
+                    //else
+                    //{
                         // Create new joint and weight accessors for this mesh's skinning.
                         // --- Joints ---
                         sharedSkinnedMeshesByOriginal[gltfMesh] = new List<GLTFMesh>();
@@ -401,7 +401,7 @@ namespace Babylon2GLTF
                         List<float> weightBones = globalVerticesSubMesh.SelectMany(v => new[] { v.BonesWeights[0], v.BonesWeights[1], v.BonesWeights[2], v.BonesWeights[3] }).ToList();
                         weightBones.ForEach(n => accessorWeights.bytesList.AddRange(BitConverter.GetBytes(n)));
                         accessorWeights.count = globalVerticesSubMesh.Count;
-                    }
+                    //}
                 }
 
                 // Morph targets positions and normals

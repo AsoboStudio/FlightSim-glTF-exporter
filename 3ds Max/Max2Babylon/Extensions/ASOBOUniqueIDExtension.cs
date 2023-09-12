@@ -110,6 +110,7 @@ namespace Max2Babylon.FlightSimExtension
             var babylonScene = babylonObject as BabylonScene;
             var gltfScene = gltfObject as GLTFScene;
 
+
             if (gltf.scenes[0] != gltfScene) 
             {
                 return null;
@@ -138,11 +139,11 @@ namespace Max2Babylon.FlightSimExtension
                         subScene.extensions.Add(GetGLTFExtensionName(), uniqueIDext);
                     };
 
+
                     Array.Resize(ref subScenes, subScenes.Length + 1);
                     subScenes[subScenes.Length - 1] = subScene;
                 }
 
-                if(subScenes.Length>0) gltf.scenes = subScenes;
                 return uniqueIDext;
             }
             

@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Max2Babylon;
 using Utilities;
+using Autodesk.Max;
 
 namespace Babylon2GLTF
 {
@@ -92,18 +93,23 @@ namespace Babylon2GLTF
             logger?.Print("GLTFExporter | Exporting nodes",Color.Black);
             progression = 30.0f;
             logger?.ReportProgressChanged((int)progression);
-            List<BabylonNode> babylonRootNodes;
+
+            List<BabylonNode> babylonRootNodes = new List<BabylonNode>();
+
             if (exportParameters.exportAsSubmodel) 
             {
-                babylonRootNodes = babylonNodes.FindAll(node => node.subModelRoot == true);
+                // Get the root nodes intialized from the babylonExporter
+                babylonRootNodes = babylonScene.RootNodes;
             }
             else 
             {
                 babylonRootNodes = babylonNodes.FindAll(node => node.parentId == null);
             }
             
+
+
+
             progressionStep = 30.0f / babylonRootNodes.Count;
-            alreadyExportedSkeletons = new Dictionary<BabylonSkeleton, BabylonSkeletonExportData>();
             nodeToGltfNodeMap = new Dictionary<BabylonNode, GLTFNode>();
             materialToGltfMaterialMap  = new Dictionary<BabylonMaterial, GLTFMaterial>();
             //cameraToGltfCameraMap = new Dictionary<BabylonCamera, GLTFCamera>();
@@ -175,7 +181,16 @@ namespace Babylon2GLTF
                 progression = 90.0f;
                 logger?.ReportProgressChanged((int) progression);
                 logger?.Print("GLTFExporter | Exporting animations",Color.Black);
+
+                if(babylonScene.animationGroups == null)
+                {
+                    logger?.RaiseWarning("One or more animation group(s) is/are empty", 1);
+                }
+                else
+                {
                 ExportAnimationGroups(gltf, babylonScene);
+                }
+                
 #if DEBUG
                 var animationGroupsExportTime = watch.ElapsedMilliseconds / 1000.0 - materialsExportTime;
                 logger?.Print(string.Format("GLTFAnimations exported in {0:0.00}s", animationGroupsExportTime),
@@ -244,6 +259,7 @@ namespace Babylon2GLTF
             {
                 ExportGLTFExtension(babylonScene, ref gltf.scenes[i], gltf);
             }
+
 
             // Output
             logger?.Print("GLTFExporter | Saving to output file",Color.Black);
@@ -426,7 +442,13 @@ namespace Babylon2GLTF
 
         private void exportNodeRec(BabylonNode babylonNode, GLTF gltf, BabylonScene babylonScene, GLTFNode gltfParentNode = null)
         {
-            GLTFNode gltfNode = ExportNode(babylonNode, gltf, babylonScene, gltfParentNode);
+
+            GLTFNode gltfNode = null;
+
+            
+            gltfNode = ExportNode(babylonNode, gltf, babylonScene, gltfParentNode);
+
+                
 
             if (gltfNode != null)
             {
@@ -642,8 +664,11 @@ namespace Babylon2GLTF
                 gltfNode.extras = babylonNode.metadata;
             }
 
+            
+            
             gltf.NodesList.Add(gltfNode);   // add the node to the gltf list
             nodeToGltfNodeMap.Add(babylonNode, gltfNode);   // add the node to the global map
+
 
             // Hierarchy
             if (gltfParentNode != null)
@@ -657,6 +682,7 @@ namespace Babylon2GLTF
                 // It's a root node
                 // Only root nodes are listed in a gltf scene
                 logger?.RaiseMessage("GLTFExporter.Node | Add " + babylonNode.name + " as root node to scene", 2);
+
                 gltf.scenes[0].NodesList.Add(gltfNode.index);
             }
 
@@ -734,5 +760,8 @@ namespace Babylon2GLTF
             
             
         }
+
+
+
     }
 }

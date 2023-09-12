@@ -69,7 +69,7 @@ namespace Max2Babylon
             {
                 
                 // Instances
-    #if MAX2020 || MAX2021 || MAX2022
+    #if MAX2020 || MAX2021 || MAX2022 || MAX2023
                 var tabs = Loader.Global.INodeTab.Create();
     #else
                 var tabs = Loader.Global.NodeTab.Create();
@@ -170,7 +170,7 @@ namespace Max2Babylon
             }
 
             // Misc.
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022 || MAX2023
             babylonMesh.isVisible = meshNode.MaxNode.Renderable;
             babylonMesh.receiveShadows = meshNode.MaxNode.RcvShadows;
             babylonMesh.applyFog = meshNode.MaxNode.ApplyAtmospherics;
@@ -314,11 +314,11 @@ namespace Max2Babylon
                     {
                         if (mtl.SubMaterialCount == 0 || mtl == unsupportedMaterial)
                         {
-                            logger?.RaiseError("Unsupported material type '" + unsupportedMaterial.MaterialClass + "'. Material is ignored.", 2);
+                            logger?.RaiseError("Unsupported material type '" + unsupportedMaterial.MaterialClass + "'. Material  " + mtl.MaterialName + " is ignored.", 2);
                         }
                         else
                         {
-                            logger?.RaiseError("Unsupported sub-material type '" + unsupportedMaterial.MaterialClass + "'. Material is ignored.", 2);
+                            logger?.RaiseWarning("Unsupported material type '" + mtl.MaterialClass + "'. Material " + mtl.MaterialName + " is ignored.", 2);
                         }
                     }
                 }
@@ -332,7 +332,7 @@ namespace Max2Babylon
                 bool hasUV2 = false;
                 for (int i = 0; i < mappingChannels.Count; ++i)
                 {
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022 || MAX2023
                     var channelNum = mappingChannels[i];
 #else
                     var channelNum = mappingChannels[new IntPtr(i)];
@@ -654,7 +654,7 @@ namespace Max2Babylon
                             if (storeFaceIndexes)
                             {
                                 // Retreive face
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022 || MAX2023
                                 face = materialFaces[j];
 #else
                                 face = materialFaces[new IntPtr(j)];

@@ -39,7 +39,7 @@ namespace Max2Babylon
 
         public static bool HasNode(this IILayer layer,IINode node,bool checkInChild = true)
         {
-#if MAX2020 || MAX2021 || MAX2022
+#if MAX2020 || MAX2021 || MAX2022 || MAX2023
             ITab<IINode> nodes = Loader.Global.INodeTab.Create();
 #else
             ITab<IINode> nodes = Loader.Global.INodeTabNS.Create();
@@ -106,7 +106,7 @@ namespace Max2Babylon
         public static IEnumerable<IINode> LayerNodes(this IILayer layer)
         {
             IILayerProperties layerProp = Loader.IIFPLayerManager.GetLayer(layer.Name);
-#if MAX2020 || MAX2021 || MAX2022
+#if MAX2020 || MAX2021 || MAX2022 || MAX2023
             ITab<IINode> nodes = Loader.Global.INodeTab.Create();
 #else
             ITab<IINode> nodes = Loader.Global.INodeTabNS.Create();
@@ -147,6 +147,22 @@ namespace Max2Babylon
                 yield return p;
             }
         }
+        public static void SelectLayersChildren(IList<IILayer> exportedLayers)
+        {
+            if (exportedLayers == null) return;
+
+            IINodeTab selection = Tools.CreateNodeTab();
+
+            foreach (IILayer layer in exportedLayers)
+            {
+                foreach (IINode layerNode in layer.LayerNodes())
+                {
+                    selection.AppendNode(layerNode, false, 0);
+                }
+            }
+            Loader.Core.SelectNodeTab(selection, true, false);
+        }
+
 
         public static void ShowExportItemLayers(IList<IILayer> exportedLayers)
         {

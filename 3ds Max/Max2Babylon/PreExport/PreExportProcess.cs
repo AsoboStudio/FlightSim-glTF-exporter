@@ -117,7 +117,7 @@ namespace Max2Babylon.PreExport
 
             IINode hierachyRoot = (node != null) ? node : Loader.Core.RootNode;
 
-#if MAX2020 || MAX2021 || MAX2022
+#if MAX2020 || MAX2021 || MAX2022 || MAX2023
             var tobake = Loader.Global.INodeTab.Create();
 #else
             var tobake = Loader.Global.NodeTab.Create();
@@ -148,13 +148,13 @@ namespace Max2Babylon.PreExport
 
             ScriptsUtilities.ExecuteMaxScriptCommand(@"
                 sel = selection
-                selNodeNames = for s in sel collect s.name
+                selNodeNames = for sNN in sel collect sNN.name
                 temps = #()
 
                 for objn in selNodeNames do 
                 (
 	                obj = getNodeByName objn
-	
+	                if obj == undefined then continue
 	                tag = getUserProp obj ""babylonjs_BakeAnimation""
 
                     if tag != true then continue
@@ -233,7 +233,7 @@ namespace Max2Babylon.PreExport
                 if (containerObject.ContainerNode.GetUserPropBool("flightsim_resolved", ref resolvePropertySet) && resolvePropertySet>0) 
                 {
                     logger?.RaiseCriticalError($"{containerObject.ContainerNode.Name} has an invalid object property 'flightsim_resolved', " +
-                        $"remove it manually trough Right Click -> Object Properties -> UserDefined  and save the scene");
+                        $"remove it manually through Right Click -> Object Properties -> UserDefined  and save the scene");
                 }
                 containerLayers = containerObject.GetContainerLayers();
                 foreach (var layer in containerLayers)

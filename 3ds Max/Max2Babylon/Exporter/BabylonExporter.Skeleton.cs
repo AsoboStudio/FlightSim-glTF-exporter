@@ -127,12 +127,12 @@ namespace Max2Babylon
         {
 
             if (skin == null)
-        {
+            {
                 return new List<IIGameNode>();
             }
 
             int logRank = 2;
-            
+
             // For optimization
             if (relevantNodesBySkin.ContainsKey(skin))
             {

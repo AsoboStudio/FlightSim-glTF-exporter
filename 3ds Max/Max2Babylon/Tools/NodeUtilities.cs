@@ -36,7 +36,7 @@ namespace Max2Babylon
 
         public static IINodeTab CreateNodeTab() 
         {
-#if MAX2020 || MAX2021 || MAX2022
+#if MAX2020 || MAX2021 || MAX2022 || MAX2023
             IINodeTab nodeTab = Loader.Global.INodeTab.Create();
 #else
             IINodeTab nodeTab = Loader.Global.INodeTabNS.Create();
@@ -55,7 +55,7 @@ namespace Max2Babylon
 
         public static IINodeTab GetAncestors(this IINodeTab nodeTab) 
         {
-#if MAX2020 || MAX2021 || MAX2022
+#if MAX2020 || MAX2021 || MAX2022 || MAX2023
             IINodeTab ancestors = Loader.Global.INodeTab.Create();
 #else
             IINodeTab ancestors = Loader.Global.INodeTabNS.Create();
@@ -223,7 +223,7 @@ namespace Max2Babylon
 
         public static List<IIContainerObject> GetContainerInSelection()
         {
-#if MAX2020 || MAX2021 || MAX2022
+#if MAX2020 || MAX2021 || MAX2022 || MAX2023
             IINodeTab selection = Loader.Global.INodeTab.Create();
 #else
             IINodeTab selection = Loader.Global.INodeTabNS.Create();
@@ -418,7 +418,7 @@ namespace Max2Babylon
 
         public static bool IsNodeSelected(this IINode node)
         {
-#if MAX2020 || MAX2021 || MAX2022
+#if MAX2020 || MAX2021 || MAX2022 || MAX2023
             IINodeTab selection = Loader.Global.INodeTab.Create();
 #else
             IINodeTab selection = Loader.Global.INodeTabNS.Create();

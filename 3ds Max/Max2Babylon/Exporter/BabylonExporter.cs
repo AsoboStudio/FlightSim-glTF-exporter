@@ -45,7 +45,7 @@ namespace Max2Babylon
         public const int MaxSceneTicksPerSecond = 4800; //https://knowledge.autodesk.com/search-result/caas/CloudHelp/cloudhelp/2016/ENU/MAXScript-Help/files/GUID-141213A1-B5A8-457B-8838-E602022C8798-htm.html
 
         public static string exporterVersion = GetConfigurationValue();
-
+        
 
         public static string GetConfigurationValue()
         {
@@ -70,6 +70,7 @@ namespace Max2Babylon
 
         public void Export(ExportParameters exportParameters)
         {
+            
             var watch = new Stopwatch();
             watch.Start();
 
@@ -93,8 +94,10 @@ namespace Max2Babylon
                     foreach (IINode node in nodeToResolve)
                     {
                         criticalNodes += node.Name + "\n";
+                        logger?.RaiseError($"Error: {node.Name} uniqueID has a conflict");
                     }
-                    logger?.RaiseCriticalError($"Export interrupted due to UniqueID conflict in the following nodes, {criticalNodes} \nFix the issue trough Babylon -> Resolve UniqueID button");
+                    logger?.RaiseError($"Export interrupted due to UniqueID conflicts,Fix the issue through Babylon -> Resolve UniqueID button");
+                    return;
                 }
                 
             }
@@ -127,18 +130,16 @@ namespace Max2Babylon
 
             if (exportNode == null || exportNode.IsRootNode)
             {
+                MaxExportParameters maxExportParameters = (exportParameters as MaxExportParameters);
                 if (exportParameters.exportAsSubmodel)
                 {
-                    IINodeTab selection = Tools.CreateNodeTab();
-                    Loader.Core.GetSelNodeTab(selection);
-                    foreach (IINode node in selection.ToIEnumerable())
+                    if (maxExportParameters.exportLayers != null)
                     {
-                        foreach (IINode child in node.NodeTree())
-                        {
-                            selection.AppendNode(child, false, 0);
-                }
+                        //clear the current selection
+                    IINodeTab selection = Tools.CreateNodeTab();
+                        Loader.Core.SelectNodeTab(selection, true, false);
+                        LayerUtilities.SelectLayersChildren(maxExportParameters.exportLayers);
                     }
-                    Loader.Core.SelectNodeTab(selection,true, false);
                     exportParameters.exportOnlySelected = true;
                     gameScene.InitialiseIGame(false);
                 }
@@ -202,7 +203,9 @@ namespace Max2Babylon
             babylonScene.producer = new BabylonProducer
             {
                 name = "3dsmax",
-#if MAX2022
+#if MAX2023
+                version = "2023",
+#elif MAX2022
                 version = "2022",
 #elif MAX2021
                 version = "2021",
@@ -303,6 +306,7 @@ namespace Max2Babylon
 
             // Root nodes
             logger?.Print("Exporting nodes",Color.Black);
+            if (exportParameters.exportAsSubmodel) logger?.RaiseWarning("Exported As SubModel");
             HashSet<IIGameNode> maxRootNodes = (exportParameters.exportAsSubmodel == false) ? getRootNodes(gameScene) : getSubModelsRootNodes(gameScene);
             
             var progressionStep = 80.0f / maxRootNodes.Count;
@@ -312,43 +316,24 @@ namespace Max2Babylon
 
             // Reseting is optional. It makes each morph target manager export starts from id = 0.
             BabylonMorphTargetManager.Reset();
-            foreach (var maxRootNode in maxRootNodes)
+
+            List<BabylonNode> rootNodes = new List<BabylonNode>();
+
+            if(exportParameters.exportAsSubmodel)
             {
-                if (isGltfExported && exportParameters.animationExportType == AnimationExportType.ExportOnly)
-                {
-                    calculateSkeletonList(maxRootNode,babylonScene, gameScene);
+                rootNodes = setRootNodesForSubmodel(gameScene, outputBabylonDirectory, babylonScene, exportParameters);
                 }
-                else if (exportParameters.exportAsSubmodel)
+            else
                 {
-                    // in case the skin has one or more bones that are not par of the submodel hierarchy
-                    BabylonNode subModelRoot = CalculateSubModelBonesDependencies(maxRootNode, babylonScene, gameScene);
-                    BabylonNode node = exportNodeRec(maxRootNode, babylonScene, gameScene);
-                    if (subModelRoot == null) 
-                    {
-                        // in case the skin has all the skinned nodes in the submodel child hierarchy
-                        // in case it is not a mesh 
-                        // in case it is not skinned
-                        subModelRoot = node;
+                rootNodes = setRootNodesForBaseModel(gameScene, exportNode, babylonScene, exportParameters);
                     }
-                    subModelRoot.subModelRoot = true;
-                    babylonScene.RootNodes.Add(subModelRoot);
 
+            if(rootNodes.Count() > 0)
+            {
+                babylonScene.RootNodes.AddRange(rootNodes);
                 }
-                else
-                {
-                BabylonNode node = exportNodeRec(maxRootNode, babylonScene, gameScene);
                 
-                if(node!=null) babylonScene.RootNodes.Add(node);
 
-                // if we're exporting from a specific node, reset the pivot to {0,0,0}
-                if (node != null && exportNode != null && !exportNode.IsRootNode)
-                    SetNodePosition(ref node, ref babylonScene, new float[] { 0, 0, 0 });
-                }
-
-                progression += progressionStep;
-                logger?.ReportProgressChanged((int)progression);
-                logger?.CheckCancelled(this);
-            };
             logger?.RaiseMessage(string.Format("Total meshes: {0}", babylonScene.MeshesList.Count), Color.Gray, 1);
 
 
@@ -446,7 +431,7 @@ namespace Max2Babylon
                 }
 
                 // Store root node
-                babylonScene.MeshesList.Add(rootNode);
+                if (!babylonScene.MeshesList.Any(x => x.id == rootNode.id)) babylonScene.MeshesList.Add(rootNode);
             }
 
 #if DEBUG
@@ -482,6 +467,7 @@ namespace Max2Babylon
             for (var index = 0; index < Loader.Core.NumAtmospheric; index++)
             {
                 var atmospheric = Loader.Core.GetAtmospheric(index);
+                if (atmospheric == null) continue;
 
 #if MAX2016 || MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021
                 string atmosphericClassName = atmospheric.ClassName;
@@ -489,7 +475,7 @@ namespace Max2Babylon
                 string atmosphericClassName = "";
                 atmospheric.GetClassName(ref atmosphericClassName);
 #endif
-                if (atmospheric!=null && atmospheric.Active(0) && atmosphericClassName == "Fog")
+                if (atmospheric.Active(0) && atmosphericClassName == "Fog")
                 {
                     var fog = atmospheric as IStdFog;
 
@@ -721,7 +707,20 @@ namespace Max2Babylon
                     Loader.Global.BroadcastNotification(SystemNotificationCode.PostExport, maxNotification);
                 }
             }
+
+            if(Directory.Exists(tempOutputDirectory))
+            {
+                try
+                {
             Directory.Delete(tempOutputDirectory, true);
+                }
+                catch
+                {
+                    logger?.RaiseError(tempOutputDirectory + " is ReadOnly");
+                }
+            }
+            
+            
             watch.Stop();
 
             logger?.Print(string.Format("Exportation done in {0:0.00}s: {1}", watch.ElapsedMilliseconds / 1000.0, fileExportString), Color.Blue);
@@ -1066,7 +1065,7 @@ namespace Max2Babylon
                 List<T> list = new List<T>();
                 for (int i = 0; i < tab.Count; i++)
                 {
-#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022
+#if MAX2017 || MAX2018 || MAX2019 || MAX2020 || MAX2021 || MAX2022 || MAX2023
                     var item = tab[i];
 #else
                     var item = tab[new IntPtr(i)];
@@ -1287,6 +1286,127 @@ namespace Max2Babylon
                         key.values[2] + offset[2] };
                 }
             }
+        }
+
+        private List<BabylonNode> setRootNodesForBaseModel(IIGameScene gameScene, IINode exportNode, BabylonScene babylonScene, ExportParameters exportParameters)
+        {
+            HashSet<IIGameNode> maxRootNodes = getRootNodes(gameScene);
+            List<BabylonNode> result = new List<BabylonNode>();
+
+            foreach (var maxRootNode in maxRootNodes)
+            {
+                if(isGltfExported && exportParameters.animationExportType == AnimationExportType.ExportOnly)
+                {
+                    calculateSkeletonList(maxRootNode, babylonScene, gameScene);
+                }
+                else
+                {
+                    BabylonNode node = exportNodeRec(maxRootNode, babylonScene, gameScene);
+
+                    if (node != null) result.Add(node);
+
+                    // if we're exporting from a specific node, reset the pivot to {0,0,0}
+                    if (node != null && exportNode != null && !exportNode.IsRootNode)
+                        SetNodePosition(ref node, ref babylonScene, new float[] { 0, 0, 0 });
+                }
+            }
+
+            return result;
+        }
+
+        private List<BabylonNode> setRootNodesForSubmodel(IIGameScene gameScene, string outputBabylonDirectory, BabylonScene babylonScene, ExportParameters exportParameters)
+        {
+            HashSet<IIGameNode> maxRootNodes = getRootNodes(gameScene);
+            List<BabylonNode> result = new List<BabylonNode>();
+
+            BabylonScene sceneTemp = new BabylonScene(outputBabylonDirectory);
+
+            //Init scene nodemap from max game scene
+            foreach (var maxRootNode in maxRootNodes)
+            {
+                BabylonNode node = exportNodeRec(maxRootNode, sceneTemp, gameScene);
+            }
+
+            //Init root nodes
+            List<BabylonNode> copyRootNodes = new List<BabylonNode>();
+
+            foreach (var maxRootNode in maxRootNodes)
+            {
+                if (isGltfExported && exportParameters.animationExportType == AnimationExportType.ExportOnly)
+                {
+                    calculateSkeletonList(maxRootNode, babylonScene, gameScene);
+                }
+
+                // in case the skin has one or more bones that are not part of the submodel hierarchy
+                BabylonNode subModelRoot = CalculateSubModelBonesDependencies(maxRootNode, babylonScene, gameScene);
+                BabylonNode node = exportNodeRec(maxRootNode, babylonScene, gameScene);
+
+                if (node != null)
+                {
+                    if (subModelRoot == null)
+                    {
+                        // in case the skin has all the skinned nodes in the submodel child hierarchy
+                        // in case it is not a mesh 
+                        // in case it is not skinned
+                        subModelRoot = node;
+                    }
+                    else
+                    {
+                        if (!copyRootNodes.Any(x => x.id == subModelRoot.id)) copyRootNodes.Add(subModelRoot);
+                    }
+
+                    subModelRoot.subModelRoot = true;
+
+
+                    if (subModelRoot != null && !result.Any(x => x.id == subModelRoot.id)) result.Add(subModelRoot);
+                }
+            }
+
+            // If exported as submodel and we need to keep only the common ancesstor for the skin meshs
+            if (copyRootNodes.Count > 0)
+            {
+                foreach (var node in copyRootNodes)
+                {
+                    if (result.Any(x => x.id == node.id))
+                    {
+                        //List<BabylonNode> childRootNodes = babylonScene.RootNodes.FindAll(x => x.parentId == node.id);
+                        List<BabylonNode> childRootNodes = new List<BabylonNode>();
+
+                        foreach (var root in result)
+                        {
+                            if (root.parentId != null)
+                            {
+                                BabylonNode parent = getRootParent(root, sceneTemp);
+
+                                if (parent.id == node.id)
+                                {
+                                    childRootNodes.Add(root);
+                                }
+                            }
+
+                        }
+
+                        if (childRootNodes.Count > 0)
+                        {
+                            foreach (var child in childRootNodes)
+                            {
+                                result.Remove(child);
+                            }
+                        }
+                    }
+
+                }
+            }
+
+
+            return result;
+        }
+
+        BabylonNode getRootParent(BabylonNode node, BabylonScene scene)
+        {
+            if (node.parentId == null)
+                return node;
+            else return getRootParent(scene.NodeMap[node.parentId], scene);
         }
     }
 }
